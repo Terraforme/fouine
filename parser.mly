@@ -29,21 +29,50 @@
 
 
 main:                       /* <- le point d'entrée (cf. + haut, "start") */
-    pgm EOF                { $1 }  /* on veut reconnaître une "expression" */
+    expression EOF                { $1 }  /* on veut reconnaître une "expression" */
 ;
 
-pgm:
-  | expression             { Expr($1) }
-  | LET VAR EQUAL expression IN pgm { Let($2, $4, $6) }
+
+expression:
+  | LPAREN expression RPAREN           { $2 }
+  | expression binary_operator expression { Bin($1,$2,$3) }
+  | INT   { Cst $1 }
+  | VAR { Var $1 }
+  | LET VAR EQUAL expression IN expression { Let($2, $4, $6) }
+  | IF bool_expr THEN expression { If($2,$4) }
+  | IF bool_expr THEN expression ELSE expression { IfElse($2,$4,$6) }
+  | MINUS expression %prec UMINUS       { Bin(Cst 0, Minus, $2) } /*un peu spécial: c'est le seul opérateur "unaire" pour le parseur */
 ;
 
-expression:			    /* règles de grammaire pour les expressions */
-  | INT                                { Cst $1 }
-  | LPAREN expression RPAREN           { $2 } /* on récupère le deuxième élément */
-  | expression PLUS expression          { Plus($1,$3) }
-  | expression TIMES expression         { Times($1,$3) }
-  | expression MINUS expression         { Minus($1,$3) }
+
+bool_expr:
+  | LPAREN bool_expr RPAREN           { $2 }
+  | TRUE { True }
+  | FALSE { False }
+  | expression comparative_operator expression { Cmp($1,$2,$3) }
+  | bool_expr boolean_operator bool_expr { Bin_op($1,$2,$3) }
+  | NOT bool_expr { Not($2) }
+;
+
+binary_operator:			    /* règles de grammaire pour les expressions */
+  | PLUS         { Plus }
+  | TIMES        { Times }
+  | MINUS      { Minus }
   | MINUS expression %prec UMINUS       { Minus(Cst 0, $2) }
   | expression DIV expression           { Div($1,$3) }
-  |expression MOD expression            { Mod($1,$3) }
+  | expression MOD expression            { Mod($1,$3) }
+;
+
+comparative_operator:
+  | EQUAL { Eq }
+  | NE { Neq }
+  | LE { Leq }
+  | LOWER { Lt }
+  | GE { Geq }
+  | GREATER { Gt }
+;
+
+boolean_operator:
+  | OR { Or }
+  | AND { And }
 ;

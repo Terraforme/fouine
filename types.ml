@@ -21,26 +21,16 @@ spécifier qu'il s'agit de types spécifiques à 'fouine'. *)
 
 type var_f = string
 
-type expr_f =
+(*type aexpr_f =
   | Var   of var_f
   | Cst   of int
-  | Plus  of expr_f * expr_f
-  | Minus of expr_f * expr_f
-  | Times of expr_f * expr_f
-  | Div   of expr_f * expr_f
-  | Mod   of expr_f * expr_f
+  | Plus  of aexpr_f * aexpr_f
+  | Minus of aexpr_f * aexpr_f
+  | Times of aexpr_f * aexpr_f
+  | Div   of aexpr_f * aexpr_f
+  | Mod   of aexpr_f * aexpr_f
+*)
 
-type bexpr_f =
-  | Var_b   of var_f
-  | Cst_b   of int
-  | Eq    of bexpr_f * bexpr_f
-  | NEq   of bexpr_f * bexpr_f
-  | Not   of bexpr_f * bexpr_f
-  | Leq   of bexpr_f * bexpr_f
-  | Lt    of bexpr_f * bexpr_f
-  | Geq   of bexpr_f * bexpr_f
-  | Gt    of bexpr_f * bexpr_f
-;;
 
 (* ************ PROGRAMMES ************** *)
 (* Ils sont vus comme des arbres.
@@ -56,10 +46,24 @@ variables, des appels de fonctions, des tests,
 bref, ce seront des expressions arithmétiques.
 *)
 
+type operator_f = Plus | Minus | Times | Div | Mod;;
+type cmp_op_f = Eq | Neq | Leq | Lt | Geq | Gt;;
+type bool_op_f = Or | And;;
 
-type pgm_f =
-  | Expr of expr_f
-  | Let of var_f * expr_f * pgm_f  (* let <var_f> = <expr_f> in <exec_f>   *)
+type expr_f =
+  | Bin of expr_f * operator_f *expr_f
+  | Var of var_f
+  | Cst of int
+  | Let of var_f * expr_f * expr_f  (* let <var_f> = <expr_f> in <exec_f>   *)
+  | If of bexpr_f * expr_f
+  | IfElse of bexpr_f * expr_f * expr_f
+and type bexpr_f =
+  | True
+  | False
+  | Cmp of expr_f * cmp_op_f * expr_f
+  | Bin_op of bexpr_f * bool_op_f * bexpr_f
+  | Not of bexpr_f
+;;
 
   (* | If  of bexpr_f * pgm_f * pgm_f     (* if  <bexpr_f> then <exec_f> else <exec_f> *)*)
 
