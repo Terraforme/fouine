@@ -21,7 +21,7 @@
 
 
 %start main
-%type <Types.expr_f list> main
+%type <Types.pgm_f> main
 
 %%
     /* --- début des règles de grammaire --- */
@@ -29,12 +29,12 @@
 
 
 main:                       /* <- le point d'entrée (cf. + haut, "start") */
-    l_expression EOF                { $1 }  /* on veut reconnaître une "expression" */
+    pgm EOF                { $1 }  /* on veut reconnaître une "expression" */
 ;
 
-l_expression:
-  | expression l_expression { $1::$2 }
-  | expression              { [$1] }
+pgm:
+  | expression             { Expr($1) }
+  | LET VAR EQUAL expression IN pgm { Let($2, $4, $6) }
 ;
 
 expression:			    /* règles de grammaire pour les expressions */
