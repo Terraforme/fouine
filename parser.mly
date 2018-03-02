@@ -18,7 +18,7 @@
 %left TIMES
 
 %start main
-%type <Types.pgm_f> main
+%type <Types.expr_f> main
 
 %%
     /* --- début des règles de grammaire --- */
@@ -31,10 +31,11 @@ main:                       /* <- le point d'entrée (cf. + haut, "start") */
 
 pgm:
   | expression             { Expr($1) }
-  | LET VAR EQUAL expression IN pgm { Let($2, $4, $6) }
+  | LET VAR EQUAL pgm IN pgm { Let($2, $4, $6) }
 ;
 
 expression:			    /* règles de grammaire pour les expressions */
+  | VAR                                { Var $1 }
   | INT                                { Cst $1 }
   | LPAREN expression RPAREN           { $2 } /* on récupère le deuxième élément */
   | expression PLUS expression          { Plus($1,$3) }

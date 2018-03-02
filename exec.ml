@@ -31,7 +31,7 @@ let rec affiche_expr e =
 
 (* sémantique opérationnelle à grands pas *)
 let rec compute env = function
-  | Var s -> 0 (* TODO aller chercher la bonne valeur dans l'environnement *)
+  | Var x -> env_read x env
   | Cst k -> k
   | Plus(e1,e2) -> (compute env e1) + (compute env e2)
   | Minus(e1,e2) -> (compute env e1) - (compute env e2)
@@ -43,5 +43,10 @@ let rec compute env = function
 
 let rec exec pgm env = match pgm with
   | Expr expr -> (compute env expr) (* TODO : evaluer l'expression *)
-  | Let (x, expr, pgm_0) -> exec pgm_0 (env_aff x (compute env expr) env)
+  | Let (x, expr, pgm_0) -> exec pgm_0 (env_aff x (exec expr env) env)
   (* TODO : remplacer (env_aff x (1)) par (env_aff x (calculer valeur)) *)
+
+
+
+
+(* ************** Fonctions d'affichage ************** *)

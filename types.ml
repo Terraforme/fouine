@@ -21,14 +21,14 @@ spécifier qu'il s'agit de types spécifiques à 'fouine'. *)
 
 type var_f = string
 
-type expr_f =
+type a_expr_f =
   | Var   of var_f
   | Cst   of int
-  | Plus  of expr_f * expr_f
-  | Minus of expr_f * expr_f
-  | Times of expr_f * expr_f
-  | Div   of expr_f * expr_f
-  | Mod   of expr_f * expr_f
+  | Plus  of a_expr_f * a_expr_f
+  | Minus of a_expr_f * a_expr_f
+  | Times of a_expr_f * a_expr_f
+  | Div   of a_expr_f * a_expr_f
+  | Mod   of a_expr_f * a_expr_f
 
 type bexpr_f =
   | Var_b   of var_f
@@ -57,12 +57,12 @@ bref, ce seront des expressions arithmétiques.
 *)
 
 
-type pgm_f =
-  | Expr of expr_f
-  | Let of var_f * expr_f * pgm_f  (* let <var_f> = <expr_f> in <exec_f>   *)
+type expr_f =
+  | Expr of a_expr_f
+  | Let of var_f * expr_f * expr_f  (* let <var_f> = <a_expr_f> in <exec_f>   *)
 
-  (* | If  of bexpr_f * pgm_f * pgm_f     (* if  <bexpr_f> then <exec_f> else <exec_f> *)*)
+  (* | If  of bexpr_f * expr_f * expr_f     (* if  <bexpr_f> then <exec_f> else <exec_f> *)*)
 
-type fun_f = (var_f list) * pgm_f (* TODO *)
+type fun_f = (var_f list) * expr_f (* TODO *)
 type val_f = Int of int | Fun of fun_f
 ;;
