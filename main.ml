@@ -1,13 +1,16 @@
 open Types
 open Eval
 
-let compile e =
-  begin
-    affiche_expr e;
-    print_newline();
-    print_int (compute e);
-    print_newline()
-  end
+let rec compile = function
+  | [] -> ()
+  | expr :: expr_list ->
+    begin
+      affiche_expr expr;
+      print_string ", value computed : ";
+      print_int (compute expr);
+      print_newline();
+      compile expr_list
+    end
 
 (* stdin désigne l'entrée standard (le clavier) *)
 (* lexbuf est un canal ouvert sur stdin *)

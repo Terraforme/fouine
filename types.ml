@@ -31,8 +31,8 @@ type expr_f =
   | Mod   of expr_f * expr_f
 
 type bexpr_f =
-  | Var   of var_f
-  | Cst   of int
+  | Var_b   of var_f
+  | Cst_b   of int
   | Eq    of bexpr_f * bexpr_f
   | NEq   of bexpr_f * bexpr_f
   | Not   of bexpr_f * bexpr_f

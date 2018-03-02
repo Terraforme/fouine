@@ -18,7 +18,7 @@
 %left TIMES
 
 %start main
-%type <Types.expr_f> main
+%type <Types.expr_f list> main
 
 %%
     /* --- début des règles de grammaire --- */
@@ -26,8 +26,14 @@
 
 
 main:                       /* <- le point d'entrée (cf. + haut, "start") */
-    expression EOF                { $1 }  /* on veut reconnaître une "expression" */
+    l_expression EOF                { $1 }  /* on veut reconnaître une "expression" */
 ;
+
+l_expression:
+  | expression l_expression { $1::$2 }
+  | expression              { [$1] }
+;
+
 expression:			    /* règles de grammaire pour les expressions */
   | INT                                { Cst $1 }
   | LPAREN expression RPAREN           { $2 } /* on récupère le deuxième élément */
