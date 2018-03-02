@@ -1,5 +1,5 @@
 open Types
-
+(*
 (* fonction d'affichage *)
 let rec affiche_expr e =
   let aff_aux s a b =
@@ -31,3 +31,4 @@ let rec compute = function
   | Div(e1,e2) -> (compute e1) / (compute e2)
   | Mod(e1,e2) -> (compute e1) mod (compute e2)
 ;;
+*)

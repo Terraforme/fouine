@@ -1,4 +1,4 @@
-Open Types
+open Types
 
 
 type env_f = (var_f * (val_f list)) list
@@ -19,7 +19,7 @@ env_unaff : var_f -> env_f -> env_f
 let rec env_read x = function
   | [] -> failwith "Read failed : variable not in environment"
   | (y, _) :: e when x <> y -> env_read x e
-  | (x, l_value) :: _       -> hd l_value
+  | (x, l_value) :: _       -> List.hd l_value
 
 let rec env_aff x value = function
   | [] -> [(x, [value])]
