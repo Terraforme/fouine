@@ -21,17 +21,6 @@ spécifier qu'il s'agit de types spécifiques à 'fouine'. *)
 
 type var_f = string
 
-(*type aexpr_f =
-  | Var   of var_f
-  | Cst   of int
-  | Plus  of aexpr_f * aexpr_f
-  | Minus of aexpr_f * aexpr_f
-  | Times of aexpr_f * aexpr_f
-  | Div   of aexpr_f * aexpr_f
-  | Mod   of aexpr_f * aexpr_f
-*)
-
-
 (* ************ PROGRAMMES ************** *)
 (* Ils sont vus comme des arbres.
  * Chaque noeud est étiqueté par un mot clé :
@@ -65,8 +54,8 @@ and type bexpr_f =
   | Not of bexpr_f
 ;;
 
-  (* | If  of bexpr_f * pgm_f * pgm_f     (* if  <bexpr_f> then <exec_f> else <exec_f> *)*)
+  (* | If  of bexpr_f * expr_f * expr_f     (* if  <bexpr_f> then <exec_f> else <exec_f> *)*)
 
-type fun_f = (var_f list) * pgm_f (* TODO *)
+type fun_f = (var_f list) * expr_f (* TODO *)
 type val_f = Int of int | Fun of fun_f
 ;;

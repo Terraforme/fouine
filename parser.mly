@@ -21,7 +21,7 @@
 
 
 %start main
-%type <Types.pgm_f> main
+%type <Types.expr_f> main
 
 %%
     /* --- début des règles de grammaire --- */
@@ -32,6 +32,7 @@ main:                       /* <- le point d'entrée (cf. + haut, "start") */
     expression EOF                { $1 }  /* on veut reconnaître une "expression" */
 ;
 
+<<<<<<< HEAD
 
 expression:
   | LPAREN expression RPAREN           { $2 }
@@ -58,6 +59,20 @@ binary_operator:			    /* règles de grammaire pour les expressions */
   | PLUS         { Plus }
   | TIMES        { Times }
   | MINUS      { Minus }
+=======
+pgm:
+  | expression             { Expr($1) }
+  | LET VAR EQUAL pgm IN pgm { Let($2, $4, $6) }
+;
+
+expression:			    /* règles de grammaire pour les expressions */
+  | VAR                                { Var $1 }
+  | INT                                { Cst $1 }
+  | LPAREN expression RPAREN           { $2 } /* on récupère le deuxième élément */
+  | expression PLUS expression          { Plus($1,$3) }
+  | expression TIMES expression         { Times($1,$3) }
+  | expression MINUS expression         { Minus($1,$3) }
+>>>>>>> 4fbcd8deca523c5180fce524ffd6ce3e0af9fe33
   | MINUS expression %prec UMINUS       { Minus(Cst 0, $2) }
   | expression DIV expression           { Div($1,$3) }
   | expression MOD expression            { Mod($1,$3) }
