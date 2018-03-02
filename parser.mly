@@ -12,6 +12,7 @@
 %token GREATER LOWER GE LE NE AND OR NOT
 %token BEGIN END LET IN FUN REC
 %token IF THEN ELSE
+%token TRUE FALSE
 %token EOL EOF
 
 %left PLUS MINUS  /* associativité gauche: a+b+c, c'est (a+b)+c */

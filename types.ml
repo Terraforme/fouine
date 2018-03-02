@@ -46,7 +46,7 @@ type expr_f =
   | Let of var_f * expr_f * expr_f  (* let <var_f> = <expr_f> in <exec_f>   *)
   | If of bexpr_f * expr_f
   | IfElse of bexpr_f * expr_f * expr_f
-and type bexpr_f =
+and bexpr_f =
   | True
   | False
   | Cmp of expr_f * cmp_op_f * expr_f

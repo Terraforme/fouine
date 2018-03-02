@@ -1,6 +1,5 @@
 open Types
 open Eval
-open Exec
 
 (* stdin désigne l'entrée standard (le clavier) *)
 (* lexbuf est un canal ouvert sur stdin *)
@@ -17,7 +16,7 @@ let calc () =
   (*try*)
       let result = parse () in
       (* Expr.affiche_expr result; print_newline (); flush stdout *)
-	let a = exec result [] in
+	let a = eval result [] in
   print_int a;
   print_newline();
   flush stdout
