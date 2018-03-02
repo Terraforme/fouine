@@ -21,15 +21,6 @@ spécifier qu'il s'agit de types spécifiques à 'fouine'. *)
 
 type var_f = string
 
-type a_expr_f =
-  | Var   of var_f
-  | Cst   of int
-  | Plus  of a_expr_f * a_expr_f
-  | Minus of a_expr_f * a_expr_f
-  | Times of a_expr_f * a_expr_f
-  | Div   of a_expr_f * a_expr_f
-  | Mod   of a_expr_f * a_expr_f
-
 type bexpr_f =
   | Var_b   of var_f
   | Cst_b   of int
@@ -41,6 +32,8 @@ type bexpr_f =
   | Geq   of bexpr_f * bexpr_f
   | Gt    of bexpr_f * bexpr_f
 ;;
+
+type operator_f = Plus | Minus | Times | Div | Mod
 
 (* ************ PROGRAMMES ************** *)
 (* Ils sont vus comme des arbres.
@@ -58,7 +51,9 @@ bref, ce seront des expressions arithmétiques.
 
 
 type expr_f =
-  | Expr of a_expr_f
+  | Bin of expr_f * operator_f * expr_f
+  | Var of var_f
+  | Cst of int
   | Let of var_f * expr_f * expr_f  (* let <var_f> = <a_expr_f> in <exec_f>   *)
 
   (* | If  of bexpr_f * expr_f * expr_f     (* if  <bexpr_f> then <exec_f> else <exec_f> *)*)
