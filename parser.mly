@@ -58,9 +58,8 @@ binary_operator:			    /* règles de grammaire pour les expressions */
   | PLUS         { Plus }
   | TIMES        { Times }
   | MINUS      { Minus }
-  | MINUS expression %prec UMINUS       { Minus(Cst 0, $2) }
-  | expression DIV expression           { Div($1,$3) }
-  | expression MOD expression            { Mod($1,$3) }
+  | DIV         { Div }
+  | MOD           { Mod }
 ;
 
 comparative_operator:
