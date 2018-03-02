@@ -14,8 +14,11 @@
 %token IF THEN ELSE
 %token EOL EOF
 
-%left PLUS   /* associativité gauche: a+b+c, c'est (a+b)+c */
+%left PLUS MINUS  /* associativité gauche: a+b+c, c'est (a+b)+c */
 %left TIMES
+%nonassoc UMINUS /* un "faux token", correspondant au "-" unaire */
+%left DIV
+
 
 %start main
 %type <Types.expr_f> main
@@ -40,4 +43,8 @@ expression:			    /* règles de grammaire pour les expressions */
   | LPAREN expression RPAREN           { $2 } /* on récupère le deuxième élément */
   | expression PLUS expression          { Plus($1,$3) }
   | expression TIMES expression         { Times($1,$3) }
+  | expression MINUS expression         { Minus($1,$3) }
+  | MINUS expression %prec UMINUS       { Minus(Cst 0, $2) }
+  | expression DIV expression           { Div($1,$3) }
+  |expression MOD expression            { Mod($1,$3) }
 ;
