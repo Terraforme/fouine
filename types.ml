@@ -21,16 +21,16 @@ spécifier qu'il s'agit de types spécifiques à 'fouine'. *)
 
 type var_f = string
 
+type cmp_op_f = Eq | NEq | Leq | Lt | Ge | Gt
+type bool_op_f = Or | And
+
 type bexpr_f =
-  | Var_b   of var_f
-  | Cst_b   of int
-  | Eq    of bexpr_f * bexpr_f
-  | NEq   of bexpr_f * bexpr_f
-  | Not   of bexpr_f * bexpr_f
-  | Leq   of bexpr_f * bexpr_f
-  | Lt    of bexpr_f * bexpr_f
-  | Geq   of bexpr_f * bexpr_f
-  | Gt    of bexpr_f * bexpr_f
+  | True
+  | False
+  | Cmp of expr_f * cmp_op_f * expr_f
+  | Bin_op of bexpr_f * bool_op_f * bexpr_f
+  | Not  of bexpr_f
+
 ;;
 
 type operator_f = Plus | Minus | Times | Div | Mod
