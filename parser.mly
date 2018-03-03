@@ -15,11 +15,17 @@
 %token TRUE FALSE
 %token EOL EOF
 
-%left PLUS MINUS  /* associativité gauche: a+b+c, c'est (a+b)+c */
-%left TIMES
-%nonassoc UMINUS /* un "faux token", correspondant au "-" unaire */
-%left DIV
+%nonassoc LET IN
+%nonassoc IF THEN ELSE
 
+%left MOD
+%left PLUS MINUS /* associativité gauche: a+b+c, c'est (a+b)+c */
+%left TIMES DIV
+%nonassoc UMINUS /* un "faux token", correspondant au "-" unaire */
+
+%left OR
+%left AND
+%nonassoc NOT
 
 %start main
 %type <Types.expr_f> main
@@ -36,7 +42,13 @@ main:                       /* <- le point d'entrée (cf. + haut, "start") */
 
 expression:
   | LPAREN expression RPAREN           { $2 }
-  | expression binary_operator expression { Bin($1,$2,$3) }
+/*  | expression binary_operator expression { Bin($1,$2,$3) }*/
+  | expression PLUS expression { Bin($1,Plus,$3) }
+  | expression TIMES expression { Bin($1,Times,$3) }
+  | expression MINUS expression { Bin($1,Minus,$3) }
+  /*| expression DIV expression { Bin($1,Div,$3) }
+  | expression MOD expression { Bin($1,Mod,$3) }*/
+
   | INT   { Cst $1 }
   | VAR { Var $1 }
   | LET VAR EQUAL expression IN expression { Let($2, $4, $6) }
@@ -50,19 +62,31 @@ bool_expr:
   | LPAREN bool_expr RPAREN           { $2 }
   | TRUE { True }
   | FALSE { False }
-  | expression comparative_operator expression { Cmp($1,$2,$3) }
-  | bool_expr boolean_operator bool_expr { Bin_op($1,$2,$3) }
+  /*| expression comparative_operator expression { Cmp($1,$2,$3) }*/
+  | expression EQUAL expression { Cmp($1,Eq,$3) }
+  | expression NE expression { Cmp($1,Neq,$3) }
+  | expression LE expression { Cmp($1,Leq,$3) }
+  | expression LOWER expression { Cmp($1,Lt,$3) }
+  | expression GE expression { Cmp($1,Geq,$3) }
+  | expression GREATER expression { Cmp($1,Gt,$3) }
+
+  /*| bool_expr boolean_operator bool_expr { Bin_op($1,$2,$3) }*/
+  | bool_expr OR bool_expr { Bin_op($1,Or,$3) }
+  | bool_expr AND bool_expr { Bin_op($1,And,$3) }
   | NOT bool_expr { Not($2) }
 ;
 
-binary_operator:			    /* règles de grammaire pour les expressions */
+/*
+binary_operator:
   | PLUS         { Plus }
   | TIMES        { Times }
   | MINUS      { Minus }
   | DIV         { Div }
   | MOD           { Mod }
 ;
+*/
 
+/*
 comparative_operator:
   | EQUAL { Eq }
   | NE { Neq }
@@ -71,8 +95,11 @@ comparative_operator:
   | GE { Geq }
   | GREATER { Gt }
 ;
+*/
 
+/*
 boolean_operator:
   | OR { Or }
   | AND { And }
 ;
+*/
