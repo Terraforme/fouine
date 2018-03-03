@@ -19,7 +19,7 @@
 %left TIMES
 %nonassoc UMINUS /* un "faux token", correspondant au "-" unaire */
 %left DIV
-
+%left MOD
 
 %start main
 %type <Types.expr_f> main
