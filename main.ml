@@ -17,6 +17,8 @@ let calc () =
       let result = parse () in
       (* Expr.affiche_expr result; print_newline (); flush stdout *)
 	let a = eval result [] in
+  pretty_print_expr result;
+  print_expr result;
   print_int a;
   print_newline();
   flush stdout

@@ -42,17 +42,17 @@ main:                       /* <- le point d'entrée (cf. + haut, "start") */
 
 expression:
   | LPAREN expression RPAREN           { $2 }
-/*  | expression binary_operator expression { Bin($1,$2,$3) }*/
+  /*| expression binary_operator expression { Bin($1,$2,$3) } %prec ???*/
   | expression PLUS expression { Bin($1,Plus,$3) }
   | expression TIMES expression { Bin($1,Times,$3) }
   | expression MINUS expression { Bin($1,Minus,$3) }
-  /*| expression DIV expression { Bin($1,Div,$3) }
-  | expression MOD expression { Bin($1,Mod,$3) }*/
+  | expression DIV expression { Bin($1,Div,$3) }
+  | expression MOD expression { Bin($1,Mod,$3) }
 
   | INT   { Cst $1 }
   | VAR { Var $1 }
   | LET VAR EQUAL expression IN expression { Let($2, $4, $6) }
-  | IF bool_expr THEN expression { If($2,$4) }
+  /*| IF bool_expr THEN expression { If($2,$4) } */
   | IF bool_expr THEN expression ELSE expression { IfElse($2,$4,$6) }
   | MINUS expression %prec UMINUS       { Bin(Cst 0, Minus, $2) } /*un peu spécial: c'est le seul opérateur "unaire" pour le parseur */
 ;
