@@ -1,0 +1,3 @@
+let a = fun b -> b*b in
+let b = a 5 in
+b
