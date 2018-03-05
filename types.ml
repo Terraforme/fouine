@@ -40,9 +40,10 @@ type cmp_op_f = Eq | Neq | Leq | Lt | Geq | Gt;;
 type bool_op_f = Or | And;;
 
 type expr_f =
-  | Bin of expr_f * operator_f *expr_f
+  | Bin of expr_f * operator_f * expr_f
   | Var of var_f
   | Cst of int
+  | PrInt of expr_f
   | Let of var_f * expr_f * expr_f  (* let <var_f> = <expr_f> in <exec_f>   *)
   | If of bexpr_f * expr_f
   | IfElse of bexpr_f * expr_f * expr_f
