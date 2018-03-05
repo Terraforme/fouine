@@ -1,7 +1,7 @@
 open Types
 
 
-type env_f = (var_f * (val_f list)) list
+type env_f = (var_f, val_f) list
 
 
 (* Fonctions pour manipuler l'environnement : *)
@@ -19,15 +19,12 @@ env_unaff : var_f -> env_f -> env_f
 let rec env_read x = function
   | [] -> failwith "Read failed : variable not in environment"
   | (y, _) :: e when x <> y -> env_read x e
-  | (x, l_value) :: _       -> List.hd l_value
+  | (x, val) :: _       -> val
 
-let rec env_aff x value = function
-  | [] -> [(x, [value])]
-  | (y, l) :: e when x <> y -> (y, l) :: (env_aff x value e)
-  | (x, l) :: e             -> (x, value :: l) :: e
+let rec env_aff x value env =
+  (x, value) :: env
 
 let rec env_unaff x = function
   | [] -> failwith "Unaffectation failed : variable not in environment"
-  | (y, l) :: e when x <> y -> (y, l) :: (env_unaff x e)
-  | (x, []) :: e            -> failwith "Unaffectation failed : no value in environment"
-  | (x, value :: l) :: e    -> (x, l) :: e
+  | (y, val) :: e when x <> y -> (y, val) :: (env_unaff x e)
+  | (x, val) :: e    -> e
