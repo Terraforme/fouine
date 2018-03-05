@@ -143,8 +143,8 @@ let rec expr2str = function
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
   | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
-  | Fun (var, expr) -> "TODO"
-  | App (expr1, expr2) -> "TODO"
+  | Fun (var, expr) -> "Fun " ^ var ^ " -> (" ^ (expr2str expr) ^ ")"
+  | App (expr1, expr2) -> (expr2str expr1) ^ "(" ^ (expr2str expr2) ^ ")"
 
 and bexpr2str = function
   | True -> "true"
@@ -236,8 +236,15 @@ let pretty_print_expr expr =
         print_tab (indent + 1);
         pretty_aux (indent + 1) expr2;
       end
-    | Fun (var, expr) -> ()
-    | App (expr1, expr2) -> ()
+    | Fun (x, expr) ->
+      print_string ("fun " ^ x ^ " -> ");
+      pretty_aux (indent+1) expr;
+
+    | App (expr1, expr2) ->
+      pretty_aux indent expr1;
+      print_string "(";
+      pretty_aux indent expr2;
+      print_string ")"
 
   and bpretty_aux indent = function
     | True -> print_string "true"

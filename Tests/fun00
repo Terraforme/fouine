@@ -1,0 +1,2 @@
+let a = fun x -> x+5 
+in 0

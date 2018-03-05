@@ -13,7 +13,7 @@ do
 	printf "Testing %-10s :\n" $test
 	cat $tests/$test
 	printf "\nResults :\n"
-	./main.native $tests/$test
+	./main.native $tests/$test -debug
 	echo "\n\n\n"
 
 done;
