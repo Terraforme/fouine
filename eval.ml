@@ -12,6 +12,13 @@ let rec eval expr env = match expr with
   | Bin (expr1, op, expr2) -> bin_eval op expr1 expr2 env
   | Var x                  -> env_read x env
   | Cst c                  -> c
+  | PrInt expr             ->
+    begin
+      let value = eval expr env in
+      print_int value;
+      print_newline ();
+      value
+    end
   | Let (x, expr1, expr2)  -> eval expr2 (env_aff x (eval expr1 env) env)
   | If (bexpr, expr)       ->
     begin
@@ -82,6 +89,7 @@ let rec expr2str = function
   "(" ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
   | Var x -> x
   | Cst c -> string_of_int c
+  | PrInt expr -> "prInt(" ^ (expr2str expr) ^ ")"
   | Let (x, expr1, expr2) -> "Let(" ^ x ^ ", "
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
@@ -134,6 +142,14 @@ let pretty_print_expr expr =
       end
     | Var x -> print_string x
     | Cst c -> print_int c
+    | PrInt expr ->
+      begin
+        print_string "prInt (";
+        pretty_aux (indent+1) expr;
+        (* print_newline ();
+        print_tab indent; *)
+        print_string ")\n";
+      end
     | Let (x, expr1, expr2) ->
       begin
         print_string ("let " ^ x ^ " = ");
