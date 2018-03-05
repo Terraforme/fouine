@@ -28,6 +28,8 @@
 %left AND
 %nonassoc NOT
 
+%nonassoc PRINT
+
 %start main
 %type <Types.expr_f> main
 
