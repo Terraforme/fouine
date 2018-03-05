@@ -14,6 +14,7 @@
 %token IF THEN ELSE
 %token TRUE FALSE
 %token EOL EOF
+%token PRINT
 
 %nonassoc LET IN
 %nonassoc IF THEN ELSE
@@ -55,6 +56,8 @@ expression:
   /*| IF bool_expr THEN expression { If($2,$4) } */
   | IF bool_expr THEN expression ELSE expression { IfElse($2,$4,$6) }
   | MINUS expression %prec UMINUS       { Bin(Cst 0, Minus, $2) } /*un peu spécial: c'est le seul opérateur "unaire" pour le parseur */
+
+  | PRINT expression { Print($2) }
 ;
 
 
