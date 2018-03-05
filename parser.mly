@@ -31,6 +31,7 @@
 %nonassoc NOT
 
 %nonassoc PRINT
+%left APPLICATION /* un faux token pour lui dire que expr1 expr2 est une application ssi ça ne peut rien être d'autre */
 
 %start main
 %type <Types.expr_f> main
@@ -65,6 +66,21 @@ expression:
   | LET VAR func IN expression { Let($2,$3,$5) }
   | FUN VAR FLECHE expression { Fun($2,$4) } %prec FUN
 
+  /*Application (cas possibles: VAR VAR, VAR INT, (expr) INT, (expr) VAR, VAR (expr), (expr) (expr))*/
+  /*| expression expression { App($1,$2) } %prec APPLICATION
+  | application expression { App($1,$2) } %prec APPLICATION*/
+
+  | VAR VAR { App(Var $1,Var $2) }
+  | VAR INT { App(Var $1,Cst $2) }
+  | LPAREN expression RPAREN INT { App($2,Cst $4) }
+  | LPAREN expression RPAREN VAR { App($2,Var $4) }
+  | VAR LPAREN expression RPAREN { App(Var $1,$3) }
+  | LPAREN expression RPAREN LPAREN expression RPAREN { App($2,$5) }
+
+
+
+
+
   /*| IF bool_expr THEN expression { If($2,$4) } */
   | IF bool_expr THEN expression ELSE expression { IfElse($2,$4,$6) }
   | PRINT expression { PrInt($2) }
@@ -76,6 +92,11 @@ func:
   | VAR func { Fun($1,$2) }
 ;
 
+/*
+application:
+  | expression expression { App($1,$2) }
+  | application expression { App($1,$2) }
+*/
 
 bool_expr:
   | LPAREN bool_expr RPAREN           { $2 }

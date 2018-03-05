@@ -1,1 +1,1 @@
-let f x y = x + y in x + y
+let f x y = x + y in 42
