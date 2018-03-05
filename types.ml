@@ -47,7 +47,7 @@ type expr_f =
   | Let of var_f * expr_f * expr_f  (* let <var_f> = <expr_f> in <exec_f>   *)
   | If of bexpr_f * expr_f
   | IfElse of bexpr_f * expr_f * expr_f
-  | Print of expr_f
+  | Fun of var_f * expr_f
 and bexpr_f =
   | True
   | False

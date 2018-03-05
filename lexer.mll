@@ -42,6 +42,8 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | "true" { TRUE }
   | "false" { FALSE }
   | "prInt" { PRINT }
+  | "fun" { FUN }
+  | "->" { FLECHE }
   | ('-'|'+')?['0'-'9']+'.'['0'-'9']* as s { NBR (float_of_string s) }
   | ['0'-'9']+ as s { INT (int_of_string s) }
   | (['A'-'Z']|['a'-'z'])*+['0'-'9']* as s { VAR s }
