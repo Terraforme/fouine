@@ -38,9 +38,13 @@ let calc exec_mod =
       print_string "\n\nBeautful parsing : \n";
       pretty_print_expr expr;
       print_string "\n\nExécution : \n";
-      let a = eval expr [] in
+      let value = eval expr [] in
       print_string "value:\t";
-      print_int a
+      let _ = match value with
+      | Int a -> print_int a
+      | _     -> failwith "functional value"
+      in
+      print_newline ()
     end
   ;
   flush stdout

@@ -2,30 +2,40 @@ open Env
 open Types
 
 
-(* On définit exec_f la fonction qui prend un programme, un environnement, et l'exécute
-Renvoie à priori un 'int'
 
-eval : pgm_f -> env_f -> int *)
+
 
 
 let rec eval expr env = match expr with
+(* eval : expr_f -> env_f -> val_f
+Prend en paramètres une expression et un environnement,
+et évalue l'expression sur cet environnement. La valeur
+renvoyée est soit un entier, soit une fonction *)
+
   | Bin (expr1, op, expr2) -> bin_eval op expr1 expr2 env
   | Var x                  -> env_read x env
-  | Cst c                  -> c
+  | Cst c                  -> Int c
   | PrInt expr             ->
     begin
       let value = eval expr env in
-      print_int value;
+      let _ = match value with
+      | Int a -> print_int a
+      | _     -> failwith "ERROR : prInt : functional value"
+      in
       print_newline ();
       value
     end
-  | Let (x, expr1, expr2)  -> eval expr2 (env_aff x (eval expr1 env) env)
+  | Let (x, expr1, expr2)  ->
+    begin
+      let value = eval expr1 env in
+      eval expr2 (env_aff x value env)
+    end
   | If (bexpr, expr)       ->
     begin
       if (bool_eval bexpr env) then
         eval expr env
       else
-        0
+        Int 0
     end
   | IfElse (bexpr, expr1, expr2) ->
     begin
@@ -34,33 +44,72 @@ let rec eval expr env = match expr with
       else
         eval expr2 env
     end
+  | Fun (x, expr0) -> Fun_var (x, expr0, env)
+  | App (expr1, expr2) ->
+    begin
+      match (eval expr1 env) with
+      | Fun_var (x, expr0, env0) ->
+        eval expr0 (env_aff x (eval expr2 env) env0)
+      | _ -> failwith "ERROR : eval (App) : expecting a function"
+    end
 
 
-and bin_eval op expr1 expr2 env = match op with
-  | Plus  -> (eval expr1 env) + (eval expr2 env)
-  | Minus -> (eval expr1 env) - (eval expr2 env)
-  | Times -> (eval expr1 env) * (eval expr2 env)
-  | Div   -> (eval expr1 env) / (eval expr2 env)
-  | Mod   -> (eval expr1 env) mod (eval expr2 env)
+and bin_eval op expr1 expr2 env =
+(* bin_eval : operator_f -> expr_f -> expr_f -> env_f -> val_f
+Sert à faire des opérations arithmétiques *)
+  match (eval expr1 env, eval expr2 env) with
+  | (Int a, Int b) ->
+    begin
+      match op with
+      | Plus  -> Int(a + b)
+      | Minus -> Int(a - b)
+      | Times -> Int(a * b)
+      | Div   -> Int(a / b)
+      | Mod   -> Int(a mod b)
+    end
+  | _, _ -> failwith "ERROR : bin_eval : functional values "
 
 and bool_eval bexpr env = match bexpr with
+(* bool_eval : bexpr_f -> env_f -> bool
+Évalue l'expression booléenne en entrée sur l'environnement donné *)
   | True -> true
   | False -> false
   | Cmp (expr1, cmp, expr2)     -> cmp_eval cmp expr1 expr2 env
   | Bin_op (bexpr1, op, bexpr2) -> bool_op_eval op bexpr1 bexpr2 env
   | Not bexpr                   -> not (bool_eval bexpr env)
 
-and cmp_eval cmp expr1 expr2 env = match cmp with
-  | Eq  -> (eval expr1 env) = (eval expr2 env)
-  | Neq -> (eval expr1 env) <> (eval expr2 env)
-  | Leq -> (eval expr1 env) <= (eval expr2 env)
-  | Lt  -> (eval expr1 env) < (eval expr2 env)
-  | Geq -> (eval expr1 env) >= (eval expr2 env)
-  | Gt  -> (eval expr1 env) > (eval expr2 env)
+and cmp_eval cmp expr1 expr2 env =
+(* cmp_eval : cmp_op_f -> expr_f -> expr_f -> env_f -> bool_eval
+Sert à comparer deux expressions *)
+  match (eval expr1 env, eval expr2 env) with
+  | (Int a, Int b) ->
+    begin
+      match cmp with
+      | Eq  -> a = b
+      | Neq -> a <> b
+      | Leq -> a <= b
+      | Lt  -> a < b
+      | Geq -> a >= b
+      | Gt  -> a > b
+    end
+  | _,_ -> failwith "ERROR : cmp_eval : functional values"
 
 and bool_op_eval op bexpr1 bexpr2 env = match op with
+(* bool_op_eval : bool_op_f -> bexpr_f -> bexpr_f -> env_f -> bool_op_f
+Sert à faire des opérations booléennes *)
   | Or  -> (bool_eval bexpr1 env) || (bool_eval bexpr2 env)
   | And -> (bool_eval bexpr1 env) && (bool_eval bexpr2 env)
+
+
+
+
+
+
+
+
+
+
+
 
 
 (* ************** Fonctions d'affichage ************** *)
@@ -94,6 +143,8 @@ let rec expr2str = function
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
   | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
+  | Fun (var, expr) -> "TODO"
+  | App (expr1, expr2) -> "TODO"
 
 and bexpr2str = function
   | True -> "true"
@@ -185,6 +236,8 @@ let pretty_print_expr expr =
         print_tab (indent + 1);
         pretty_aux (indent + 1) expr2;
       end
+    | Fun (var, expr) -> ()
+    | App (expr1, expr2) -> ()
 
   and bpretty_aux indent = function
     | True -> print_string "true"
