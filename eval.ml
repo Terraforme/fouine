@@ -28,6 +28,18 @@ renvoyée est soit un entier, soit une fonction *)
       let value = eval expr1 env in
       eval expr2 (env_aff x value env)
     end
+  | LetRec (f, expr1, expr2) ->
+    begin
+      match expr1 with
+      (* Deux cas pour f : soit c'est directement une fonction (rec)
+         soit c'est une expression autre *)
+      | Fun (x, expr0) ->
+      (* Cas spécial ici.... la fonction env_aff ne suffit pas *)
+        let rec env0 = (f, Fun_var(x, expr0, env0)) :: env in
+        eval expr2 env0
+      | _ -> let value = eval expr1 env in
+             eval expr2 (env_aff f value env)
+    end
   | If (bexpr, expr)       ->
     begin
       if (bool_eval bexpr env) then
@@ -139,6 +151,8 @@ let rec expr2str = function
   | PrInt expr -> "prInt(" ^ (expr2str expr) ^ ")"
   | Let (x, expr1, expr2) -> "Let(" ^ x ^ ", "
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
+  | LetRec (f, expr1, expr2) -> "LetRec(" ^ f ^ ", "
+  ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
   | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
   | Fun (var, expr) -> "Fun " ^ var ^ " -> (" ^ (expr2str expr) ^ ")"
@@ -209,6 +223,16 @@ let pretty_print_expr expr =
         print_tab indent;
         pretty_aux indent expr2
       end
+    | LetRec (f, expr1, expr2) ->
+      begin
+        print_string ("let rec " ^ f ^ " = ");
+        pretty_aux (indent+1) expr1;
+        (* print_newline ();
+        print_tab indent; *)
+        print_string " in\n";
+        print_tab indent;
+        pretty_aux indent expr2
+      end
     | If (bexpr, expr) ->
       begin
         print_string "if ";
@@ -240,7 +264,7 @@ let pretty_print_expr expr =
 
     | App (expr1, expr2) ->
       pretty_aux indent expr1;
-      print_string "(";
+      print_string " (";
       pretty_aux indent expr2;
       print_string ")"
 

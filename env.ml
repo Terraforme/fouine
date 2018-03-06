@@ -16,13 +16,16 @@ env_unaff : var_f -> env_f -> env_f
       désaffecte la valeur d'une variable et renvoie le nouvel environnement
       dans les faits, cette fonction est inutile*)
 
-let rec env_read x = function
+let rec env_read x env =
+  if x = "_" then failwith "ERROR : trying to read '_'"
+  else match env with
   | [] -> failwith ("Read failed : variable " ^ x ^ " not in environment")
   | (y, _) :: e when x <> y -> env_read x e
   | (x, value) :: _       -> value
 
 let rec env_aff x value env =
-  (x, value) :: env
+  if x = "_" then env
+  else (x, value) :: env
 
 let rec env_unaff x = function
   | [] -> failwith "Unaffectation failed : variable not in environment"
