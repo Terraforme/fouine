@@ -22,6 +22,7 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | '/'             { DIV }
   | '*'             { TIMES }
   | "mod"           { MOD }
+  (*| '_'             { UNDERSCORE }*)
   | '>'             { GREATER }
   | '<'             { LOWER }
   | ">="            { GE }
@@ -46,4 +47,4 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | "->" { FLECHE }
   | ('-'|'+')?['0'-'9']+'.'['0'-'9']* as s { NBR (float_of_string s) }
   | ['0'-'9']+ as s { INT (int_of_string s) }
-  | (['A'-'Z']|['a'-'z'])*+['0'-'9']* as s { VAR s }
+  | ((['A'-'Z']|['a'-'z'])*+['0'-'9']*)|'_' as s { VAR s }

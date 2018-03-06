@@ -61,9 +61,11 @@ expression:
   | INT   { Cst $1 }
   | VAR { Var $1 }
   | LET VAR EQUAL expression IN expression { Let($2, $4, $6) }
+  | REC VAR EQUAL expression IN expression { LetRec($2, $4, $6) }
 
   /*fonctions*/
   | LET VAR func IN expression { Let($2,$3,$5) }
+  | REC VAR func IN expression { LetRec($2,$3,$5) }
   | FUN VAR FLECHE expression { Fun($2,$4) } %prec FUN
 
   /*Application (cas possibles: VAR VAR, VAR INT, (expr) INT, (expr) VAR, VAR (expr), (expr) (expr))*/
