@@ -17,7 +17,7 @@ env_unaff : var_f -> env_f -> env_f
       dans les faits, cette fonction est inutile*)
 
 let rec env_read x = function
-  | [] -> failwith "Read failed : variable not in environment"
+  | [] -> failwith ("Read failed : variable " ^ x ^ " not in environment")
   | (y, _) :: e when x <> y -> env_read x e
   | (x, value) :: _       -> value
 

@@ -4,8 +4,6 @@ open Types
 
 
 
-
-
 let rec eval expr env = match expr with
 (* eval : expr_f -> env_f -> val_f
 Prend en paramètres une expression et un environnement,

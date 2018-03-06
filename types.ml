@@ -45,6 +45,7 @@ type expr_f =
   | Cst of int
   | PrInt of expr_f
   | Let of var_f * expr_f * expr_f  (* let <var_f> = <expr_f> in <exec_f>   *)
+  | LetRec of var_f * expr_f * expr_f
   | If of bexpr_f * expr_f
   | IfElse of bexpr_f * expr_f * expr_f
   | Fun of var_f * expr_f (* car les fonctions sont un objet fun var -> expr *)
