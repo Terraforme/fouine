@@ -16,6 +16,7 @@
 %token EOL EOF
 %token PRINT
 %token FUN FLECHE
+%token ANON
 
 %nonassoc FUN
 %nonassoc LET IN
@@ -61,6 +62,8 @@ expression:
   | INT   { Cst $1 }
   | VAR { Var $1 }
   | LET VAR EQUAL expression IN expression { Let($2, $4, $6) }
+  /*| LET ANON EQUAL expression { $4 } %prec LET*/
+  | LET ANON EQUAL expression IN expression { Let("_", $4, $6) }
   | REC VAR EQUAL expression IN expression { LetRec($2, $4, $6) }
 
   /*fonctions*/
