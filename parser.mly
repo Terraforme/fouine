@@ -19,8 +19,10 @@
 %token ANON
 
 %nonassoc FUN
+%nonassoc ANON
 %nonassoc LET IN
-%nonassoc IF THEN ELSE
+%nonassoc IF THEN
+%nonassoc ELSE
 
 %left MOD
 %left PLUS MINUS /* associativité gauche: a+b+c, c'est (a+b)+c */
@@ -42,66 +44,63 @@
                             /* à droite, les valeurs associées */
 
 
-main:                       /* <- le point d'entrée (cf. + haut, "start") */
-    expression EOF                { $1 }  /* on veut reconnaître une "expression" */
+main:
+    expression EOF                { $1 }
 ;
 
 
 expression:
+  | INT   { Cst $1 }
+  | VAR { Var $1 }
+
   | LPAREN expression RPAREN           { $2 }
 
+  /*opérations arithmétiques*/
   /*| expression binary_operator expression { Bin($1,$2,$3) } %prec ???*/
   | expression PLUS expression { Bin($1,Plus,$3) }
   | expression TIMES expression { Bin($1,Times,$3) }
   | expression MINUS expression { Bin($1,Minus,$3) }
   | expression DIV expression { Bin($1,Div,$3) }
   | expression MOD expression { Bin($1,Mod,$3) }
-
   | MINUS expression %prec UMINUS       { Bin(Cst 0, Minus, $2) } /*un peu spécial: c'est le seul opérateur "unaire" pour le parseur */
 
-  | INT   { Cst $1 }
-  | VAR { Var $1 }
+  /*let ... in ...*/
   | LET VAR EQUAL expression IN expression { Let($2, $4, $6) }
-  /*| LET ANON EQUAL expression { $4 } %prec LET*/
+  | LET ANON EQUAL expression { $4 } %prec ANON
   | LET ANON EQUAL expression IN expression { Let("_", $4, $6) }
   | REC VAR EQUAL expression IN expression { LetRec($2, $4, $6) }
 
-  /*fonctions*/
+  /*déclarations de fonction*/
   | LET VAR func IN expression { Let($2,$3,$5) }
   | REC VAR func IN expression { LetRec($2,$3,$5) }
   | FUN VAR FLECHE expression { Fun($2,$4) } %prec FUN
 
   /*Application (cas possibles: VAR VAR, VAR INT, (expr) INT, (expr) VAR, VAR (expr), (expr) (expr))*/
-  /*| expression expression { App($1,$2) } %prec APPLICATION
-  | application expression { App($1,$2) } %prec APPLICATION*/
+  | applicator applicated { App($1,$2) } %prec APPLICATION
 
-  | VAR VAR { App(Var $1,Var $2) }
-  | VAR INT { App(Var $1,Cst $2) }
-  | LPAREN expression RPAREN INT { App($2,Cst $4) }
-  | LPAREN expression RPAREN VAR { App($2,Var $4) }
-  | VAR LPAREN expression RPAREN { App(Var $1,$3) }
-  | LPAREN expression RPAREN LPAREN expression RPAREN { App($2,$5) }
-
-
-
-
-
-  /*| IF bool_expr THEN expression { If($2,$4) } */
+  | IF bool_expr THEN expression { If($2,$4) }
   | IF bool_expr THEN expression ELSE expression { IfElse($2,$4,$6) }
+
   | PRINT expression { PrInt($2) }
 ;
 
+applicator:
+  | VAR { Var $1 }
+  | LPAREN expression RPAREN { $2 }
+  | applicator applicated { App($1,$2) } %prec APPLICATION
+;
+
+applicated: /* il faut garder la distinction avec expr_appl1 car on ne peut pas appliquer une constante à quelque chose */
+  | VAR { Var $1 }
+  | INT { Cst $1 }
+  | LPAREN expression RPAREN { $2 }
+;
 
 func:
   | VAR EQUAL expression { Fun($1,$3) }
   | VAR func { Fun($1,$2) }
 ;
 
-/*
-application:
-  | expression expression { App($1,$2) }
-  | application expression { App($1,$2) }
-*/
 
 bool_expr:
   | LPAREN bool_expr RPAREN           { $2 }
