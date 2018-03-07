@@ -1,0 +1,24 @@
+let a = 5 in 
+let _ = prInt a in
+
+let a = 42 in
+let b = 18 in
+let _ = prInt a + b in 
+
+let c = a * b in
+let _ = prInt c in
+
+let a = b in 
+let _ = prInt a in
+
+let a = 17 in
+let b = 3 in
+let c = a * b * c in
+let _ = prInt c in
+
+let a = 5 in 
+let b = 42 in
+let c = -4 in
+let discr = b * b - 4 * a * c in
+
+prInt discr

@@ -1,0 +1,22 @@
+let rec fact = fun n -> 
+	if n = 0 then 1
+	else n * fact (n-1)
+in
+
+let _ = prInt (fact 5) in
+let _ = prInt (fact 15) in
+
+
+let rec pgcd a b =
+	if b = 0 then a
+	else if a = 0 then b
+	else pgcd b (a mod b)
+in
+
+let _ = prInt (pgcd 78 148948) in
+let _ = prInt (pgcd 71 97) in
+let _ = prInt (pgcd 42 144) in
+let _ = prInt (pgcd (-54) 42) in
+
+
+prInt 42

@@ -1,0 +1,33 @@
+let _ = prInt ((fun x -> x * x) 3) in
+
+let _ = prInt ((fun x -> fun y -> x + y) 71 97) in
+
+let f = (fun x -> x + 1) in
+let _ = prInt (f 0) in
+
+let a = f (f (f (f (f 0)))) in
+
+let f x = x / 2 in
+let _ = prInt 42 in
+
+let f x y = x * y - x in
+let _ = prInt (f 17 42) in
+let _ = prInt (f 0 1997) in
+
+let f = fun x -> a * x in
+let g = fun a -> a + a - a in
+let _ = prInt (g 1) in
+let _ = prInt (f 5) in
+let a = 42 in
+let _ = prInt (f 5) in
+let _ = prInt (f 11) in
+
+
+let a = 0 in
+let f = fun x -> fun y -> a * x + y in
+let h a b = 1 + f a b in
+let a = 1 in
+let _ = prInt (h 5 0) in
+let _ = prInt (h (-42) 42) in
+
+prInt 42

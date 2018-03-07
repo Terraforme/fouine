@@ -1,2 +1,0 @@
-let a = 1 in
-let b = let a = 2 in a in a+b

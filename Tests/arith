@@ -1,0 +1,9 @@
+let _ = prInt (1+1) in 
+let _ = prInt (1+2*3) in
+let _ = prInt (0-5*4) in
+let _ = prInt (2*5+3*11) in
+let _ = prInt (24/4/3) in
+let _ = prInt (5 mod 3) in
+let _ = prInt (-789 mod 42) in
+
+prInt (5*4/7 + 11*97/3)
