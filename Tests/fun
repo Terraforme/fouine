@@ -30,4 +30,7 @@ let a = 1 in
 let _ = prInt (h 5 0) in
 let _ = prInt (h (-42) 42) in
 
+let f g = g 0 in
+let _ = prInt (f (fun a -> a mod 5)) in
+
 prInt 42
