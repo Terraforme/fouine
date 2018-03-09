@@ -1,5 +1,0 @@
-let a = 5 in a;;
-let b = 3 in 42;;
-let a = 2 let b = 3;;
-a+b;;
-let a = 2 in let b = a in prInt b;;

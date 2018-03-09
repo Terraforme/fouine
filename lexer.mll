@@ -5,7 +5,7 @@ exception Eof;;
 }
 
 rule token = parse    (* la "fonction" aussi s'appelle token .. *)
-  | [' ' '\t' '\n']     { token lexbuf }    (* on saute les blancs et les tabulations *)
+  | [' ' '\t' '\n']     { token lexbuf }    (* on saute les blancs et les tabulations et les retours à la ligne *)
  	     	   	           (* token: appel récursif *)
                                    (* lexbuf: argument implicite
                                       associé au tampon où sont
@@ -15,6 +15,7 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | ')'             { RPAREN }
   | '='             { EQUAL }
   | ';'             { SEMICOL }
+  | ";;"            { EOI } (*end of instruction*)
   | ':'             { COLON }
   | '.'             { DOT }
   | '+'             { PLUS }
@@ -31,7 +32,6 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | "&&"            { AND }
   | "||"            { OR }
   | "not"           { NOT }
-  | ";;"            { EOI }
   | "begin" { BEGIN }
   | "end" { END }
   | "let" { LET }
