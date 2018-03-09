@@ -1,7 +1,1 @@
-Beginners/all-comparison.ml
-Beginners/ite.ml
-Beginners/let3.ml
-Beginners/let4.ml
-Beginners/printletin.ml
-Beginners/print.ml
-Beginners/ManualOutput/let1.ml
+Intermediate/fibonacci.ml

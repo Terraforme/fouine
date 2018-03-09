@@ -2,7 +2,7 @@
 
 
 
-	On s’intéresse à fouine , un sous-ensemble de Caml qui est décrit en http://www.ens-lyon.fr/DI/?p=5451 . Le but est d’écrire un interprète, mais attention, pas au sens d’un programme interactif qui propose, comme OCaml, de saisir des expressions au clavier et de les  évaluer dans la foulée. L’interprète prend en entrée un fichier Caml, exécute le code qui s’y trouve, et affiche ce qu’on lui demande d’afficher.
+	On s’intéresse à fouine , un sous-ensemble de Caml qui est décrit en <http://www.ens-lyon.fr/DI/?p=5451> . Le but est d’écrire un interprète, mais attention, pas au sens d’un programme interactif qui propose, comme OCaml, de saisir des expressions au clavier et de les  évaluer dans la foulée. L’interprète prend en entrée un fichier Caml, exécute le code qui s’y trouve, et affiche ce qu’on lui demande d’afficher.
 
 
 --
@@ -31,10 +31,22 @@
 	Il n'est pas autorisé de faire `if a then ...` car `a` n'est pas considéré comme étant une expression booléenne. Les expressions booléennes ne sont trouvables que dans les conditions d'un `if`.
 
 
-# Environnement `env_f`
+# Environnement `env_f` et LET .. IN ..
 
 	C'est une liste `(var_f * val_f) list` d'affectation.
 	Quand on affecte une variable à une valeur, on rajoute cette association en tête de liste (`O(1)` pour toutes les associations),, et quand on cherche la valeur d'une variable, on prend la première trouvée dans la liste (`O(n)` sur la taille de la liste).
+
+	Lorsqu'on fait un `let <var> = <expr1> in <expr2>` dans un environnement `env`, on évalue `expr1` dans un premier temps, puis on l'associe à `var` dans l'environnement courant `env`. Ainsi, la variable précédente aura la valeur calculée seulement dans `expr2`.
+
+__Quelques détails sur `let <var> = .. ;;`__ :
+	Il s'agit de remarquer que `;;` correspond au toplevel. Ainsi on ne peut pas mettre le `;;` au milieu d'un code s'il ne renvoie pas au top level. Lorsqu'on utilise ce type de let dans un interpréteur, on a l'impression de définir la variable "pour toujours". De fait, il faut remarquer que ceci est équivalent à un let in ie
+
+`let .. = .. ;; expr` devient `let .. = .. in expr`
+
+mais
+
+`let .. = .. ;; expr1 ;; expr2 ;;` devient, si expr1 n'est pas un let :
+`let .. = .. in let _ = expr in expr2` 
 
 # Fonctions  - Fonctions récursives
 

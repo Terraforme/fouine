@@ -13,7 +13,7 @@
 %token BEGIN END LET IN FUN REC
 %token IF THEN ELSE
 %token TRUE FALSE
-%token EOL EOF
+%token EOL EOF EOI
 %token PRINT
 %token FUN FLECHE
 %token ANON
@@ -45,8 +45,19 @@
 
 
 main:
-    expression EOF                { $1 }
-;
+	| toplevel EOF { $1 }
+
+toplevel:
+	| expression { $1 }
+	| expression EOI { $1 }
+	| expression EOI toplevel { Let("_", $1, $3) }
+	| tplvl_let { $1 }
+
+tplvl_let:
+	| LET VAR EQUAL expression { Let($2, $4, Cst 0) }
+	| LET VAR EQUAL expression EOI { Let($2, $4, Cst 0) }
+	| LET VAR EQUAL expression tplvl_let { Let($2, $4, $5) }
+	| LET VAR EQUAL expression EOI toplevel { Let($2, $4, $6) }
 
 
 expression:

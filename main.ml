@@ -1,5 +1,6 @@
 open Types
 open Eval
+open Printer
 
 type exec_mod_f = Normal | Parsing | Debug;;
 

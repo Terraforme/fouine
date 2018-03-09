@@ -31,6 +31,7 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | "&&"            { AND }
   | "||"            { OR }
   | "not"           { NOT }
+  | ";;"            { EOI }
   | "begin" { BEGIN }
   | "end" { END }
   | "let" { LET }
