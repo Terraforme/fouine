@@ -13,7 +13,7 @@
 %token BEGIN END LET IN FUN REC
 %token IF THEN ELSE
 %token TRUE FALSE
-%token EOL EOF
+%token EOL EOF EOI
 %token PRINT
 %token FUN FLECHE
 %token ANON
@@ -35,6 +35,7 @@
 
 %nonassoc PRINT
 %left APPLICATION /* un faux token pour lui dire que expr1 expr2 est une application ssi ça ne peut rien être d'autre */
+/*%nonassoc EOI*/
 
 %start main
 %type <Types.expr_f> main
@@ -45,9 +46,22 @@
 
 
 main:
-    expression EOF                { $1 }
+    | expression_enchainement EOF{ $1 }
 ;
 
+expression_enchainement:
+  | expression { $1 }
+  | expression EOI { $1 }
+  | expression EOI expression_enchainement { Let("_", $1, $3) }
+  | let_enchainement { $1 }
+;
+
+let_enchainement:
+  | LET VAR EQUAL expression let_enchainement { Let($2, $4, $5) }
+  | LET VAR EQUAL expression EOI expression_enchainement { Let($2, $4, $6) }
+  | LET VAR EQUAL expression { Let($2, $4, Cst 0) }
+  | LET VAR EQUAL expression EOI { Let($2, $4, Cst 0) }
+;
 
 expression:
   | INT   { Cst $1 }
@@ -56,7 +70,6 @@ expression:
   | LPAREN expression RPAREN           { $2 }
 
   /*opérations arithmétiques*/
-  /*| expression binary_operator expression { Bin($1,$2,$3) } %prec ???*/
   | expression PLUS expression { Bin($1,Plus,$3) }
   | expression TIMES expression { Bin($1,Times,$3) }
   | expression MINUS expression { Bin($1,Minus,$3) }
@@ -66,9 +79,11 @@ expression:
 
   /*let ... in ...*/
   | LET VAR EQUAL expression IN expression { Let($2, $4, $6) }
-  | LET ANON EQUAL expression { $4 } %prec ANON
-  | LET ANON EQUAL expression IN expression { Let("_", $4, $6) }
   | REC VAR EQUAL expression IN expression { LetRec($2, $4, $6) }
+  | LET ANON EQUAL expression { $4 } %prec ANON
+  | REC ANON EQUAL expression { $4 } %prec ANON
+  | LET ANON EQUAL expression IN expression { Let("_", $4, $6) }
+  | REC ANON EQUAL expression IN expression { Let("_", $4, $6) }
 
   /*déclarations de fonction*/
   | LET VAR func IN expression { Let($2,$3,$5) }
@@ -106,7 +121,7 @@ bool_expr:
   | LPAREN bool_expr RPAREN           { $2 }
   | TRUE { True }
   | FALSE { False }
-  /*| expression comparative_operator expression { Cmp($1,$2,$3) }*/
+
   | expression EQUAL expression { Cmp($1,Eq,$3) }
   | expression NE expression { Cmp($1,Neq,$3) }
   | expression LE expression { Cmp($1,Leq,$3) }
@@ -114,37 +129,7 @@ bool_expr:
   | expression GE expression { Cmp($1,Geq,$3) }
   | expression GREATER expression { Cmp($1,Gt,$3) }
 
-  /*| bool_expr boolean_operator bool_expr { Bin_op($1,$2,$3) }*/
   | bool_expr OR bool_expr { Bin_op($1,Or,$3) }
   | bool_expr AND bool_expr { Bin_op($1,And,$3) }
   | NOT bool_expr { Not($2) }
 ;
-
-
-/*
-binary_operator:
-  | PLUS         { Plus }
-  | TIMES        { Times }
-  | MINUS      { Minus }
-  | DIV         { Div }
-  | MOD           { Mod }
-;
-*/
-
-/*
-comparative_operator:
-  | EQUAL { Eq }
-  | NE { Neq }
-  | LE { Leq }
-  | LOWER { Lt }
-  | GE { Geq }
-  | GREATER { Gt }
-;
-*/
-
-/*
-boolean_operator:
-  | OR { Or }
-  | AND { And }
-;
-*/
