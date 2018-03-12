@@ -46,6 +46,7 @@ type expr_f =
   | Fun    of var_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
   | App    of expr_f * expr_f              (* Ce sont les applications *)
   | Aff    of var_f * expr_f               (* Affectation i.e le `:=`*)
+  | Alloc  of expr_f                       (* Allocation mémoire *)
 
 (* On co-définit les expressions booléennes - pour les tests *)
 and bexpr_f =
