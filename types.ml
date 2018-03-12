@@ -35,6 +35,7 @@ type bool_op_f = Or | And;;
 
 type expr_f =
   | Var    of var_f                        (* Feuille : variable *)
+  | Bang   of var_f                        (* Le déréférençage *)
   | Cst    of int                          (* Feuille : constante *)
   | Bin    of expr_f * operator_f * expr_f (* opérations binaires *)
   | PrInt  of expr_f
@@ -44,6 +45,7 @@ type expr_f =
   | IfElse of bexpr_f * expr_f * expr_f
   | Fun    of var_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
   | App    of expr_f * expr_f              (* Ce sont les applications *)
+  | Aff    of var_f * expr_f               (* Affectation i.e le `:=`*)
 
 (* On co-définit les expressions booléennes - pour les tests *)
 and bexpr_f =
@@ -62,5 +64,7 @@ type env_f = (var_f * val_f) list
 
 (* Une fonction est un objet fun x -> ... *)
 (* Dans le cas des variables, on ajoute un environnement pour les clôtures *)
-and val_f = Int of int | Fun_var of var_f * expr_f * env_f
+and val_f = Int of int
+          | Fun_var of var_f * expr_f * env_f
+          | Ref     of int32
 ;;
