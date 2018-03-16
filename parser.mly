@@ -46,21 +46,33 @@
 
 
 main:
-    | expression_enchainement EOF{ $1 }
+    | expression_chain EOF{ $1 }
 ;
 
-expression_enchainement:
+expression_chain:
   | expression { $1 }
   | expression EOI { $1 }
-  | expression EOI expression_enchainement { Let("_", $1, $3) }
-  | let_enchainement { $1 }
+  | expression EOI expression_chain { Let("_", $1, $3) }
+  | let_chain { $1 }
 ;
 
-let_enchainement:
-  | LET VAR EQUAL expression let_enchainement { Let($2, $4, $5) }
-  | LET VAR EQUAL expression EOI expression_enchainement { Let($2, $4, $6) }
+let_chain:
+  | LET VAR EQUAL expression let_chain { Let($2, $4, $5) }
+  | REC VAR EQUAL expression let_chain { LetRec($2, $4, $5) }
+  | LET VAR EQUAL expression EOI expression_chain { Let($2, $4, $6) }
+  | REC VAR EQUAL expression EOI expression_chain { LetRec($2, $4, $6) }
   | LET VAR EQUAL expression { Let($2, $4, Cst 0) }
+  | REC VAR EQUAL expression { LetRec($2, $4, Cst 0) }
   | LET VAR EQUAL expression EOI { Let($2, $4, Cst 0) }
+  | REC VAR EQUAL expression EOI { LetRec($2, $4, Cst 0) }
+  | LET VAR func let_chain{ Let($2,$3,$4) }
+  | REC VAR func let_chain { LetRec($2,$3,$4) }
+  | LET VAR func EOI let_chain{ Let($2,$3,$5) }
+  | REC VAR func EOI let_chain { LetRec($2,$3,$5) }
+  | LET VAR func { Let($2,$3, Cst 0) }
+  | REC VAR func { LetRec($2,$3, Cst 0) }
+  | LET VAR func EOI { Let($2,$3, Cst 0) }
+  | REC VAR func EOI { LetRec($2,$3, Cst 0) }
 ;
 
 expression:
