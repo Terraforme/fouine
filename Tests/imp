@@ -1,6 +1,6 @@
 let a = ref 2 in
 	a := 3;
-	prInt(!a); 
+	let _ = prInt(!a) in 
 	prInt(!a+1)
 ;;
 

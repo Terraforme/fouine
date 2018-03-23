@@ -15,9 +15,10 @@ d'une expression, il faut renvoyer en plus de la valeur *)
 
   | Bin (expr1, op, expr2) -> bin_eval op expr1 expr2 env mem
   | Var x                  -> env_read x env, mem
-  | Bang x                 ->
+  | Bang expr              ->
     begin
-      match (env_read x env) with
+      let (value, mem) = eval expr env mem in
+      match value with
       | Ref addr -> let value = read_mem addr mem
                     in value, mem
       | _ -> failwith "ERROR : Dereferencing non-addr"
