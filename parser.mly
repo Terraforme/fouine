@@ -12,12 +12,16 @@
 %token GREATER LOWER GE LE NE AND OR NOT
 %token BEGIN END LET IN FUN REC
 %token IF THEN ELSE
+%token BEGIN END
 %token TRUE FALSE
 %token EOL EOF EOI
 %token PRINT
 %token FUN FLECHE
+%token REF BANG
 %token ANON
 
+
+%left SEMICOL
 %nonassoc FUN
 %nonassoc ANON
 %nonassoc LET IN
@@ -36,6 +40,9 @@
 %nonassoc PRINT
 %left APPLICATION /* un faux token pour lui dire que expr1 expr2 est une application ssi ça ne peut rien être d'autre */
 /*%nonassoc EOI*/
+%nonassoc REF
+%nonassoc BANG
+
 
 %start main
 %type <Types.expr_f> main
@@ -81,6 +88,9 @@ expression:
 
   | LPAREN expression RPAREN           { $2 }
 
+  | BEGIN expression END { $2 }
+  | expression SEMICOL expression { Let("_", $1, $3) }
+
   /*opérations arithmétiques*/
   | expression PLUS expression { Bin($1,Plus,$3) }
   | expression TIMES expression { Bin($1,Times,$3) }
@@ -97,6 +107,10 @@ expression:
   | LET ANON EQUAL expression IN expression { Let("_", $4, $6) }
   | REC ANON EQUAL expression IN expression { Let("_", $4, $6) }
 
+  /*reference*/
+  | REF expression { Alloc($2) }
+  | BANG expression { Bang($2) }
+
   /*déclarations de fonction*/
   | LET VAR func IN expression { Let($2,$3,$5) }
   | REC VAR func IN expression { LetRec($2,$3,$5) }
@@ -105,6 +119,7 @@ expression:
   /*Application (cas possibles: VAR VAR, VAR INT, (expr) INT, (expr) VAR, VAR (expr), (expr) (expr))*/
   | applicator applicated { App($1,$2) } %prec APPLICATION
 
+  /* if ... then ... else ...*/
   | IF bool_expr THEN expression { If($2,$4) }
   | IF bool_expr THEN expression ELSE expression { IfElse($2,$4,$6) }
 
