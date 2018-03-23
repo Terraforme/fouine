@@ -17,7 +17,9 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | ';'             { SEMICOL }
   | ";;"            { EOI } (*end of instruction*)
   | ':'             { COLON }
+  | ":="            { AFFECTATION }
   | '.'             { DOT }
+  | '!'             { BANG }
   | '+'             { PLUS }
   | '-'             { MINUS }
   | '/'             { DIV }
@@ -46,6 +48,7 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | "prInt" { PRINT }
   | "fun" { FUN }
   | "->" { FLECHE }
+  | "ref" { REF }
   | ('-'|'+')?['0'-'9']+'.'['0'-'9']* as s { NBR (float_of_string s) }
   | ['0'-'9']+ as s { INT (int_of_string s) }
   | (['A'-'Z']|['a'-'z'])(['A'-'Z']|['a'-'z']|'_'|['0'-'9'])* as s { VAR s }

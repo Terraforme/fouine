@@ -35,7 +35,7 @@ type bool_op_f = Or | And;;
 
 type expr_f =
   | Var    of var_f                        (* Feuille : variable *)
-  | Bang   of var_f                        (* Le déréférençage *)
+  | Bang   of expr_f                       (* Le déréférençage *)
   | Cst    of int                          (* Feuille : constante *)
   | Bin    of expr_f * operator_f * expr_f (* opérations binaires *)
   | PrInt  of expr_f

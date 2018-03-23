@@ -28,6 +28,7 @@ let rec expr2str = function
   | Bin (expr1, op, expr2) -> (op2str op) ^
   "(" ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
   | Var x -> x
+  | Bang expr -> "!" ^ (expr2str expr)
   | Cst c -> string_of_int c
   | PrInt expr -> "prInt(" ^ (expr2str expr) ^ ")"
   | Let (x, expr1, expr2) -> "Let(" ^ x ^ ", "
@@ -38,6 +39,8 @@ let rec expr2str = function
   | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
   | Fun (var, expr) -> "Fun " ^ var ^ " -> (" ^ (expr2str expr) ^ ")"
   | App (expr1, expr2) -> (expr2str expr1) ^ "(" ^ (expr2str expr2) ^ ")"
+  | Aff (var, expr) -> var ^ " := " ^ "(" ^ (expr2str expr) ^ ")"
+  | Alloc expr -> "Alloc(" ^ (expr2str expr) ^ ")"
 
 and bexpr2str = function
   | True -> "true"

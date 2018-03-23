@@ -7,22 +7,27 @@
 %token <int> INT       /* le lexème INT a un attribut entier */
 %token <float> NBR       /* le lexème NBR a un attribut float */
 %token <string> VAR       /* le lexème VAR a un attribut, de type string */
-%token LPAREN RPAREN EQUAL SEMICOL DOT COLON
+%token LPAREN RPAREN EQUAL SEMICOL DOT COLON AFFECTATION
 %token PLUS MINUS DIV TIMES MOD
 %token GREATER LOWER GE LE NE AND OR NOT
 %token BEGIN END LET IN FUN REC
 %token IF THEN ELSE
+%token BEGIN END
 %token TRUE FALSE
 %token EOL EOF EOI
 %token PRINT
 %token FUN FLECHE
+%token REF BANG
 %token ANON
 
-%nonassoc FUN
+%right FUN
 %nonassoc ANON
 %nonassoc LET IN
+%right SEMICOL
 %nonassoc IF THEN
 %nonassoc ELSE
+%right AFFECTATION
+
 
 %left MOD
 %left PLUS MINUS /* associativité gauche: a+b+c, c'est (a+b)+c */
@@ -36,6 +41,9 @@
 %nonassoc PRINT
 %left APPLICATION /* un faux token pour lui dire que expr1 expr2 est une application ssi ça ne peut rien être d'autre */
 /*%nonassoc EOI*/
+%nonassoc REF
+%nonassoc BANG
+
 
 %start main
 %type <Types.expr_f> main
@@ -46,21 +54,33 @@
 
 
 main:
-    | expression_enchainement EOF{ $1 }
+    | expression_chain EOF{ $1 }
 ;
 
-expression_enchainement:
+expression_chain:
   | expression { $1 }
   | expression EOI { $1 }
-  | expression EOI expression_enchainement { Let("_", $1, $3) }
-  | let_enchainement { $1 }
+  | expression EOI expression_chain { Let("_", $1, $3) }
+  | let_chain { $1 }
 ;
 
-let_enchainement:
-  | LET VAR EQUAL expression let_enchainement { Let($2, $4, $5) }
-  | LET VAR EQUAL expression EOI expression_enchainement { Let($2, $4, $6) }
+let_chain:
+  | LET VAR EQUAL expression let_chain { Let($2, $4, $5) }
+  | REC VAR EQUAL expression let_chain { LetRec($2, $4, $5) }
+  | LET VAR EQUAL expression EOI expression_chain { Let($2, $4, $6) }
+  | REC VAR EQUAL expression EOI expression_chain { LetRec($2, $4, $6) }
   | LET VAR EQUAL expression { Let($2, $4, Cst 0) }
+  | REC VAR EQUAL expression { LetRec($2, $4, Cst 0) }
   | LET VAR EQUAL expression EOI { Let($2, $4, Cst 0) }
+  | REC VAR EQUAL expression EOI { LetRec($2, $4, Cst 0) }
+  | LET VAR func let_chain{ Let($2,$3,$4) }
+  | REC VAR func let_chain { LetRec($2,$3,$4) }
+  | LET VAR func EOI let_chain{ Let($2,$3,$5) }
+  | REC VAR func EOI let_chain { LetRec($2,$3,$5) }
+  | LET VAR func { Let($2,$3, Cst 0) }
+  | REC VAR func { LetRec($2,$3, Cst 0) }
+  | LET VAR func EOI { Let($2,$3, Cst 0) }
+  | REC VAR func EOI { LetRec($2,$3, Cst 0) }
 ;
 
 expression:
@@ -68,6 +88,9 @@ expression:
   | VAR { Var $1 }
 
   | LPAREN expression RPAREN           { $2 }
+
+  | BEGIN expression END { $2 }
+  | expression SEMICOL expression { Let("_", $1, $3) }
 
   /*opérations arithmétiques*/
   | expression PLUS expression { Bin($1,Plus,$3) }
@@ -85,6 +108,11 @@ expression:
   | LET ANON EQUAL expression IN expression { Let("_", $4, $6) }
   | REC ANON EQUAL expression IN expression { Let("_", $4, $6) }
 
+  /*reference*/
+  | REF expression { Alloc($2) }
+  | BANG expression { Bang($2) }
+  | VAR AFFECTATION expression { Aff($1, $3) }
+
   /*déclarations de fonction*/
   | LET VAR func IN expression { Let($2,$3,$5) }
   | REC VAR func IN expression { LetRec($2,$3,$5) }
@@ -93,6 +121,7 @@ expression:
   /*Application (cas possibles: VAR VAR, VAR INT, (expr) INT, (expr) VAR, VAR (expr), (expr) (expr))*/
   | applicator applicated { App($1,$2) } %prec APPLICATION
 
+  /* if ... then ... else ...*/
   | IF bool_expr THEN expression { If($2,$4) }
   | IF bool_expr THEN expression ELSE expression { IfElse($2,$4,$6) }
 
