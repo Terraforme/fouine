@@ -2,3 +2,9 @@ let a = ref 2 in
 	a := 3;
 	prInt(!a); 
 	prInt(!a+1)
+;;
+
+let a = ref 2;;
+prInt((a:=3; 1) + (a:=4; 2));;
+
+prInt(!a)

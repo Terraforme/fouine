@@ -20,13 +20,14 @@
 %token REF BANG
 %token ANON
 
-%right AFFECTATION
-%right SEMICOL
-%nonassoc FUN
+%right FUN
 %nonassoc ANON
 %nonassoc LET IN
+%right SEMICOL
 %nonassoc IF THEN
 %nonassoc ELSE
+%right AFFECTATION
+
 
 %left MOD
 %left PLUS MINUS /* associativité gauche: a+b+c, c'est (a+b)+c */
