@@ -66,6 +66,7 @@ type env_f = (var_f * val_f) list
 (* Une fonction est un objet fun x -> ... *)
 (* Dans le cas des variables, on ajoute un environnement pour les clôtures *)
 and val_f = Int of int
+          | Unit
           | Fun_var of var_f * expr_f * env_f
           | Ref     of int32
 ;;

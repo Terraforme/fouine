@@ -2,7 +2,7 @@
 
 tests="Tests/"
 sol_dir="no sol dir"
-prInt="prInt.test"
+prInt="preludeCaml.ml"
 
 make
 

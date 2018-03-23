@@ -1,6 +1,7 @@
 open Types
 open Eval
 open Printer
+open Mem
 
 type exec_mod_f = Normal | Parsing | Debug;;
 
@@ -26,7 +27,7 @@ let parse () = Parser.main Lexer.token lexbuf;;
 let calc exec_mod =
   let expr = parse () in
   match exec_mod with
-  | Normal -> let _ = eval expr [] in ()
+  | Normal -> let _ = eval expr [] (init_mem ())  in ()
   | Parsing ->
     begin
       print_string "Raw parsing : \n";
@@ -42,7 +43,7 @@ let calc exec_mod =
       print_string "\n\nBeautiful parsing : \n";
       pretty_print_expr expr;
       print_string "\n\nExécution : \n";
-      let value = eval expr [] in
+      let value, _ = eval expr [] (init_mem ()) in
       print_string "value:\t";
       let _ = match value with
       | Int a -> print_int a

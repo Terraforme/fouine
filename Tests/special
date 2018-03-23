@@ -1,0 +1,2 @@
+let a = 5 in
+(if a <> 0 then (fun x -> prInt 0) else (fun x -> prInt 1)) 5
