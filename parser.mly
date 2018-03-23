@@ -7,7 +7,7 @@
 %token <int> INT       /* le lexème INT a un attribut entier */
 %token <float> NBR       /* le lexème NBR a un attribut float */
 %token <string> VAR       /* le lexème VAR a un attribut, de type string */
-%token LPAREN RPAREN EQUAL SEMICOL DOT COLON
+%token LPAREN RPAREN EQUAL SEMICOL DOT COLON AFFECTATION
 %token PLUS MINUS DIV TIMES MOD
 %token GREATER LOWER GE LE NE AND OR NOT
 %token BEGIN END LET IN FUN REC
@@ -20,8 +20,8 @@
 %token REF BANG
 %token ANON
 
-
-%left SEMICOL
+%right AFFECTATION
+%right SEMICOL
 %nonassoc FUN
 %nonassoc ANON
 %nonassoc LET IN
@@ -110,6 +110,7 @@ expression:
   /*reference*/
   | REF expression { Alloc($2) }
   | BANG expression { Bang($2) }
+  | VAR AFFECTATION expression { Aff($1, $3) }
 
   /*déclarations de fonction*/
   | LET VAR func IN expression { Let($2,$3,$5) }

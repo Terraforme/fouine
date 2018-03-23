@@ -1,2 +1,4 @@
 let a = ref 2 in
-	begin prInt(!a); prInt(!a+1) end
+	a := 3;
+	prInt(!a); 
+	prInt(!a+1)

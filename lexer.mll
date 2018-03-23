@@ -17,6 +17,7 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | ';'             { SEMICOL }
   | ";;"            { EOI } (*end of instruction*)
   | ':'             { COLON }
+  | ":="            { AFFECTATION }
   | '.'             { DOT }
   | '!'             { BANG }
   | '+'             { PLUS }
