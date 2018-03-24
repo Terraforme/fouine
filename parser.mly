@@ -69,25 +69,26 @@ let_chain:
   | REC VAR EQUAL expression let_chain { LetRec($2, $4, $5) }
   | LET VAR EQUAL expression EOI expression_chain { Let($2, $4, $6) }
   | REC VAR EQUAL expression EOI expression_chain { LetRec($2, $4, $6) }
-  | LET VAR EQUAL expression { Let($2, $4, Cst 0) }
-  | REC VAR EQUAL expression { LetRec($2, $4, Cst 0) }
-  | LET VAR EQUAL expression EOI { Let($2, $4, Cst 0) }
-  | REC VAR EQUAL expression EOI { LetRec($2, $4, Cst 0) }
+  | LET VAR EQUAL expression { Let($2, $4, Unit) }
+  | REC VAR EQUAL expression { LetRec($2, $4, Unit) }
+  | LET VAR EQUAL expression EOI { Let($2, $4, Unit) }
+  | REC VAR EQUAL expression EOI { LetRec($2, $4, Unit) }
   | LET VAR func let_chain{ Let($2,$3,$4) }
   | REC VAR func let_chain { LetRec($2,$3,$4) }
   | LET VAR func EOI let_chain{ Let($2,$3,$5) }
   | REC VAR func EOI let_chain { LetRec($2,$3,$5) }
-  | LET VAR func { Let($2,$3, Cst 0) }
-  | REC VAR func { LetRec($2,$3, Cst 0) }
-  | LET VAR func EOI { Let($2,$3, Cst 0) }
-  | REC VAR func EOI { LetRec($2,$3, Cst 0) }
+  | LET VAR func { Let($2,$3, Unit) }
+  | REC VAR func { LetRec($2,$3, Unit) }
+  | LET VAR func EOI { Let($2,$3, Unit) }
+  | REC VAR func EOI { LetRec($2,$3, Unit) }
 ;
 
 expression:
   | INT   { Cst $1 }
   | VAR { Var $1 }
 
-  | LPAREN expression RPAREN           { $2 }
+  | LPAREN expression RPAREN { $2 }
+  | LPAREN RPAREN { Unit }
 
   | BEGIN expression END { $2 }
   | expression SEMICOL expression { Let("_", $1, $3) }
@@ -138,11 +139,14 @@ applicated: /* il faut garder la distinction avec expr_appl1 car on ne peut pas 
   | VAR { Var $1 }
   | INT { Cst $1 }
   | LPAREN expression RPAREN { $2 }
+  | LPAREN RPAREN { Unit }
 ;
 
 func:
   | VAR EQUAL expression { Fun($1,$3) }
+  | LPAREN RPAREN EQUAL expression { Fun("_", $4) }
   | VAR func { Fun($1,$2) }
+  | LPAREN RPAREN func { Fun("_", $3) }
 ;
 
 
