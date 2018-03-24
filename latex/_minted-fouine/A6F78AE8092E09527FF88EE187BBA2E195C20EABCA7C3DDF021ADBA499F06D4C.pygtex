@@ -1,0 +1,9 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{type} \PYG{n}{val\PYGZus{}f} \PYG{o}{=}
+    \PYG{n+nc}{Unit}
+  \PYG{o}{|} \PYG{n+nc}{Int}  \PYG{k}{of} \PYG{k+kt}{int}
+  \PYG{o}{|} \PYG{n+nc}{Addr} \PYG{k}{of} \PYG{n+nc}{Int32}
+  \PYG{o}{|} \PYG{n+nc}{Fun}  \PYG{k}{of} \PYG{n}{var\PYGZus{}f} \PYG{o}{*} \PYG{n}{expr\PYGZus{}f} \PYG{o}{*} \PYG{n}{env\PYGZus{}f}
+  \PYG{o}{|} \PYG{n+nc}{Pair} \PYG{k}{of} \PYG{n}{val\PYGZus{}f} \PYG{o}{*} \PYG{n}{val\PYGZus{}f}
+ \PYG{o}{;;}
+\end{Verbatim}

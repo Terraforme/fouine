@@ -7,4 +7,15 @@ let a = ref 2 in
 let a = ref 2;;
 prInt((a:=3; 1) + (a:=4; 2));;
 
-prInt(!a)
+prInt(!a);;
+
+let b = ref 5;;
+
+let f = fun x -> x * !b;;
+let b = 42 in
+prInt(f b);;
+
+let my_ref x = ref x in
+let c = my_ref 42 in
+c := !c/2;
+prInt(!c)
