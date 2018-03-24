@@ -1,0 +1,213 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[francais]{babel}
+\usepackage{fullpage}
+
+
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+
+\title{\textbf{Fouine}}
+\date{Mars 2018}
+\author{Victor Boone - Gabrielle Pauvert}
+
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.png}
+\usepackage{hyperref}
+
+\newcommand\code[1]{{\fontfamily{lmtt}\selectfont #1}}
+
+\usepackage{minted} 
+ 
+\begin{document}
+
+\maketitle
+
+
+\section{Généralités}
+
+	Dans notre implémentation de \emph{Fouine}, il y a $4$ grands types
+	
+	\vspace{0.5cm}
+	
+	\begin{tabular}{l l l}
+	Composante & Description & Type \\
+	\hline
+	Expression & Ce qu'on évalue & \code{expr\_f} \\
+	Valeurs & Ensemble des valeurs pouvant être renvoyées & \code{val\_f} \\
+	Environnement & Stocke des couples (variables, valeurs) & \code{env\_f} \\
+	Mémoire & Représentation de la mémoire en Fouine & \code{mem\_f} 
+	\end{tabular}
+	
+	\vspace{0.5cm}
+	
+	On ne parlera pas de \emph{programme} en Fouine, mais plutôt d'\emph{expression}. Tout est expression qu'on cherche à évaluer. L'évaluation des fonctions est faite par la fonction \code{eval}:
+	
+	
+	\begin{minted}{ocaml}
+	
+		val eval : expr_f -> env_f -> mem_f -> val_f * mem_f
+	
+	\end{minted}
+	
+	La mémoire associée à un programme fouine n'est pas vue comme un contexte qui pourra être modifié par effet de bord. Elle est passée en argument à la fonction d'évaluation, qui renvoie la valeur de l'expression évaluée \textbf{et} le nouvel état de la mémoire. Il en va différemment de l'environnement ; celui-ci est passé en paramètre et agit comme un "contexte" dans lequel s'évalue l'expression, mais ne peut être modifié de manière globale, donc on ne le renvoie pas.
+	
+\subsection{Expressions}
+
+	Les expressions regroupent tout ce qui a été demandé dans le sujet. Leur type est :
+	
+	\begin{minted}{ocaml}
+	
+type expr_f =
+  | Var    of var_f                        (* Feuille : variable *)
+  | Bang   of expr_f                       (* Le déréférençage *)
+  | Cst    of int                          (* Feuille : constante *)
+  | Bin    of expr_f * operator_f * expr_f (* opérations binaires *)
+  | PrInt  of expr_f
+  | Let    of var_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
+  | LetRec of var_f * expr_f * expr_f      (* let rec *)
+  | If     of bexpr_f * expr_f
+  | IfElse of bexpr_f * expr_f * expr_f
+  | Fun    of var_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
+  | App    of expr_f * expr_f              (* Ce sont les applications *)
+  | Aff    of var_f * expr_f               (* Affectation i.e le `:=`*)
+  | Alloc  of expr_f                       (* Allocation mémoire *)
+
+	\end{minted}
+	
+	\vspace{0.5cm}
+	Voici un tableau de correspondance entre les constructeurs et les notions OCamL.
+	
+	\begin{center}
+	\begin{tabular}{l | l}
+		Constructeur & Équivalent OCamL \\
+		\hline
+		\code{Var of var\_f} & \code{x, y, c0, variable\_1} : nom de variable \\
+  		\code{Bang of expr\_f} & \code{!} : déréférençage\\
+		\code{Cst of int} & \code{0}, \code{1} : les entiers\\
+		\code{Bin of expr\_f * operator\_f * expr\_f} & \code{x+5} : opérations binaires (\code{+, -, *, /, mod}) \\
+  		\code{PrInt of expr\_f} & \code{let prInt x = print\_int x; print\_newline ()} \\
+		\code{Let of var\_f * expr\_f * expr\_f} & \code{let ... = ... in ... } \\
+		\code{LetRec of var\_f * expr\_f * expr\_f} & \code{let rec ... = ... in ... }\\
+		\code{If of bexpr\_f * expr\_f} & \code{if ... then ... else 0} \\
+		\code{IfElse of bexpr\_f * expr\_f * expr\_f} & \code{if ... then ... else ...} \\
+		\code{Fun of var\_f * expr\_f} & \code{fun x -> ... } \\
+		\code{App of expr\_f * expr\_f} & \code{ a b } : application \\
+		\code{Aff of var\_f * expr\_f} & \code{... := ...} \\
+  		\code{Alloc of expr\_f} & \code{ref ...} : allocation mémoire \\ 
+	\end{tabular}
+	\end{center}
+	
+	\vspace{0.5cm}
+	
+	Certains constructeurs intermédiaires sont détaillés dans \code{type.ml}.
+	
+\subsection{Valeurs}
+
+
+	Les programmes fouine sont des expressions \code{expr\_f}, et sont évaluées par la fonction \code{eval}. Une évaluation renvoie une valeur du type donné ci-dessous :
+\begin{minted}{ocaml}
+type val_f = 
+    Unit
+  | Int  of int
+  | Addr of Int32
+  | Fun  of var_f * expr_f * env_f
+  | Pair of val_f * val_f
+ ;; 
+\end{minted}
+
+	Concernant les fonctions, celles-ci sont de la forme \code{fun x -> expr}. On sauvegarde de plus l'environnement dans lequel elles ont été définies (notion de clotûre). Nous y reviendrons.
+
+
+\subsection{Environnement}
+
+	L'environnement est une liste d'association (variable, valeur), qui agit comme une \textbf{pile} (on empile les associations les unes après les autres). Une variable est simplement une chaîne de caractères. Ainsi :
+	
+	\begin{minted}{ocaml}
+		type env_f = (var_f * val_f) list
+	\end{minted}
+	
+	Si \code{x} est une variable, sa valeur associée dans un environnement \code{env} est la première occurrence \code{("x", ...)} dans l'environnement. Donc, si on considère la liste \code{l = [("x", Int(0)); ("x", Int(5))]}, la valeur de \code{x} courante est \code{Int(0)}.
+	
+	Si on essaie de lire la valeur d'une variable non-existante, l'interpréteur lève une exception.
+
+\subsection{Mémoire}
+
+	
+	La mémoire est un dictionnaire d'association \code{Int32 -> val\_f}. On définit \code{mem\_f} comme le module \code{Mem\_f} :
+	
+	\begin{minted}{ocaml}
+module Mem_f = Map.make(Int32)
+(* ici, on est obligé de prendre des 'Int32' pour faire les adressages *)
+(* car 'Map.make' doit prendre un module en argument *)
+	\end{minted}
+	
+	\vspace{0.5cm}
+
+	C'est la mémoire qui gère les références. Pour les gérer, on descend assez bas-niveau dans la philosophie. Les références seront vues comme une adresse mémoire. Ainsi, \code{let a = ref 0} est interprété comme
+
+	\vspace{0.5cm}
+
+\begin{itemize}
+	\item Allouer une nouvelle case mémoire
+	\item Associer \code{a} à cette nouvelle case \emph{(notion d'adresse mémoire)}
+	\item Mettre le contenu de cette case à $0$
+\end{itemize}
+
+	\vspace{0.5cm}
+	
+	Pour savoir qu'elle est la prochaine case mémoire allouable, on utilise une variable globale \code{available}.
+	
+\section{Fonctions}
+
+	\subsection{Fonctions classiques}
+
+	Les fonctions sont définies avec une clôture pour la raison suivante 
+	
+	\begin{minted}{ocaml}
+let a = 5 in
+let f = fun x -> a in
+let a = 10 in
+f 10;;
+	\end{minted}
+	
+	Ici, \code{f} doit se souvenir de la valeur de \code{a}. Sauvegarder une clôture est en ${\cal{O}}(1)$ : il s'agit juste de sauvegarder un pointeur vers une tête de pile i.e l'environnement courant. La valeur d'une fonction est 
+	
+	\begin{minted}{ocaml}
+	
+	| Fun_var of var_f * expr_f * env_f 
+	
+	\end{minted}
+	
+	donc les fonctions ne sont pas typées en fouine.
+	
+	\subsection{Fonctions Récursives}	
+
+	Quand on définit une fonction \code{f} de la manière ci-dessus, il faut remarquer qu'au moment de sa définition, \code{f} n'est pas définie dans l'environnement, donc une fonction standard n'est pas définie dans sa propre clôture. On ne peut donc pas définir des fonctions récursives. On introduit le \code{let rec}.
+	
+	\vspace{0.5cm}
+	
+	Le \code{let rec} est un peu particulier. Il regarde si on est en train de définir une fonction ou non. Si oui, il construit la clôture de \code{f} en y rajoutant l'association \code{(f, clôture où f est défini)}. Il y a donc une définition cyclique ici, qui fera apparaître \code{<cycle>}. Je renvoie au code pour l'implémentation de ça.
+	
+	\vspace{0.5cm}
+	
+	Si c'est une variable quelconque, qui n'est pas une fonction, on se comporte comme un \code{let} classique. Ceci ne pose pas trop de problèmes si on ne joue qu'avec des \code{int} ou des couples, mais fait tout de même apparaître quelques petits cas pathologiques (cf dernière partie).
+	
+\section{Parsing}
+
+\section{Pathologies}
+
+	Dans cette partie, quelques pathologiques sur le fonctionnement de fouine.
+	
+	\begin{minted}{ocaml}
+# let f _ = print_string "coucou\n";;
+val f : 'a -> unit = <fun>
+	\end{minted}
+
+
+\end{document}
+

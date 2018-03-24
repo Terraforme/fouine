@@ -1,0 +1,6 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{let} \PYG{n}{a} \PYG{o}{=} \PYG{l+m+mi}{5} \PYG{k}{in}
+\PYG{k}{let} \PYG{n}{f} \PYG{o}{=} \PYG{k}{fun} \PYG{n}{x} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{a} \PYG{k}{in}
+\PYG{k}{let} \PYG{n}{a} \PYG{o}{=} \PYG{l+m+mi}{10} \PYG{k}{in}
+\PYG{n}{f} \PYG{l+m+mi}{10}\PYG{o}{;;}
+\end{Verbatim}
