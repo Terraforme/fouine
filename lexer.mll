@@ -15,6 +15,7 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | ')'             { RPAREN }
   | '='             { EQUAL }
   | ';'             { SEMICOL }
+  | ','             { COMA }
   | ";;"            { EOI } (*end of instruction*)
   | ':'             { COLON }
   | ":="            { AFFECTATION }
