@@ -41,6 +41,8 @@ let rec expr2str = function
   | App (expr1, expr2) -> (expr2str expr1) ^ "(" ^ (expr2str expr2) ^ ")"
   | Aff (var, expr) -> var ^ " := " ^ "(" ^ (expr2str expr) ^ ")"
   | Alloc expr -> "Alloc(" ^ (expr2str expr) ^ ")"
+  | Pair (expr1, expr2) -> "Pair("^(expr2str expr1)^" , "^(expr2str expr2)^")"
+  | Unit -> "()"
 
 and bexpr2str = function
   | True -> "true"

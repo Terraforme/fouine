@@ -28,6 +28,7 @@
 %nonassoc ELSE
 %right AFFECTATION
 
+%nonassoc COMA
 
 %left MOD
 %left PLUS MINUS /* associativité gauche: a+b+c, c'est (a+b)+c */
@@ -94,7 +95,7 @@ let_chain:
 
 var_pattern:
   | VAR { Var_Pat $1 }
-  | LPAREN VAR COMA var_pattern { Pair_Pat($2,$4) }
+  | VAR COMA var_pattern { Pair_Pat($1,$3) }
 ;
 
 expression:
@@ -103,6 +104,8 @@ expression:
 
   | LPAREN expression RPAREN { $2 }
   | LPAREN RPAREN { Unit }
+
+  | expression COMA expression { Pair($1,$3) }
 
   | BEGIN expression END { $2 }
   | expression SEMICOL expression { Let(Var_Pat "_", $1, $3) }
@@ -148,12 +151,10 @@ applicator:
   | VAR { Var $1 }
   | LPAREN expression RPAREN { $2 }
   | applicator applicated { App($1,$2) } %prec APPLICATION
-  /* TODO problème ici: on autorise à appliquer un couple */
 ;
 
 applicated: /* il faut garder la distinction avec applicator car on ne peut pas appliquer une constante à quelque chose */
   | VAR { Var $1 }
-  /*| LPAREN var_pattern RPAREN { $2 }*/
   | INT { Cst $1 }
   | LPAREN expression RPAREN { $2 }
   | LPAREN RPAREN { Unit }
