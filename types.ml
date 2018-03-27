@@ -39,14 +39,15 @@ type expr_f =
   | Cst    of int                          (* Feuille : constante *)
   | Bin    of expr_f * operator_f * expr_f (* opérations binaires *)
   | PrInt  of expr_f
-  | Let    of var_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
-  | LetRec of var_f * expr_f * expr_f      (* let rec *)
+  | Let    of pattern_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
+  | LetRec of pattern_f * expr_f * expr_f      (* let rec *)
   | If     of bexpr_f * expr_f
   | IfElse of bexpr_f * expr_f * expr_f
   | Fun    of var_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
   | App    of expr_f * expr_f              (* Ce sont les applications *)
   | Aff    of var_f * expr_f               (* Affectation i.e le `:=`*)
   | Alloc  of expr_f                       (* Allocation mémoire *)
+  | Pair   of expr_f * expr_f
   | Unit
 
 (* On co-définit les expressions booléennes - pour les tests *)
@@ -56,6 +57,10 @@ and bexpr_f =
   | Cmp    of expr_f * cmp_op_f * expr_f
   | Bin_op of bexpr_f * bool_op_f * bexpr_f
   | Not    of bexpr_f
+
+and pattern_f =
+  | Var_Pat of var_f
+  | Pair_Pat of pattern_f * pattern_f
 ;;
 
 
