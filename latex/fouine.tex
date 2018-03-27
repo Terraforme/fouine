@@ -74,7 +74,7 @@ type expr_f =
   | IfElse of bexpr_f * expr_f * expr_f
   | Fun    of pattern_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
   | App    of expr_f * expr_f              (* Ce sont les applications *)
-  | Aff    of var_f * expr_f               (* Affectation i.e le `:=`*)
+  | Aff    of expr_f * expr_f               (* Affectation i.e le `:=`*)
   | Alloc  of expr_f                       (* Allocation mémoire *)
   | Pair   of expr_f * expr_f
   | Unit
@@ -231,6 +231,22 @@ Pour la définition de fonction, il a fallu faire attention aux différentes fa�
 					let f _  = 5 ;;
 	\end{minted}
 	Ceci aura le comportement souhaité en pratique, car fouine ne vérifie pas les typages, et toutes les associations \code{\_ <- ...} sont ignorées par l'environnement. Ainsi, le type \code{unit -> 'a} devient \code{'a -> 'b}.
+
+	\subsection{Fonctions récursives}
+	
+	On remarquera simplement que le code 
+	
+	\begin{minted}{ocaml}
+					let f = 5 in
+					let rec f = f;;
+	\end{minted}
+	
+	va être accepté dans notre \emph{Fouine}, alors qui n'est pas sensé l'être en OCamL.
+	Par contre, le code suivant ne l'est pas :
+	
+	\begin{minted}{ocaml}
+					let rec f = fun x -> f;;
+	\end{minted}
 
 \end{document}
 

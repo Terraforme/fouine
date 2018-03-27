@@ -3,6 +3,8 @@ open Eval
 open Printer
 open Mem
 
+(* Pour la commodité : *)
+
 type exec_mod_f = Normal | Parsing | Debug;;
 
 (* stdin désigne l'entrée standard (le clavier) *)
@@ -29,6 +31,7 @@ let calc exec_mod =
   match exec_mod with
   | Normal -> let _ = eval expr [] (init_mem ())  in ()
   | Parsing ->
+  (* On a rajouté une option de parsing *)
     begin
       print_string "Raw parsing : \n";
       print_expr expr;

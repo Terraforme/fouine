@@ -19,7 +19,7 @@ env_unaff : var_f -> env_f -> env_f
 let rec env_read x env =
   if x = "_" then failwith "ERROR : trying to read '_'"
   else match env with
-  | [] -> failwith ("Read failed : variable " ^ x ^ " not in environment")
+  | [] -> failwith ("ERROR : Read failed : variable " ^ x ^ " not in environment")
   | (y, _) :: e when x <> y -> env_read x e
   | (x, value) :: _       -> value
 
@@ -27,6 +27,10 @@ let rec env_aff x value env =
   if x = "_" then env
   else (x, value) :: env
 
+
+(* On rajoute pat_env_aff : car à partir du rajout des
+couples, on a des 'let (x, y) = ...' donc cette fonction
+arrive ici pour la comodité *)
 let rec pat_env_aff pattern value env =
   match (pattern, value) with
   | (Var_Pat x, _) -> env_aff x value env
@@ -35,9 +39,9 @@ let rec pat_env_aff pattern value env =
   | (Var_Pat x, Ref _) -> env_aff x value env*)
   | (Pair_Pat (x, pattern), Pair_val(value0, value_next))
     -> pat_env_aff pattern value_next (env_aff x value0 env)
-  | (_,_) -> failwith "error : Pattern Matching failed"
+  | (_,_) -> failwith "ERROR : Pattern Matching failed"
 
 let rec env_unaff x = function
-  | [] -> failwith "Unaffectation failed : variable not in environment"
+  | [] -> failwith "ERROR : Unaffectation failed : variable not in environment"
   | (y, value) :: e when x <> y -> (y, value) :: (env_unaff x e)
   | (x, value) :: e    -> e

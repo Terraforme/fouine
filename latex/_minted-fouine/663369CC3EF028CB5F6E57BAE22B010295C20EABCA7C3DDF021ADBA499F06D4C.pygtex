@@ -11,7 +11,7 @@
   \PYG{o}{|} \PYG{n+nc}{IfElse} \PYG{k}{of} \PYG{n}{bexpr\PYGZus{}f} \PYG{o}{*} \PYG{n}{expr\PYGZus{}f} \PYG{o}{*} \PYG{n}{expr\PYGZus{}f}
   \PYG{o}{|} \PYG{n+nc}{Fun}    \PYG{k}{of} \PYG{n}{pattern\PYGZus{}f} \PYG{o}{*} \PYG{n}{expr\PYGZus{}f}               \PYG{c}{(* car les fonctions sont un objet fun var \PYGZhy{}\PYGZgt{} expr *)}
   \PYG{o}{|} \PYG{n+nc}{App}    \PYG{k}{of} \PYG{n}{expr\PYGZus{}f} \PYG{o}{*} \PYG{n}{expr\PYGZus{}f}              \PYG{c}{(* Ce sont les applications *)}
-  \PYG{o}{|} \PYG{n+nc}{Aff}    \PYG{k}{of} \PYG{n}{var\PYGZus{}f} \PYG{o}{*} \PYG{n}{expr\PYGZus{}f}               \PYG{c}{(* Affectation i.e le `:=`*)}
+  \PYG{o}{|} \PYG{n+nc}{Aff}    \PYG{k}{of} \PYG{n}{expr\PYGZus{}f} \PYG{o}{*} \PYG{n}{expr\PYGZus{}f}               \PYG{c}{(* Affectation i.e le `:=`*)}
   \PYG{o}{|} \PYG{n+nc}{Alloc}  \PYG{k}{of} \PYG{n}{expr\PYGZus{}f}                       \PYG{c}{(* Allocation mémoire *)}
   \PYG{o}{|} \PYG{n+nc}{Pair}   \PYG{k}{of} \PYG{n}{expr\PYGZus{}f} \PYG{o}{*} \PYG{n}{expr\PYGZus{}f}
   \PYG{o}{|} \PYG{n+nc}{Unit}

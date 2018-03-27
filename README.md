@@ -6,8 +6,19 @@
 
 
 --
+# Répartition Du Travail
+
+	L'architecture globale (i.e ce qui est types) a été discuté et débattu comme il se doit en binôme.
+	Ensuite, Victor Boone s'est concentré sur l'interpréteur.
+		     Gabrielle Pauvert s'est concentrée sur le parseur.
+
+	Les fichiers de tests et la doc ont été fait un peu à deux. Le LateX est de Victor, car il aime bien taper de la doc.
+
+--
 
 # DOCUMENTATION
+
+	Cf le latex.
 
 	La liste des types est donnée dans `types.ml`. Par convention, tous les types reliés à l'interpréteur portent l'extension `_f` pour être faciles à distinguer.
 
@@ -31,46 +42,21 @@
 	Il n'est pas autorisé de faire `if a then ...` car `a` n'est pas considéré comme étant une expression booléenne. Les expressions booléennes ne sont trouvables que dans les conditions d'un `if`.
 
 
-# Environnement `env_f` et LET .. IN ..
 
-	C'est une liste `(var_f * val_f) list` d'affectation.
-	Quand on affecte une variable à une valeur, on rajoute cette association en tête de liste (`O(1)` pour toutes les associations),, et quand on cherche la valeur d'une variable, on prend la première trouvée dans la liste (`O(n)` sur la taille de la liste).
+## IMPORTANT
 
-	Lorsqu'on fait un `let <var> = <expr1> in <expr2>` dans un environnement `env`, on évalue `expr1` dans un premier temps, puis on l'associe à `var` dans l'environnement courant `env`. Ainsi, la variable précédente aura la valeur calculée seulement dans `expr2`.
+	Une documentation un peu plus importante sur "notre fouine" est fournie dans un pdf écrit en LateX que vous trouverez dans le dossier `latex/`.
+	Celle-ci reste assez générale, mais permet de comprendre la construction globale du code. Si vous voulez encore plus de documentation, il y en a un peu dans le code. Et lisez tout simplement le code si vous en voulez encore plus !
 
-__Quelques détails sur `let <var> = .. ;;`__ :
-	Il s'agit de remarquer que `;;` correspond au toplevel. Ainsi on ne peut pas mettre le `;;` au milieu d'un code s'il ne renvoie pas au top level. Lorsqu'on utilise ce type de let dans un interpréteur, on a l'impression de définir la variable "pour toujours". De fait, il faut remarquer que ceci est équivalent à un let in ie
-
-`let .. = .. ;; expr` devient `let .. = .. in expr`
-
-mais
-
-`let .. = .. ;; expr1 ;; expr2 ;;` devient, si expr1 n'est pas un let :
-`let .. = .. in let _ = expr in expr2` 
-
-# Fonctions  - Fonctions récursives
-
-	Le type d'une valeur fonctionnelle est `var_f * expr_f * env_f`. Ainsi, les valeurs fonctionnelles sont déjà 'décompactées' sous la formule `fun x -> expr` munies de leur clôture. Lorsqu'on définit une fonction via un `let f = fun x -> ...`, la clôture est définie comme l'environnement courant, qui n'est qu'un pointeur. La structure de l'environnement assure le bon fonctionnement des fonctions par la suite. 
-	Il est important de noter que lors d'un `let f = fun ...` on ne peut pas utiliser la fonction de manière récursive car la clôture passée en argument ne contient pas la définition de `f`. Quand on fait un `let rec`, la clôture passée en argument est la clôture dans laquelle on définit `f`, donc la clôture est définie de manière récursive dans l'interpréteur.
+**Les tests**
+	Nos tests sont dans `Tests/`. Un script automatique peut être lancé avec `./testing.sh`
+	On n'a pas renommé l'interpréteur en `fouine` mais, si vous êtes allergique à `main.native`, vous pouvez tout-à-fait faire un petit `mv main.native fouine`, ça marchera aussi.
 
 
-# A faire :
+**BUGS**
+	cf `Tests/fun-rec0`  et la documentation LateX
 
-__Débutant__
 
-* expressions arithmétiques
-* `let ... in`
-* `if then else`
-* la fonction `prInt`
+## CONCLUSION
 
-__Intermédiaire__
-
-* fonctions et clôtures
-* fonctions récursives
-
-__Avancé__
-
-* aspects impératifs : `:=` `!` `;` `ref` `()`
-* couples
-* listes
-* types sommes
+	On vous souhaite une chouette correction.

@@ -5,6 +5,12 @@ open Types
 standard, et un pretty printer capable de fournir du code
 qui pourra être directement utilisé comme code OCamL *)
 
+
+
+(* Le premier Printer *)
+(* Sous forme d'arbre : non ambigü mais parfois
+difficile à utiliser car les notations sont lourdes *)
+
 let op2str = function
   | Plus  -> "Plus"
   | Minus -> "Minus"
@@ -56,6 +62,12 @@ and pattern2str = function
   | Pair_Pat (x, pattern) -> "Pair(" ^ x ^ "," ^ (pattern2str pattern) ^ ")"
 
 let print_expr expr = print_string (expr2str expr) ; print_newline ()
+
+
+
+(* Le pretty printer :
+Le code qu'il donne peut être normalement utilisé
+en code OCamL *)
 
 
 let pretty_op2str = function
