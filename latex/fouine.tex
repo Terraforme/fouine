@@ -68,14 +68,17 @@ type expr_f =
   | Cst    of int                          (* Feuille : constante *)
   | Bin    of expr_f * operator_f * expr_f (* opérations binaires *)
   | PrInt  of expr_f
-  | Let    of var_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
+  | Let    of pattern_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
   | LetRec of var_f * expr_f * expr_f      (* let rec *)
   | If     of bexpr_f * expr_f
   | IfElse of bexpr_f * expr_f * expr_f
-  | Fun    of var_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
+  | Fun    of pattern_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
   | App    of expr_f * expr_f              (* Ce sont les applications *)
   | Aff    of var_f * expr_f               (* Affectation i.e le `:=`*)
   | Alloc  of expr_f                       (* Allocation mémoire *)
+  | Pair   of expr_f * expr_f
+  | Unit
+
 
 	\end{minted}
 	
@@ -91,14 +94,15 @@ type expr_f =
 		\code{Cst of int} & \code{0}, \code{1} : les entiers\\
 		\code{Bin of expr\_f * operator\_f * expr\_f} & \code{x+5} : opérations binaires (\code{+, -, *, /, mod}) \\
   		\code{PrInt of expr\_f} & \code{let prInt x = print\_int x; print\_newline ()} \\
-		\code{Let of var\_f * expr\_f * expr\_f} & \code{let ... = ... in ... } \\
+		\code{Let of pattern\_f * expr\_f * expr\_f} & \code{let ... = ... in ... } \\
 		\code{LetRec of var\_f * expr\_f * expr\_f} & \code{let rec ... = ... in ... }\\
 		\code{If of bexpr\_f * expr\_f} & \code{if ... then ... else 0} \\
 		\code{IfElse of bexpr\_f * expr\_f * expr\_f} & \code{if ... then ... else ...} \\
-		\code{Fun of var\_f * expr\_f} & \code{fun x -> ... } \\
+		\code{Fun of pattern\_f * expr\_f} & \code{fun x -> ... } \\
 		\code{App of expr\_f * expr\_f} & \code{ a b } : application \\
 		\code{Aff of var\_f * expr\_f} & \code{... := ...} \\
-  		\code{Alloc of expr\_f} & \code{ref ...} : allocation mémoire \\ 
+  		\code{Alloc of expr\_f} & \code{ref ...} : allocation mémoire \\
+  		\code{Pair of expr\_f * expr\_f} & \code{... , ...} : couples \\ 
 	\end{tabular}
 	\end{center}
 	
@@ -203,11 +207,19 @@ f 10;;
 
 	Dans cette partie, quelques pathologiques sur le fonctionnement de fouine.
 	
+	
+	\subsection{Types \code{unit -> 'a}}
+
+	Le type \code{unit -> 'a} existe en OCamL par exemple avec
 	\begin{minted}{ocaml}
-# let f _ = print_string "coucou\n";;
-val f : 'a -> unit = <fun>
+					let f () = 5 ;;
 	\end{minted}
 
+	Ce code ne va pas parser en fouine car \code{()} ne correspond pas à un pattern de variables, or le constructeur pour les fonctions est \code{Fun of pattern\_f * expr\_f}. On utilise la variable "anonyme" \code{\_} pour cela :
+	\begin{minted}{ocaml}
+					let f _  = 5 ;;
+	\end{minted}
+	Ceci aura le comportement souhaité en pratique, car fouine ne vérifie pas les typages, et toutes les associations \code{\_ <- ...} sont ignorées par l'environnement. Ainsi, le type \code{unit -> 'a} devient \code{'a -> 'b}.
 
 \end{document}
 
