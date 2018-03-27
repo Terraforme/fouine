@@ -130,7 +130,8 @@ expression:
   /*reference*/
   | REF expression { Alloc($2) }
   | BANG expression { Bang($2) }
-  | VAR AFFECTATION expression { Aff($1, $3) }
+  | VAR AFFECTATION expression { Aff(Var $1, $3) }
+  | LPAREN expression RPAREN AFFECTATION expression { Aff($2, $5) }
 
   /*déclarations de fonction*/
   | LET VAR func IN expression { Let(Var_Pat $2,$3,$5) }
