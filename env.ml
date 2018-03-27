@@ -27,6 +27,16 @@ let rec env_aff x value env =
   if x = "_" then env
   else (x, value) :: env
 
+let rec pat_env_aff pattern value env =
+  match (pattern, value) with
+  | (Var_Pat x, _) -> env_aff x value env
+  (*| (Var_Pat x, Int _) -> env_aff x value env
+  | (Var_Pat x, Fun_var (_,_,_)) -> env_aff x value env
+  | (Var_Pat x, Ref _) -> env_aff x value env*)
+  | (Pair_Pat (x, pattern), Pair_val(value0, value_next))
+    -> pat_env_aff pattern value_next (env_aff x value0 env)
+  | (_,_) -> failwith "error : Pattern Matching failed"
+
 let rec env_unaff x = function
   | [] -> failwith "Unaffectation failed : variable not in environment"
   | (y, value) :: e when x <> y -> (y, value) :: (env_unaff x e)

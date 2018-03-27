@@ -4,6 +4,11 @@ open Mem
 
 
 
+let rec regroup_pair pair1 pair2 = match pair1 with
+  | Pair_val(value, pair1) -> Pair_val(value, regroup_pair pair1 pair2)
+  | _ -> Pair_val(pair1, pair2)
+;;
+
 let rec eval expr env mem = match expr with
 (* eval : expr_f -> env_f -> mem_f -> val_f * mem_f
 Prend en paramètres une expression et un environnement,
@@ -34,19 +39,19 @@ d'une expression, il faut renvoyer en plus de la valeur *)
       print_newline ();
       (value, mem')
     end
-  | Let (x, expr1, expr2)  ->
+  | Let (pattern, expr1, expr2)  ->
     begin
       let (value, mem') = eval expr1 env mem in
-      eval expr2 (env_aff x value env) mem'
+      eval expr2 (pat_env_aff pattern value env) mem'
     end
   | LetRec (f, expr1, expr2) ->
     begin
       match expr1 with
       (* Deux cas pour f : soit c'est directement une fonction (rec)
          soit c'est une expression autre *)
-      | Fun (x, expr0) ->
+      | Fun (pattern, expr0) ->
       (* Cas spécial ici.... la fonction env_aff ne suffit pas *)
-        let rec env0 = (f, Fun_var(x, expr0, env0)) :: env in
+        let rec env0 = (f, Fun_var(pattern, expr0, env0)) :: env in
         eval expr2 env0 mem
       | _ -> let (value, mem') = eval expr1 env mem in
              eval expr2 (env_aff f value env) mem'
@@ -73,8 +78,8 @@ d'une expression, il faut renvoyer en plus de la valeur *)
       let (value, mem) = eval expr2 env mem in
       let (f,     mem) = eval expr1 env mem in
       match f with
-      | Fun_var (x, expr0, env0) ->
-        eval expr0 (env_aff x value env0) mem
+      | Fun_var (pattern, expr0, env0) ->
+        eval expr0 (pat_env_aff pattern value env0) mem
       | _ -> failwith "ERROR : eval (App) : expecting a function"
     end
   | Aff (x, expr) ->
@@ -92,6 +97,12 @@ d'une expression, il faut renvoyer en plus de la valeur *)
       let mem, addr = alloc_mem value mem in
       addr, mem
     end
+  | Pair (expr1, expr2) ->
+    let (value, mem) = eval expr2 env mem in
+    let (value0, mem) = eval expr1 env mem in
+    (regroup_pair value0 value), mem
+  | Unit -> (Unit, mem)
+
 
 
 and bin_eval op expr1 expr2 env mem0 =

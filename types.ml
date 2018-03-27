@@ -40,7 +40,7 @@ type expr_f =
   | Bin    of expr_f * operator_f * expr_f (* opérations binaires *)
   | PrInt  of expr_f
   | Let    of pattern_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
-  | LetRec of pattern_f * expr_f * expr_f      (* let rec *)
+  | LetRec of var_f * expr_f * expr_f      (* let rec *)
   | If     of bexpr_f * expr_f
   | IfElse of bexpr_f * expr_f * expr_f
   | Fun    of pattern_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
@@ -73,6 +73,7 @@ type env_f = (var_f * val_f) list
 (* Dans le cas des variables, on ajoute un environnement pour les clôtures *)
 and val_f = Int of int
           | Unit
-          | Fun_var of var_f * expr_f * env_f
+          | Fun_var of pattern_f * expr_f * env_f
           | Ref     of int32
+          | Pair_val    of val_f * val_f
 ;;
