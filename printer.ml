@@ -31,13 +31,13 @@ let rec expr2str = function
   | Bang expr -> "!" ^ (expr2str expr)
   | Cst c -> string_of_int c
   | PrInt expr -> "prInt(" ^ (expr2str expr) ^ ")"
-  | Let (x, expr1, expr2) -> "Let(" ^ x ^ ", "
+  | Let (x, expr1, expr2) -> "Let(" ^ (pattern2str x) ^ ", "
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
   | LetRec (f, expr1, expr2) -> "LetRec(" ^ f ^ ", "
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
   | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
-  | Fun (var, expr) -> "Fun " ^ var ^ " -> (" ^ (expr2str expr) ^ ")"
+  | Fun (var, expr) -> "Fun " ^ (pattern2str var) ^ " -> (" ^ (expr2str expr) ^ ")"
   | App (expr1, expr2) -> (expr2str expr1) ^ "(" ^ (expr2str expr2) ^ ")"
   | Aff (var, expr) -> var ^ " := " ^ "(" ^ (expr2str expr) ^ ")"
   | Alloc expr -> "Alloc(" ^ (expr2str expr) ^ ")"
@@ -49,10 +49,14 @@ and bexpr2str = function
   | Bin_op(bexpr1, op, bexpr2) -> bool_op2str(op) ^ "(" ^ bexpr2str(bexpr1) ^ ", " ^ bexpr2str(bexpr2) ^ ")"
   | Not bexpr -> "Not(" ^ bexpr2str(bexpr) ^ ")"
 
+and pattern2str = function
+  | Var_Pat x -> x
+  | Pair_Pat (x, pattern) -> "Pair(" ^ x ^ "," ^ (pattern2str pattern) ^ ")"
+
 let print_expr expr = print_string (expr2str expr) ; print_newline ()
 
 
-let pretty_op2str = function
+(*let pretty_op2str = function
   | Plus  -> print_string " + "
   | Minus -> print_string " - "
   | Times -> print_string " * "
@@ -182,3 +186,4 @@ let pretty_print_expr expr =
 
   pretty_aux 0 expr;
   print_newline ()
+*)
