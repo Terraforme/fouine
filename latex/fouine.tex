@@ -203,6 +203,17 @@ f 10;;
 	
 \section{Parsing}
 
+
+\subsection{\code{let ... in}}
+
+Ce qui pose problème avec les \code{let ... in ...} c'est qu'il y en a beaucoup de variantes! On distingue les \code{let} des expressions des \code{let} extérieurs (du toplevel) qui permettent une syntaxe un peu particulière pour enchaîner les \code{let} sans \code{in} ni \code{;;}. Il y a aussi l'ajout (parfois facultatif) du mot clé \code{rec} qui dédouble tous les cas. Enfin les \code{let} peuvent servir à définir des fonctions ou des couples (triplets, etc.). Il y avait sûrement un moyen de synthétiser tous ces cas mais expliciter tous les cas étaient plus simple.
+
+\subsection{L'application de fonction}
+
+Typiquement, une application de fonctions est du type expression expression, mais écrire cela en tant que règle aurait abouti à du "rule never reduce" car on peut toujours lire une expression derrière. Là encore, le plus simple était d'expliciter tous les cas dans une règle "applicator applicated".
+
+Pour la définition de fonction, il a fallu faire attention aux différentes façons de définir une fonction (avec des \code{fun ->} ou directement).
+
 \section{Pathologies}
 
 	Dans cette partie, quelques pathologiques sur le fonctionnement de fouine.

@@ -1,0 +1,29 @@
+let a = ref 0 in
+let b = ref a in
+
+let c = (a := !a + 5) in
+prInt !a;;
+
+
+
+
+
+
+let addr = ref(ref 0);;
+
+let a = ref 42 in
+addr := a;;
+
+prInt !(!addr);;
+
+
+
+let a = ref 42
+let r = ref a
+let b = r
+let c = ref 17
+;;
+
+
+(ref c) := ref (-42)
+;;

@@ -1,0 +1,6 @@
+let f = fun x ->
+	prInt x;
+	prInt (x+1)
+;;
+
+f 5 ;;

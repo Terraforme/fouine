@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.1.11)  27 MAR 2018 19:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2018.1.11)  27 MAR 2018 21:25
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -832,10 +832,6 @@ LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
 )
 \openout3 = `fouine.pyg'.
 
-runsystem(pygmentize -l ocaml -f latex -P commandprefix=PYG -F tokenmerge -o "_
-minted-fouine/6AC58ADE903A8DF4EA9B95732266CBAB95C20EABCA7C3DDF021ADBA499F06D4C.
-pygtex" "fouine.pyg" )...executed.
-
 
 (./_minted-fouine/6AC58ADE903A8DF4EA9B95732266CBAB95C20EABCA7C3DDF021ADBA499F06
 D4C.pygtex) [1
@@ -867,40 +863,45 @@ D4C.pygtex)
 (./_minted-fouine/E082970FDBFB5F84AFEE2DB7148D3D7495C20EABCA7C3DDF021ADBA499F06
 D4C.pygtex)
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 211.
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 207.
+ [3]
 \openout3 = `fouine.pyg'.
 
 
 (./_minted-fouine/C928B2D336B9210E47FFB1DA650A76A595C20EABCA7C3DDF021ADBA499F06
-D4C.pygtex [3])
+D4C.pygtex)
 \openout3 = `fouine.pyg'.
 
 
 (./_minted-fouine/3B19DB51877AA5F32418B8085CEC10E895C20EABCA7C3DDF021ADBA499F06
 D4C.pygtex)
-runsystem(rm "_minted-fouine/DCF753D56D9FD9F68110DB9D66B0C19495C20EABCA7C3DDF02
-1ADBA499F06D4C.pygtex")...executed.
-
 runsystem(rm "fouine.pyg")...executed.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 224.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 235.
  [4]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 224.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 235.
  (./fouine.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 224.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 224.
-Package rerunfilecheck Info: File `fouine.out' has not changed.
-(rerunfilecheck)             Checksum: B5FEE7E61BA97B8E3DE446A09E86D32C;632.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 224.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 235.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 235.
+
+
+Package rerunfilecheck Warning: File `fouine.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `fouine.out':
+(rerunfilecheck)             Before: 750D35A875BA668B6674360113CFD75F;767
+(rerunfilecheck)             After:  04D1651056FCD3994AA9C7AC37A643CF;767.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 235.
  ) 
 Here is how much of TeX's memory you used:
- 10565 strings out of 493029
- 161119 string characters out of 6136234
- 291408 words of memory out of 5000000
- 13876 multiletter control sequences out of 15000+600000
+ 10568 strings out of 493029
+ 161115 string characters out of 6136234
+ 291411 words of memory out of 5000000
+ 13878 multiletter control sequences out of 15000+600000
  19091 words of font info for 59 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 31i,6n,35p,912b,488s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 31i,6n,35p,912b,439s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc}{/usr/share/texmf/fonts/enc/dv
 ips/cm-super/cm-super-t1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/
 amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
@@ -913,10 +914,10 @@ uper/sfit1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></
 usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/font
 s/type1/public/cm-super/sfti1000.pfb></usr/share/texmf/fonts/type1/public/cm-su
 per/sftt1000.pfb>
-Output written on fouine.pdf (4 pages, 237962 bytes).
+Output written on fouine.pdf (4 pages, 240220 bytes).
 PDF statistics:
- 128 PDF objects out of 1000 (max. 8388607)
- 107 compressed objects within 2 object streams
- 16 named destinations out of 1000 (max. 500000)
- 89 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 136 PDF objects out of 1000 (max. 8388607)
+ 115 compressed objects within 2 object streams
+ 18 named destinations out of 1000 (max. 500000)
+ 105 words of extra memory for PDF output out of 10000 (max. 10000000)
 
