@@ -196,7 +196,14 @@ let pretty_print_expr expr =
         pretty_aux indent expr;
         print_string ")"
       end
-    | Pair (expr1, expr2) -> print_string "TODO"
+    | Pair (expr1, expr2) ->
+      begin
+        print_string "(";
+        pretty_aux indent expr1;
+        print_string ", ";
+        pretty_aux indent expr2;
+        print_string ")"
+      end
 
   and bpretty_aux indent = function
     | True -> print_string "true"

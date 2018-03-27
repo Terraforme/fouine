@@ -40,8 +40,8 @@ let calc exec_mod =
     begin
       print_string "Raw parsing : \n";
       print_expr expr;
-      (*print_string "\n\nBeautiful parsing : \n";
-      pretty_print_expr expr; *)
+      print_string "\n\nBeautiful parsing : \n";
+      pretty_print_expr expr;
       print_string "\n\nExécution : \n";
       let value, _ = eval expr [] (init_mem ()) in
       print_string "value:\t";
