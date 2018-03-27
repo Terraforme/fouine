@@ -83,21 +83,13 @@ let_chain:
   | REC VAR func EOI { LetRec($2,$3, Unit) }
 
   | LET LPAREN var_pattern RPAREN EQUAL expression let_chain { Let($3, $6, $7) }
-  | REC LPAREN var_pattern RPAREN EQUAL expression let_chain { LetRec($3, $6, $7) }
   | LET LPAREN var_pattern RPAREN EQUAL expression EOI expression_chain { Let($3, $6, $8) }
-  | REC LPAREN var_pattern RPAREN EQUAL expression EOI expression_chain { LetRec($3, $6, $8) }
   | LET LPAREN var_pattern RPAREN EQUAL expression { Let($3, $6, Unit) }
-  | REC LPAREN var_pattern RPAREN EQUAL expression { LetRec($3, $6, Unit) }
   | LET LPAREN var_pattern RPAREN EQUAL expression EOI { Let($3, $6, Unit) }
-  | REC LPAREN var_pattern RPAREN EQUAL expression EOI { LetRec($3, $6, Unit) }
   | LET LPAREN var_pattern RPAREN func let_chain{ Let($3,$5,$6) }
-  | REC LPAREN var_pattern RPAREN func let_chain { LetRec($3,$5,$6) }
   | LET LPAREN var_pattern RPAREN func EOI let_chain{ Let($3,$5,$7) }
-  | REC LPAREN var_pattern RPAREN func EOI let_chain { LetRec($3,$5,$7) }
   | LET LPAREN var_pattern RPAREN func { Let($3,$5, Unit) }
-  | REC LPAREN var_pattern RPAREN func { LetRec($3,$5, Unit) }
   | LET LPAREN var_pattern RPAREN func EOI { Let($3,$5, Unit) }
-  | REC LPAREN var_pattern RPAREN func EOI { LetRec($3,$5, Unit) }
 ;
 
 var_pattern:
@@ -126,7 +118,7 @@ expression:
   /*let ... in ...*/
   | LET VAR EQUAL expression IN expression { Let(Var_Pat $2, $4, $6) }
   | LET LPAREN var_pattern RPAREN EQUAL expression IN expression { Let($3, $6, $8) } /*paire, triplet, etc.*/
-  | REC VAR EQUAL expression IN expression { LetRec(Var_Pat $2, $4, $6) }
+  | REC VAR EQUAL expression IN expression { LetRec($2, $4, $6) }
   | LET ANON EQUAL expression { $4 } %prec ANON
   | REC ANON EQUAL expression { $4 } %prec ANON
   | LET ANON EQUAL expression IN expression { Let(Var_Pat "_", $4, $6) }
@@ -139,7 +131,7 @@ expression:
 
   /*déclarations de fonction*/
   | LET VAR func IN expression { Let(Var_Pat $2,$3,$5) }
-  | REC VAR func IN expression { LetRec(Var_Pat $2,$3,$5) }
+  | REC VAR func IN expression { LetRec($2,$3,$5) }
   | FUN VAR FLECHE expression { Fun(Var_Pat $2,$4) } %prec FUN
 
   /*Application (cas possibles: VAR VAR, VAR INT, (expr) INT, (expr) VAR, VAR (expr), (expr) (expr))*/
@@ -156,12 +148,12 @@ applicator:
   | VAR { Var $1 }
   | LPAREN expression RPAREN { $2 }
   | applicator applicated { App($1,$2) } %prec APPLICATION
-  /* TODO problème ici: on ne peut pas appliquer un couple à autre chose, mais avec la currifycation, on peut (doit) autoriser f (x,y) (z,t) */
+  /* TODO problème ici: on autorise à appliquer un couple */
 ;
 
 applicated: /* il faut garder la distinction avec applicator car on ne peut pas appliquer une constante à quelque chose */
   | VAR { Var $1 }
-  | LPAREN var_pattern RPAREN { $2 }
+  /*| LPAREN var_pattern RPAREN { $2 }*/
   | INT { Cst $1 }
   | LPAREN expression RPAREN { $2 }
   | LPAREN RPAREN { Unit }
