@@ -39,7 +39,7 @@ let rec expr2str = function
   | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
   | Fun (var, expr) -> "Fun " ^ (pattern2str var) ^ " -> (" ^ (expr2str expr) ^ ")"
   | App (expr1, expr2) -> (expr2str expr1) ^ "(" ^ (expr2str expr2) ^ ")"
-  | Aff (var, expr) -> var ^ " := " ^ "(" ^ (expr2str expr) ^ ")"
+  | Aff (expr1, expr2) -> "(" ^ (expr2str expr1)^ ") := " ^ "(" ^ (expr2str expr2) ^ ")"
   | Alloc expr -> "Alloc(" ^ (expr2str expr) ^ ")"
   | Pair (expr1, expr2) -> "Pair("^(expr2str expr1)^" , "^(expr2str expr2)^")"
   | Unit -> "()"
@@ -58,7 +58,7 @@ and pattern2str = function
 let print_expr expr = print_string (expr2str expr) ; print_newline ()
 
 
-(*let pretty_op2str = function
+let pretty_op2str = function
   | Plus  -> print_string " + "
   | Minus -> print_string " - "
   | Times -> print_string " * "
@@ -78,6 +78,16 @@ let pretty_bool_op = function
   | And -> print_string " && "
 
 
+let rec pretty_pattern = function
+  | Var_Pat x -> print_string x
+  | Pair_Pat (x, pattern) ->
+    begin
+      print_string ("(" ^ x);
+      pretty_pattern pattern;
+      print_string ")"
+    end
+
+
 let pretty_print_expr expr =
 
   let print_tab n =
@@ -95,6 +105,13 @@ let pretty_print_expr expr =
       end
     | Var x -> print_string x
     | Cst c -> print_int c
+    | Unit -> print_string "()"
+    | Bang expr ->
+      begin
+        print_string "!(";
+        pretty_aux indent expr;
+        print_string ")";
+      end
     | PrInt expr ->
       begin
         print_string "prInt (";
@@ -105,7 +122,9 @@ let pretty_print_expr expr =
       end
     | Let (x, expr1, expr2) ->
       begin
-        print_string ("let " ^ x ^ " = ");
+        print_string ("let ");
+        pretty_pattern x;
+        print_string " = ";
         pretty_aux (indent+1) expr1;
         (* print_newline ();
         print_tab indent; *)
@@ -149,14 +168,35 @@ let pretty_print_expr expr =
         pretty_aux (indent + 1) expr2;
       end
     | Fun (x, expr) ->
-      print_string ("fun " ^ x ^ " -> ");
-      pretty_aux (indent+1) expr;
+      begin
+        print_string "fun ";
+        pretty_pattern x;
+        print_string " -> ";
+        pretty_aux (indent+1) expr;
+      end
 
     | App (expr1, expr2) ->
-      pretty_aux indent expr1;
-      print_string " (";
-      pretty_aux indent expr2;
-      print_string ")"
+      begin
+        pretty_aux indent expr1;
+        print_string " (";
+        pretty_aux indent expr2;
+        print_string ")"
+      end
+    | Aff (expr1, expr2) ->
+      begin
+        print_string "(";
+        pretty_aux indent expr1;
+        print_string ") := (";
+        pretty_aux indent expr2;
+        print_string ")"
+      end
+    | Alloc expr ->
+      begin
+        print_string "ref (";
+        pretty_aux indent expr;
+        print_string ")"
+      end
+    | Pair (expr1, expr2) -> print_string "TODO"
 
   and bpretty_aux indent = function
     | True -> print_string "true"
@@ -188,4 +228,3 @@ let pretty_print_expr expr =
 
   pretty_aux 0 expr;
   print_newline ()
-*)
