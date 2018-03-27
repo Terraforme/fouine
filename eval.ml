@@ -84,11 +84,11 @@ d'une expression, il faut renvoyer en plus de la valeur *)
     end
   | Aff (expr1, expr2) ->
     begin
-      let (value, mem) = eval expr2 env mem in
+      let (value0, mem) = eval expr2 env mem in
       let (value, mem) = eval expr1 env mem in
       match value with
       | Ref addr ->
-          let mem = set_mem addr value mem in
+          let mem = set_mem addr value0 mem in
           (Unit, mem)
       | _ -> failwith "ERROR : affecting non-addr"
     end

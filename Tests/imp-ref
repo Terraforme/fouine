@@ -25,5 +25,6 @@ let c = ref 17
 ;;
 
 
-(ref c) := ref (-42)
-;;
+(ref c) := ref (-42);
+(!b) := !a + 7;
+prInt ((!(!r)) + !c);;
