@@ -45,7 +45,7 @@ type expr_f =
   | IfElse of bexpr_f * expr_f * expr_f
   | Fun    of pattern_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
   | App    of expr_f * expr_f              (* Ce sont les applications *)
-  | Aff    of var_f * expr_f               (* Affectation i.e le `:=`*)
+  | Aff    of expr_f * expr_f               (* Affectation i.e le `:=`*)
   | Alloc  of expr_f                       (* Allocation mémoire *)
   | Pair   of expr_f * expr_f
   | Unit

@@ -82,10 +82,11 @@ d'une expression, il faut renvoyer en plus de la valeur *)
         eval expr0 (pat_env_aff pattern value env0) mem
       | _ -> failwith "ERROR : eval (App) : expecting a function"
     end
-  | Aff (x, expr) ->
+  | Aff (expr1, expr2) ->
     begin
-      let (value, mem) = eval expr env mem in
-      match (env_read x env) with
+      let (value, mem) = eval expr2 env mem in
+      let (value, mem) = eval expr1 env mem in
+      match value with
       | Ref addr ->
           let mem = set_mem addr value mem in
           (Unit, mem)
