@@ -112,6 +112,8 @@ d'une expression, il faut renvoyer en plus de la valeur *)
     let (value0, mem) = eval expr1 env mem in
     (regroup_pair value0 value), mem
   | Unit -> (Unit, mem)
+  | Raise _ -> failwith "TODO"
+  | Try (_,_,_) -> failwith "TODO"
 
 (* Pour les opérations ninaire : '+', '-' (...) '=', '<'
 il y quelques subtilités sur les ordres, car '+' est

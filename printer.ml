@@ -49,6 +49,8 @@ let rec expr2str = function
   | Alloc expr -> "Alloc(" ^ (expr2str expr) ^ ")"
   | Pair (expr1, expr2) -> "Pair("^(expr2str expr1)^" , "^(expr2str expr2)^")"
   | Unit -> "()"
+  | Try (expr1, var, expr2) -> "Try(" ^ (expr2str expr1) ^ ", with E " ^ var ^ " -> " ^ (expr2str expr2) ^ ")"
+  | Raise expr -> "Raise(" ^ (expr2str expr) ^ ")"
 
 and bexpr2str = function
   | True -> "true"
@@ -215,6 +217,21 @@ let pretty_print_expr expr =
         print_string ", ";
         pretty_aux indent expr2;
         print_string ")"
+      end
+    | Try (expr1, x, expr2) ->
+      begin
+        print_string "try\n";
+        print_tab (indent + 1);
+        pretty_aux (indent + 1) expr1;
+        print_string "\n";
+        print_tab indent;
+        print_string ("with E " ^ x ^ " -> ");
+        pretty_aux (indent + 1) expr2;
+      end
+    | Raise expr ->
+      begin
+        print_string "raise ";
+        pretty_aux (indent + 1) expr;
       end
 
   and bpretty_aux indent = function
