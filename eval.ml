@@ -9,7 +9,7 @@ let rec regroup_pair pair1 pair2 = match pair1 with
   | _ -> Pair_val(pair1, pair2)
 ;;
 
-let rec eval expr env mem = match expr with
+let rec eval expr env mem (* except *)= match expr with
 (* eval : expr_f -> env_f -> mem_f -> val_f * mem_f
 Prend en paramètres une expression et un environnement,
 et évalue l'expression sur cet environnement. La valeur
@@ -54,7 +54,7 @@ d'une expression, il faut renvoyer en plus de la valeur *)
          soit c'est une expression autre *)
       | Fun (pattern, expr0) ->
       (* Cas spécial ici.... la fonction env_aff ne suffit pas *)
-        let rec env0 = (f, Fun_var(pattern, expr0, env0)) :: env in
+        let rec env0 = (f, Fun_val(pattern, expr0, env0)) :: env in
         eval expr2 env0 mem
       | _ -> let (value, mem') = eval expr1 env mem in
              eval expr2 (env_aff f value env) mem'
@@ -77,14 +77,14 @@ d'une expression, il faut renvoyer en plus de la valeur *)
       else
         eval expr2 env mem'
     end
-  | Fun (x, expr0) -> Fun_var (x, expr0, env), mem
+  | Fun (x, expr0) -> Fun_val (x, expr0, env), mem
   | App (expr1, expr2) ->
   (* On évalue bien d'abord l'argument, puis la fonction *)
     begin
       let (value, mem) = eval expr2 env mem in
       let (f,     mem) = eval expr1 env mem in
       match f with
-      | Fun_var (pattern, expr0, env0) ->
+      | Fun_val (pattern, expr0, env0) ->
         eval expr0 (pat_env_aff pattern value env0) mem
       | _ -> failwith "ERROR : eval (App) : expecting a function"
     end
