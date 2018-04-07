@@ -31,6 +31,10 @@ do
 		echo ""
 		$becho -e "\e[32;1mFouine:\t\e[37;0m$fouine\e[0m"
 		$becho -e "\e[32;1mOCamL :\t\e[37;0m$caml\e[0m\n"
+
+		$becho -e "\e[33;1mMore details\n· Fouine :\e[0m"
+		./main.native $tests/$test
+		$becho -e "\e[33;1m· OCamL :\e[0m"
 		cat $prInt $tests/$test | ocaml -stdin
 		echo ""
 	fi
