@@ -69,42 +69,43 @@ expression_chain:
 /* >.< */
 
 let_chain:
-  | LET VAR EQUAL expression let_chain { Let(Var_Pat $2, $4, $5) }
+  | LET var_pattern EQUAL expression let_chain { Let($2, $4, $5) }
   | REC VAR EQUAL expression let_chain { LetRec($2, $4, $5) }
-  | LET VAR EQUAL expression EOI expression_chain { Let(Var_Pat $2, $4, $6) }
+  | LET var_pattern EQUAL expression EOI expression_chain { Let($2, $4, $6) }
   | REC VAR EQUAL expression EOI expression_chain { LetRec($2, $4, $6) }
-  | LET VAR EQUAL expression { Let(Var_Pat $2, $4, Unit) }
+  | LET var_pattern EQUAL expression { Let( $2, $4, Unit) }
   | REC VAR EQUAL expression { LetRec($2, $4, Unit) }
-  | LET VAR EQUAL expression EOI { Let(Var_Pat $2, $4, Unit) }
+  | LET var_pattern EQUAL expression EOI { Let( $2, $4, Unit) }
   | REC VAR EQUAL expression EOI { LetRec($2, $4, Unit) }
-  | LET VAR func let_chain{ Let(Var_Pat $2,$3,$4) }
+  | LET var_pattern func let_chain{ Let($2,$3,$4) }
   | REC VAR func let_chain { LetRec($2,$3,$4) }
-  | LET VAR func EOI let_chain{ Let(Var_Pat $2,$3,$5) }
+  | LET var_pattern func EOI let_chain { Let($2,$3,$5) }
   | REC VAR func EOI let_chain { LetRec($2,$3,$5) }
-  | LET VAR func { Let(Var_Pat $2,$3, Unit) }
+  | LET var_pattern func { Let($2,$3, Unit) }
   | REC VAR func { LetRec($2,$3, Unit) }
-  | LET VAR func EOI { Let(Var_Pat $2,$3, Unit) }
+  | LET var_pattern func EOI { Let($2,$3, Unit) }
   | REC VAR func EOI { LetRec($2,$3, Unit) }
 
-  | LET LPAREN var_pattern RPAREN EQUAL expression let_chain { Let($3, $6, $7) }
+  /*| LET LPAREN var_pattern RPAREN EQUAL expression let_chain { Let($3, $6, $7) }
   | LET LPAREN var_pattern RPAREN EQUAL expression EOI expression_chain { Let($3, $6, $8) }
   | LET LPAREN var_pattern RPAREN EQUAL expression { Let($3, $6, Unit) }
   | LET LPAREN var_pattern RPAREN EQUAL expression EOI { Let($3, $6, Unit) }
   | LET LPAREN var_pattern RPAREN func let_chain{ Let($3,$5,$6) }
   | LET LPAREN var_pattern RPAREN func EOI let_chain{ Let($3,$5,$7) }
   | LET LPAREN var_pattern RPAREN func { Let($3,$5, Unit) }
-  | LET LPAREN var_pattern RPAREN func EOI { Let($3,$5, Unit) }
+  | LET LPAREN var_pattern RPAREN func EOI { Let($3,$5, Unit) }*/
 ;
 
 var_pattern:
   | VAR { Var_Pat $1 }
+  | ANON { Var_Pat "_" }
   | LPAREN var_pattern RPAREN { $2 }
   | VAR COMA var_pattern { Pair_Pat($1,$3) }
 ;
 
 expression:
   | INT   { Cst $1 }
-  | VAR { Var $1 }
+  | VAR   { Var $1 }
 
   | LPAREN expression RPAREN { $2 }
   | LPAREN RPAREN { Unit }
