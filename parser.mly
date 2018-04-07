@@ -68,7 +68,7 @@ expression_chain:
 /* FIXME : simplifier le let-binding */
 /* >.< */
 
-let_chain:
+/*let_chain:
   | LET VAR EQUAL expression let_chain { Let(Var_Pat $2, $4, $5) }
   | REC VAR EQUAL expression let_chain { LetRec($2, $4, $5) }
   | LET VAR EQUAL expression EOI expression_chain { Let(Var_Pat $2, $4, $6) }
@@ -94,6 +94,15 @@ let_chain:
   | LET LPAREN var_pattern RPAREN func EOI let_chain{ Let($3,$5,$7) }
   | LET LPAREN var_pattern RPAREN func { Let($3,$5, Unit) }
   | LET LPAREN var_pattern RPAREN func EOI { Let($3,$5, Unit) }
+;*/
+
+let_chain:
+  | LET var_pattern EQUAL expression let_chain { Let($2, $4, $5) }
+  | REC VAR EQUAL expression let_chain { LetRec($2, $4, $5) }
+  | LET var_pattern EQUAL expression EOI { Let($2, $4, Unit) }
+  | REC VAR EQUAL expression EOI { LetRec($2, $4, Unit) }
+  | LET var_pattern EQUAL expression EOI expression_chain { Let($2, $4, $6) }
+  | REC VAR EQUAL expression EOI expression_chain { LetRec($2, $4, $6) }
 ;
 
 var_pattern:
@@ -123,8 +132,8 @@ expression:
   | MINUS expression %prec UMINUS       { Bin(Cst 0, Minus, $2) } /*un peu spécial: c'est le seul opérateur "unaire" pour le parseur */
 
   /*let ... in ...*/
-  | LET VAR EQUAL expression IN expression { Let(Var_Pat $2, $4, $6) }
-  | LET LPAREN var_pattern RPAREN EQUAL expression IN expression { Let($3, $6, $8) } /*paire, triplet, etc.*/
+  /*| LET VAR EQUAL expression IN expression { Let(Var_Pat $2, $4, $6) }*/
+  | LET var_pattern EQUAL expression IN expression { Let($2, $4, $6) } /*paire, triplet, etc.*/
   | REC VAR EQUAL expression IN expression { LetRec($2, $4, $6) }
   | LET ANON EQUAL expression { $4 } %prec ANON
   | REC ANON EQUAL expression { $4 } %prec ANON

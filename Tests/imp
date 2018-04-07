@@ -5,6 +5,7 @@ let a = ref 2 in
 ;;
 
 let a = ref 2;;
+
 prInt((a:=3; 1) + (a:=4; 2));;
 
 prInt(!a);;
