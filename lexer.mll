@@ -39,7 +39,7 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | "end" { END }
   | "let" { LET }
   | "in" { IN }
-  | "fun" { FUN}
+  | "fun" { FUN }
   | "let rec" { REC }
   | "if" { IF }
   | "then" { THEN }

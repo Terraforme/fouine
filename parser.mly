@@ -98,6 +98,7 @@ let_chain:
 
 var_pattern:
   | VAR { Var_Pat $1 }
+  | LPAREN var_pattern RPAREN { $2 }
   | VAR COMA var_pattern { Pair_Pat($1,$3) }
 ;
 
@@ -122,7 +123,6 @@ expression:
   | MINUS expression %prec UMINUS       { Bin(Cst 0, Minus, $2) } /*un peu spécial: c'est le seul opérateur "unaire" pour le parseur */
 
   /*let ... in ...*/
-  /* FIXME : Faire un let de pattern ? */
   | LET VAR EQUAL expression IN expression { Let(Var_Pat $2, $4, $6) }
   | LET LPAREN var_pattern RPAREN EQUAL expression IN expression { Let($3, $6, $8) } /*paire, triplet, etc.*/
   | REC VAR EQUAL expression IN expression { LetRec($2, $4, $6) }
