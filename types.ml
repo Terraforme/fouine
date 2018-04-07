@@ -43,7 +43,7 @@ type expr_f =
   | PrInt  of expr_f
   | Let    of pattern_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
   | LetRec of var_f * expr_f * expr_f      (* let rec *)
-  | If     of bexpr_f * expr_f
+  | If     of bexpr_f * expr_f             (* FIXME : obsolète *)
   | IfElse of bexpr_f * expr_f * expr_f
   | Fun    of pattern_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
   | App    of expr_f * expr_f              (* Ce sont les applications *)

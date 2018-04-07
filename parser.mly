@@ -65,6 +65,9 @@ expression_chain:
   | let_chain { $1 }
 ;
 
+/* FIXME : simplifier le let-binding */
+/* >.< */
+
 let_chain:
   | LET VAR EQUAL expression let_chain { Let(Var_Pat $2, $4, $5) }
   | REC VAR EQUAL expression let_chain { LetRec($2, $4, $5) }
@@ -119,6 +122,7 @@ expression:
   | MINUS expression %prec UMINUS       { Bin(Cst 0, Minus, $2) } /*un peu spécial: c'est le seul opérateur "unaire" pour le parseur */
 
   /*let ... in ...*/
+  /* FIXME : Faire un let de pattern ? */
   | LET VAR EQUAL expression IN expression { Let(Var_Pat $2, $4, $6) }
   | LET LPAREN var_pattern RPAREN EQUAL expression IN expression { Let($3, $6, $8) } /*paire, triplet, etc.*/
   | REC VAR EQUAL expression IN expression { LetRec($2, $4, $6) }
@@ -142,7 +146,7 @@ expression:
   | applicator applicated { App($1,$2) } %prec APPLICATION
 
   /* if ... then ... else ...*/
-  | IF bool_expr THEN expression { If($2,$4) }
+  | IF bool_expr THEN expression { If($2,$4) } /* FIXME : parser en format IfElse */
   | IF bool_expr THEN expression ELSE expression { IfElse($2,$4,$6) }
 
   | PRINT expression { PrInt($2) }

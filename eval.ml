@@ -9,6 +9,8 @@ let rec regroup_pair pair1 pair2 = match pair1 with
   | _ -> Pair_val(pair1, pair2)
 ;;
 
+(* FIXME : exceptions ... *)
+
 let rec eval expr env mem (* except *)= match expr with
 (* eval : expr_f -> env_f -> mem_f -> val_f * mem_f
 Prend en paramètres une expression et un environnement,
