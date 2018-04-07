@@ -1,0 +1,2 @@
+let a, b = (0, 1) in
+prInt a ;;
