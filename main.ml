@@ -46,13 +46,23 @@ let calc exec_mod =
       print_string "\n\nBeautiful parsing : \n";
       pretty_print_expr expr;
       print_string "\n\nExécution : \n";
-      let value, _ = eval expr [] (init_mem ()) in
-      print_string "value:\t";
-      let _ = match value with
-      | Int a -> print_int a
-      | _     -> failwith "functional value"
-      in
-      print_newline ()
+      let value, _, e = eval expr [] (init_mem ()) in
+			if e = None then 
+				begin
+					print_string "value:\t";
+					let _ = match value with
+					| Int a -> print_int a
+					| _     -> failwith "non-int value"
+					in
+					print_newline ()
+				end
+			else match e with 
+				| Some e_val -> 
+				begin
+					print_string "Received Exception E ";
+					print_int e_val; print_newline ()
+				end
+				| _ -> failwith "Main : unexpected exception"
     end
   ;
   flush stdout
