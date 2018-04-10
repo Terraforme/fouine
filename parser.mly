@@ -19,8 +19,10 @@
 %token FUN FLECHE
 %token REF BANG
 %token ANON
+%token RAISE TRY WITH E
 
 %right FUN
+%nonassoc TRY
 %nonassoc ANON
 %nonassoc LET IN
 %right SEMICOL
@@ -44,6 +46,8 @@
 /*%nonassoc EOI*/
 %nonassoc REF
 %nonassoc BANG
+
+%nonassoc RAISE
 
 
 %start main
@@ -102,6 +106,15 @@ expression:
 
   | BEGIN expression END { $2 }
   | expression SEMICOL expression { Let(Var_Pat "_", $1, $3) }
+
+  /* exceptions */
+  | TRY expression WITH E VAR FLECHE expression { Try($2, $5, $7) } %prec TRY
+  | RAISE LPAREN E INT RPAREN { Raise $4 } %prec RAISE/*les parenthèses imitent de manière artificielle le fait que raise ait une très forte priorité en Ocmal.
+  Par ex:
+exception E of int;;
+raise E 2;; --> non valide (ocaml considère que raise est appliqué à E)
+raise (E 2);; -> valide
+*/
 
   /*opérations arithmétiques*/
   | expression PLUS expression { Bin($1,Plus,$3) }

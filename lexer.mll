@@ -50,6 +50,10 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | "fun" { FUN }
   | "->" { FLECHE }
   | "ref" { REF }
+  | 'E' { E }
+  | "raise" { RAISE }
+  | "try" { TRY }
+  | "with" { WITH }
   | ('-'|'+')?['0'-'9']+'.'['0'-'9']* as s { NBR (float_of_string s) }
   | ['0'-'9']+ as s { INT (int_of_string s) }
   | (['A'-'Z']|['a'-'z'])(['A'-'Z']|['a'-'z']|'_'|['0'-'9'])* as s { VAR s }
