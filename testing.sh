@@ -49,18 +49,19 @@ do
 	caml=$(cat $prInt $tests/$test | ocaml -w -26 -stdin 2> /dev/null)
 	# parce que omg ce warning 26 qui me casse les pieds !!!
 	
+	error=$(cat errors.log)
+	if [ "$error" = "Fatal error: exception Parsing.Parse_error" ]
+	then
+		$becho -e -n "\e[33;1mP\e[0m"
+	else
+		$becho -e -n " " 
+	fi 
 
 	if [ "$fouine" = "$caml" ]
 	then
 		$becho -e "\e[32;1m✓ \e[0m $test"
 	else
-		error=$(cat errors.log)
-		if [ "$error" = "Fatal error: exception Parsing.Parse_error" ]
-		then
-			$becho -e "\e[33;1mP  $test\e[0m"
-		else
-			$becho -e "\e[31;1m✕  $test\e[0m" 
-		fi
+		$becho -e "\e[31;1m✕  $test\e[0m" 
 	fi
 done;
 

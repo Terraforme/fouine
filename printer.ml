@@ -230,7 +230,7 @@ let pretty_print_expr expr =
       end
     | Raise a ->
       begin
-        print_string ("raise " ^ (string_of_int a))
+        print_string ("raise (E " ^ (string_of_int a) ^ ")")
       end
 
   and bpretty_aux indent = function

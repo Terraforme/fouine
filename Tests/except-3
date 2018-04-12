@@ -1,0 +1,10 @@
+try
+	if 42 = 42 then 
+		try 
+			if 0 = 1 then raise (E 41)
+			else raise (E 42)
+		with E exn -> raise (E (exn + 1))
+	else raise (E 0)
+
+with E x -> prInt (x-1)
+;;

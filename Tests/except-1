@@ -1,0 +1,5 @@
+let f x = x + 1 in
+try prInt (f (raise (E 42)))
+with E x -> prInt x
+;;
+

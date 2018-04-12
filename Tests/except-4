@@ -1,0 +1,8 @@
+try
+	if 42 = 42 then 
+		try raise (E 65536)
+		with E x -> prInt x
+	else raise (E 97)
+
+with E x -> prInt (x-1)
+;;
