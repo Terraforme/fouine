@@ -1,0 +1,2 @@
+try if (raise (E 42)) = 1 then 42 else -41
+with E x -> 1 

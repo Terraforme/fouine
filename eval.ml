@@ -73,6 +73,7 @@ d'une expression, il faut la renvoyer en plus de la valeur *)
 						 if e = None then eval expr2 (env_aff f value env) mem'
 						 else (Unit, mem', e)
     end
+	| Match (expr, pmatch)   -> failwith "TODO - Matchings"
   | If (bexpr, expr)       ->
   (* On pourrait se passer de ce constructeur en pratique
   C'est une relique du passé. *)
