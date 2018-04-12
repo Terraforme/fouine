@@ -49,11 +49,8 @@ let calc exec_mod =
       let value, _, e = eval expr [] (init_mem ()) in
 			if e = None then 
 				begin
-					print_string "value:\t";
-					let _ = match value with
-					| Int a -> print_int a
-					| _     -> failwith "non-int value"
-					in
+					print_string "\nvalue:\t";
+					pretty_value 0 value;
 					print_newline ()
 				end
 			else match e with 

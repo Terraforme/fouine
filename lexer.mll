@@ -11,6 +11,8 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
                                       associé au tampon où sont
                                       lus les caractères *)
   | eof             { EOF }
+
+	(* PONCTUATION *)
   | '('             { LPAREN }
   | ')'             { RPAREN }
   | '='             { EQUAL }
@@ -21,40 +23,63 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | ":="            { AFFECTATION }
   | '.'             { DOT }
   | '!'             { BANG }
+	
+	(* OPÉRATEURS ARITHMÉTIQUES *)
   | '+'             { PLUS }
   | '-'             { MINUS }
   | '/'             { DIV }
   | '*'             { TIMES }
   | "mod"           { MOD }
+
   | '_'             { ANON }
+
+	(* OPÉRATEURS DE COMPARAISON *)
   | '>'             { GREATER }
   | '<'             { LOWER }
   | ">="            { GE }
   | "<="            { LE }
   | "<>"            { NE }
+
+	(* OPÉRATEURS BOOLÉENS *)
   | "&&"            { AND }
   | "||"            { OR }
   | "not"           { NOT }
-  | "begin" { BEGIN }
-  | "end" { END }
-  | "let" { LET }
-  | "in" { IN }
-  | "fun" { FUN }
-  | "let rec" { REC }
-  | "if" { IF }
-  | "then" { THEN }
-  | "else" { ELSE }
-  | "true" { TRUE }
-  | "false" { FALSE }
-  | "prInt" { PRINT }
-  | "fun" { FUN }
-  | "->" { FLECHE }
-  | "ref" { REF }
-  | 'E' { E }
-  | "raise" { RAISE }
-  | "try" { TRY }
-  | "with" { WITH }
-  | ('-'|'+')?['0'-'9']+'.'['0'-'9']* as s { NBR (float_of_string s) }
+
+	(* MOTS CLÉS *)
+  | "begin" 		{ BEGIN }
+  | "end" 			{ END }
+
+  | "let" 			{ LET }
+  | "let rec" 	{ REC }
+  | "in"			  { IN }
+
+  | "fun" 			{ FUN }
+
+	(* Structures de contrôle *)
+  | "if" 				{ IF }
+  | "then" 			{ THEN }
+  | "else" 			{ ELSE }
+
+  | "true" 			{ TRUE }
+  | "false" 		{ FALSE }
+
+  | "prInt" 		{ PRINT }
+  | "->" 				{ FLECHE }
+
+  | "ref" 			{ REF }
+
+  | 'E' 				{ E }
+  | "raise" 		{ RAISE }
+  | "try" 			{ TRY }
+  | "with" 			{ WITH }
+
+	(* CONSTANTES *)
+  | ('-'|'+')?['0'-'9']+'.'['0'-'9']* as s { NBR (float_of_string s) } (* FIXME : inutile ? *)
   | ['0'-'9']+ as s { INT (int_of_string s) }
-  | (['A'-'Z']|['a'-'z'])(['A'-'Z']|['a'-'z']|'_'|['0'-'9'])* as s { VAR s }
+
+	(* VARIABLES : On n'autorise pas aux variables de commencer par une majuscule *)
+  | ['a'-'z'](['A'-'Z']|['a'-'z']|'_'|['0'-'9'])* as s { VAR s }
   (*| (['A'-'Z']|['a'-'z'])*+['0'-'9']* as s { VAR s }*)
+
+	(* CONSTRUCTEURS : comme les variables sauf qu'on a une majuscule au début *)
+	| ['A'-'Z'](['A'-'Z']|['a'-'z']|'_'|['0'-'9'])* as s { CONS s }

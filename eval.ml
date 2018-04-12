@@ -22,7 +22,7 @@ juste à être renvoyée telle quelle jusqu'au prochain `try` pour
 être rattrapée. 
 
 On passe la mémoire en argument. Bien-sûr, après l'évaluation
-d'une expression, il faut renvoyer en plus de la valeur *)
+d'une expression, il faut la renvoyer en plus de la valeur *)
 
   | Bin (expr1, op, expr2) -> bin_eval op expr1 expr2 env mem
   | Var x                  -> env_read x env, mem, None

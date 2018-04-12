@@ -6,3 +6,5 @@ let a = 5 in
 let f = fun x -> x ; 2
 ;;
 prInt (f 5);;
+
+f;;

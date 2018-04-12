@@ -73,9 +73,20 @@ type env_f = (var_f * val_f) list
 
 (* Une fonction est un objet fun x -> ... *)
 (* Dans le cas des variables, on ajoute un environnement pour les clôtures *)
-and val_f = Int         of int
-          | Pair_val    of val_f * val_f
-          | Ref         of int32
-          | Unit
+
+(* Rappel sur les types en OCamL : plusieurs constructeurs :
+
+type ::= | int | float | bool | char | unit | string .....
+				/* | (constructeur) of ... ? */
+				 | type * type 
+				 | type -> type 
+
+Sachant que Fouine n'est pas typé, on ne distingue pas types et valeurs : *)
+
+and val_f = Unit
+					| Int         of int
+					| Ref					of int32
+					| Cons				of string * val_f
+          | Pair_val    of val_f * val_f 
           | Fun_val     of pattern_f * expr_f * env_f
 ;;

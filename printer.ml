@@ -263,3 +263,71 @@ let pretty_print_expr expr =
 
   pretty_aux 0 expr;
   print_newline ()
+;;
+
+
+
+
+(* On définit une un pretty-printer de valeurs *)
+
+(* Le printeur de valeurs est définit co-inductivement avec le printeur 
+de clôtures. *)
+
+let rec pretty_closure = function 
+(* pretty_closure : env_f -> unit
+Prend en paramètre un environnement et tente de l'afficher joliment *)
+	| [] -> print_string "[]"
+	| (var, value) :: closure ->
+		begin 
+			print_string (var ^ " ::= ");
+			pretty_value 0 value;
+			print_string " :: "; 
+			pretty_closure closure
+		end
+
+and pretty_value opt = function 
+(* pretty_value : int -> val_f -> unit
+Prend en paramètre une valeur et tente de l'afficher correctement
+L'argument entier est un renseignement pour améliorer l'affichage	*)
+
+(* opt : FIXME inutilisé pour l'instant
+	| 0 -> comportement usuel (i.e par défaut)
+	| 1 -> liste de couples déjà parenthésée
+
+FIXME : 
+
+si 
+
+type tree = Nil | Node of int * tree * tree ;;
+let f (Node(x, _, _)) = print_int x ;;
+
+Warning 8: this pattern-matching is not exhaustive.
+Here is an example of a value that is not matched:
+Nil
+val f : tree -> unit = <fun>
+
+*)
+
+	| Unit 	   -> print_string "()"
+	| Int x 	 -> print_int x
+	| Ref addr -> print_string ("ref " ^ (Int32.to_string addr))
+	| Cons (c, value) -> 
+		begin
+			print_string (c ^ "(");
+			pretty_value 0 value;
+			print_string ")"
+		end
+	| Pair_val (val1, val2) -> 
+		begin
+			print_string "(";  pretty_value 0 val1;
+			print_string ", "; pretty_value 0 val2;
+			print_string ")"
+		end
+	| Fun_val (pat, expr, env) ->
+		begin
+			pretty_pattern pat;
+			print_string " -> ";
+			pretty_print_expr expr;
+			print_string "\nin closure ";
+			pretty_closure env
+		end
