@@ -55,8 +55,8 @@ d'une expression, il faut la renvoyer en plus de la valeur *)
   | Let (pattern, expr1, expr2)  ->
   (* pattern : pour faire 'let (x, y) = c in' *)
     begin
-      let (value, mem', e) = eval expr1 env mem in
-			if e = None then eval expr2 (pat_env_aff pattern value env) mem'
+      let  (value, mem', e) = eval expr1 env mem in
+			if   e = None 			    then eval expr2 (pat_env_aff pattern value env) mem'
 			else (Unit, mem', e)
     end
   | LetRec (f, expr1, expr2) ->
