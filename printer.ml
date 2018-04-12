@@ -50,7 +50,7 @@ let rec expr2str = function
   | Pair (expr1, expr2) -> "Pair("^(expr2str expr1)^" , "^(expr2str expr2)^")"
   | Unit -> "()"
   | Try (expr1, var, expr2) -> "Try(" ^ (expr2str expr1) ^ ", with E " ^ var ^ " -> " ^ (expr2str expr2) ^ ")"
-  | Raise a -> "Raise (E " ^ (string_of_int a) ^ ")"
+  | Raise a -> "Raise (E " ^ (expr2str a) ^ ")"
 
 and bexpr2str = function
   | True -> "true"
@@ -230,7 +230,9 @@ let pretty_print_expr expr =
       end
     | Raise a ->
       begin
-        print_string ("raise (E " ^ (string_of_int a) ^ ")")
+        print_string "raise (E ";
+				pretty_aux (indent + 1) a;
+				print_string ")"
       end
 
   and bpretty_aux indent = function

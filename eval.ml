@@ -149,7 +149,12 @@ d'une expression, il faut la renvoyer en plus de la valeur *)
 			else (Unit, mem, e)
 		else (Unit, mem, e)
   | Unit -> (Unit, mem, None)
-  | Raise x -> (Unit, mem, Some x) 
+  | Raise expr -> 
+		let (value, mem, e) = eval expr env mem in
+		if e = None then match value with 
+			| Int exn -> (Unit, mem, Some exn)
+			| _     -> failwith "Raise : non-int value"
+		else (Unit, mem, e) 
   | Try (expr1, var_except, expr2) -> 
 	(* Syntaxe: try expr1 with E var_except -> expr2 *)
 		let (value, mem, e) = eval expr1 env mem in
