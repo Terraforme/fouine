@@ -91,7 +91,7 @@ Sachant que Fouine n'est pas typé, on ne distingue pas types et valeurs : *)
 
 and val_f = Unit
 					| Int         of int
-					| Ref					of int32
+					| Ref					of int
 					| Cons				of string * val_f
 					| Pair_val    of val_f * val_f 
 					| Fun_val     of pattern_f * expr_f * env_f

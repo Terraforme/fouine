@@ -335,7 +335,7 @@ val f : tree -> unit = <fun>
 
 	| Unit 	   -> print_string "()"
 	| Int x 	 -> print_int x
-	| Ref addr -> print_string ("ref " ^ (Int32.to_string addr))
+	| Ref addr -> print_string ("ref " ^ (string_of_int addr))
 	| Cons (c, value) -> 
 		begin
 			print_string (c ^ "(");

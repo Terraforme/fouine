@@ -29,7 +29,7 @@ let parse () = Parser.main Lexer.token lexbuf;;
 let calc exec_mod =
   let expr = parse () in
   match exec_mod with
-  | Normal -> let _ = eval expr [] (init_mem ())  in ()
+  | Normal -> let _ = eval expr [] id [] in ()
   | Parsing ->
   (* On a rajouté une option de parsing *)
     begin
@@ -46,20 +46,10 @@ let calc exec_mod =
       print_string "\n\nBeautiful parsing : \n";
       pretty_print_expr expr;
       print_string "\n\nExécution : \n";
-      let value, _, e = eval expr [] (init_mem ()) in
-			if e = None then 
-				begin
-					print_string "\nvalue:\t";
-					pretty_value 0 value;
-					print_newline ()
-				end
-			else match e with 
-				| Some e_val -> 
-				begin
-					print_string "Received Exception E ";
-					print_int e_val; print_newline ()
-				end
-				| _ -> failwith "Main : unexpected exception"
+      let value = eval expr [] id [] in
+			print_string "\nvalue:\t";
+			pretty_value 0 value;
+			print_newline ()
     end
   ;
   flush stdout

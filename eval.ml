@@ -3,166 +3,88 @@ open Types
 open Mem
 
 
+let id = fun x -> x ;;
 
 let rec regroup_pair pair1 pair2 = match pair1 with
   | Pair_val(value, pair1) -> Pair_val(value, regroup_pair pair1 pair2)
   | _ -> Pair_val(pair1, pair2)
 ;;
 
-(* FIXME : exceptions ... *)
+(* FIXME : exceptions ...  : 
+Environnements locaux des exceptions *)
 
-let rec eval expr env mem (* except *)= match expr with
-(* eval : expr_f -> env_f -> mem_f -> val_f * mem_f * int option
-Prend en paramètres une expression et un environnement,
-et évalue l'expression sur cet environnement. La valeur renvoyée
-est de type val_f décrite dans `types.ml`. On renvoie aussi
-le nouvel état de la mémoire ainsi qu'une valeur d'exception.
-Cette valeur d'exception est assez artificielle : elle demande 
-juste à être renvoyée telle quelle jusqu'au prochain `try` pour 
-être rattrapée. 
 
-On passe la mémoire en argument. Bien-sûr, après l'évaluation
-d'une expression, il faut la renvoyer en plus de la valeur *)
+let rec eval expr env k k' = match expr with
+(* eval : 
+expr_f -> env_f -> (val_f -> val_f) -> ((val_f -> val_f) * env_f) list -> val_f
 
-  | Bin (expr1, op, expr2) -> bin_eval op expr1 expr2 env mem
-  | Var x                  -> env_read x env, mem, None
-  | Bang expr              ->
-    begin
-      let (value, mem, e) = eval expr env mem in
-			if e = None then
-				match value with
-				| Ref addr -> let value = read_mem addr mem
-				              in value, mem, None
-				| _ -> failwith "ERROR : Dereferencing non-addr"
-			else (Unit, mem, e)
-    end
-  | Cst c                  -> Int c, mem, None
+La fonction d'évaluation principale. Fonctionne en style par continuation 
+La mémoire est globale et d'utilisation transparente.
+Pour les continuations : k correspond à la continuation normale et 
+                         k' à une pile de couple (continuations * environnement)
+                            correspondant aux scénarios exceptionnels *)
+
+  | Bin (expr1, op, expr2) -> 
+         eval expr2 env (fun val2 ->
+                         eval expr1 env (fun val1 -> k (aeval op val1 val2)) k') k'
+  | Var x                  -> k (env_read x env)
+  | Bang expr              -> 
+         eval expr env (function   Ref  addr -> k (read_mem addr)
+                                 | _ -> failwith "! : Dereferecing non-addr") k'
+  | Cst c                  -> k (Int c)
   | PrInt expr             ->
   (* On autorise seulement l'affichage d'entiers *)
-    begin
-      let (value, mem', e) = eval expr env mem in
-			if e = None then
-				begin
-					let _ = match value with
-					| Int a -> print_int a
-					| _     -> failwith "ERROR : prInt : not an integer"
-					in
-					print_newline ();
-					(value, mem', None)
-				end
-			else (Unit, mem', e)
-    end
+    eval expr env (function Int a -> begin print_int a; print_newline ();
+                                       k (Int a)
+                                     end
+                            | _ -> failwith "prInt : non-int") k'
   | Let (pattern, expr1, expr2)  ->
   (* pattern : pour faire 'let (x, y) = c in' *)
-    begin
-      let  (value, mem', e) = eval expr1 env mem in
-			if   e = None 			    then eval expr2 (pat_env_aff pattern value env) mem'
-			else (Unit, mem', e)
-    end
+    eval expr1 env (fun value -> eval expr2 (pat_env_aff pattern value env) k k') k'
   | LetRec (f, expr1, expr2) ->
   (* f n'est pas un pattern : cf doc *)
-    begin
-      match expr1 with
-      (* Deux cas pour f : soit c'est directement une fonction (rec)
-         soit c'est une expression autre *)
-      | Fun (pattern, expr0) ->
-      (* Cas spécial ici.... la fonction env_aff ne suffit pas *)
-        let rec env0 = (f, Fun_val(pattern, expr0, env0)) :: env in
-        eval expr2 env0 mem
-      | _ -> let (value, mem', e) = eval expr1 env mem in
-						 if e = None then eval expr2 (env_aff f value env) mem'
-						 else (Unit, mem', e)
+		begin
+      match expr1 with | Fun (pat, expr0) -> 
+                         let rec env0 = (f, Fun_val (pat, expr0, env0)) :: env in
+                         eval expr2 env0 k k'
+                       | _ -> eval (Let (Var_Pat f, expr1, expr2)) env k k'
     end
 	| Match (expr, pmatch)   -> failwith "TODO - Matchings"
   | If (bexpr, expr)       ->
   (* On pourrait se passer de ce constructeur en pratique
   C'est une relique du passé. *)
-    begin
-      let (value, mem', e) = bool_eval bexpr env mem in
-			if e = None then 
-				begin
-				  if value then
-				    eval expr env mem'
-				  else
-				    Int 0, mem', None
-				end
-			else (Unit, mem', e)
-    end
+    failwith "TODO"
   | IfElse (bexpr, expr1, expr2) ->
-    begin
-      let (value, mem', e) = bool_eval bexpr env mem in
-			if e = None then
-				begin
-				  if value then
-				    eval expr1 env mem'
-				  else
-				    eval expr2 env mem'
-				end
-			else (Unit, mem', e)
-    end
-  | Fun (x, expr0) -> Fun_val (x, expr0, env), mem, None
+    beval bexpr env (fun b -> eval (if b then expr1 else expr2) env k k') k'
+  | Fun (x, expr0) -> k (Fun_val (x, expr0, env))
   | App (expr1, expr2) ->
   (* On évalue bien d'abord l'argument, puis la fonction *)
-    begin
-      let (value, mem, e) = eval expr2 env mem in
-			if e = None then 
-				begin
-				  let (f, mem, e) = eval expr1 env mem in
-					if e = None then
-						match f with
-						| Fun_val (pattern, expr0, env0) ->
-						  eval expr0 (pat_env_aff pattern value env0) mem
-						| _ -> failwith "ERROR : eval (App) : expecting a function"
-					else (Unit, mem, e)
-				end
-			else (Unit, mem, e)
-    end
+    eval expr2 env (fun value -> eval expr1 env 
+                   (function Fun_val (x, expr0, env) -> 
+                                eval expr0 (pat_env_aff x value env) k k'
+                             | _ -> failwith "App : applicator is not a function") 
+                    k') k'
   | Aff (expr1, expr2) ->
   (* Affectation : le terme gauche doit être une référence *)
-    begin
-      let (value0, mem, e) = eval expr2 env mem in
-			if e = None then
-		    let (value, mem, e) = eval expr1 env mem in
-				if e = None then 
-				  match value with
-				  | Ref addr ->
-				      let mem = set_mem addr value0 mem in
-				      (Unit, mem, None)
-				  | _ -> failwith "ERROR : affecting non-addr"
-				else (Unit, mem, e)
-			else (Unit, mem, e)
-    end
+		eval expr2 env (fun value -> eval expr1 env 
+                   (function Ref addr -> begin set_mem addr value; k Unit end
+                             | _ -> failwith "Aff : affecting non-ref" ) k') k'  
   | Alloc (expr) ->
   (* L'allocation mémoire : le terme gauche a toutes les libertés *)
-    begin
-      let (value, mem, e) = eval expr env mem in
-			if e = None then 
-		    let mem, addr = alloc_mem value mem in
-		    addr, mem, None
-			else (Unit, mem, e)
-    end
+    eval expr env (fun value -> let addr = alloc_mem value in k (Ref addr)) k'
   | Pair (expr1, expr2) ->
-  (* Les pairs ont une structure un peu particulière *)
-    let (value, mem, e) = eval expr2 env mem in
-		if e = None then
-		  let (value0, mem, e) = eval expr1 env mem in
-			if e = None then (regroup_pair value0 value), mem, None
-			else (Unit, mem, e)
-		else (Unit, mem, e)
-  | Unit -> (Unit, mem, None)
+		eval expr2 env (fun val2 -> 
+                    eval expr1 env (fun val1 -> k (regroup_pair val1 val2)) k') k'
+  | Unit -> k Unit
   | Raise expr -> 
-		let (value, mem, e) = eval expr env mem in
-		if e = None then match value with 
-			| Int exn -> (Unit, mem, Some exn)
-			| _     -> failwith "Raise : non-int value"
-		else (Unit, mem, e) 
+		begin
+		  match k' with
+		  | [] -> failwith "Raise : Nothing to catch exception"
+		  | k_exn :: k' -> eval expr env k_exn k'
+    end
   | Try (expr1, var_except, expr2) -> 
 	(* Syntaxe: try expr1 with E var_except -> expr2 *)
-		let (value, mem, e) = eval expr1 env mem in
-		if e = None then (value, mem, None)
-		else match e with
-			| Some e_value -> eval expr2 (env_aff var_except (Int e_value) env) mem
-			| _ -> failwith "Try : impossible case"
+    eval expr1 env k ((fun exn -> eval expr2 (env_aff var_except exn env) k k') :: k')
 
 
 (* Pour les opérations ninaire : '+', '-' (...) '=', '<'
@@ -170,84 +92,60 @@ il y quelques subtilités sur les ordres, car '+' est
 en réalité une fonction donc faire a + b c'est faire
 ((+) a) b). *)
 
-and bin_eval op expr1 expr2 env mem0 =
-(* bin_eval :
-operator_f -> expr_f -> expr_f -> env_f -> mem_f-> val_f * mem_f
+and aeval op val1 val2 =
+(* FIXME *)
+(* aeval :
+operator_f -> val_f -> val_f -> val_f
 Sert à faire des opérations arithmétiques *)
-  let (val2, mem1, e) = eval expr2 env mem0 in
-	if e = None then 
-		let (val1, mem2, e) = eval expr1 env mem1 in
-		if e = None then
-			match (val1, val2) with
-			| (Int a, Int b) ->
-				begin
-					match op with
-					| Plus  -> (Int(a + b), mem2, None)
-					| Minus -> (Int(a - b), mem2, None)
-					| Times -> (Int(a * b), mem2, None)
-					| Div   -> (Int(a / b), mem2, None)
-					| Mod   -> (Int(a mod b), mem2, None)
-				end
-			| _, _ -> failwith "ERROR : bin_eval : non-Int values "
-		else (Unit, mem2, e)
-	else (Unit, mem1, e)
-
-and bool_eval bexpr env mem = match bexpr with
-(* bool_eval : bexpr_f -> env_f -> mem_f -> bool
-Évalue l'expression booléenne en entrée sur l'environnement donné *)
-  | True -> (true, mem, None)
-  | False -> (false, mem, None)
-  | Cmp (expr1, cmp, expr2)     -> cmp_eval cmp expr1 expr2 env mem
-  | Bin_op (bexpr1, op, bexpr2) -> bool_op_eval op bexpr1 bexpr2 env mem
-  | Not bexpr                   ->
-    let (val0, mem', e) = bool_eval bexpr env mem in
-		if e = None then (not val0, mem', None)
-		else (false, mem', e)	
-
-and cmp_eval cmp expr1 expr2 env mem0 =
-(* cmp_eval : cmp_op_f -> expr_f -> expr_f -> env_f -> mem_f -> bool_eval
-Sert à comparer deux expressions *)
-  let (val2, mem1, e) = eval expr2 env mem0 in
-	if e = None then 
-		let (val1, mem2, e) = eval expr1 env mem1 in
-		if e = None then
-			match (val1, val2) with
-			| (Int a, Int b) ->
-				begin
-				  match cmp with
-				  | Eq  -> (a = b,  mem2, None)
-				  | Neq -> (a <> b, mem2, None)
-				  | Leq -> (a <= b, mem2, None)
-				  | Lt  -> (a < b,  mem2, None)
-				  | Geq -> (a >= b, mem2, None)
-				  | Gt  -> (a > b,  mem2, None)
-				end
-			| _,_ -> failwith "ERROR : cmp_eval : functional values"
-		else (false, mem2, e)
-	else (false, mem1, e)
-
-and bool_op_eval op bexpr1 bexpr2 env mem0 = match op with
-(* bool_op_eval : bool_op_f -> bexpr_f -> bexpr_f -> env_f -> mem_f -> bool_op_f
-Sert à faire des opérations booléennes *)
-  | Or  ->
+  match val1, val2 with
+  | Int a, Int b -> 
     begin
-      let (val1, mem1, e) = bool_eval bexpr1 env mem0 in
-			if e = None then 
-		    if val1 = true then (true, mem1, None)
-		    else
-		      let (val2, mem2, e) = bool_eval bexpr2 env mem1 in
-					if e = None then (val2, mem2, None)
-					else (false, mem2, e)
-			else (false, mem1, e)
+      match op with 
+      | Plus  -> Int(a + b)
+      | Minus -> Int(a - b)
+      | Times -> Int(a * b)
+      | Div   -> Int(a / b)
+      | Mod   -> Int(a mod b)
     end
-  | And ->
+  | _, _ -> failwith "aeval : non-Int values"
+
+and beval bexpr env k k' = match bexpr with
+(* beval : 
+
+bexpr_f -> env_f -> (bool -> val_f) -> ((val_f -> val_f) * env_f) list -> val_f
+
+Évalue l'expression booléenne en entrée sur l'environnement donné
+La continuation normale considérée est différentes des autres :
+de type "bool" -> val_f au lieu de val_f -> val_f *)
+  | True -> k true
+  | False -> k false
+  | Cmp (expr1, cmp, expr2)     -> 
+    eval expr2 env (fun val2 -> eval expr1 env 
+                               (fun val1 -> k (cmp_eval cmp val1 val2)) k') k'
+  | Bin_op (bexpr1, op, bexpr2) ->
+    (* Je n'encapsule pas cette section à cause de l'évaluation fainéante *)
+    begin match op with
+    | Or  -> beval bexpr1 env (fun b1 -> if b1 then k true
+                                         else beval bexpr2 env 
+                                             (fun b2 -> k b2) k' ) k'
+    | And -> beval bexpr1 env (fun b1 -> if not b1 then k false 
+                                         else beval bexpr2 env 
+                                             (fun b2 -> k b2) k' ) k'
+    end
+  | Not bexpr                   -> beval bexpr env (fun b -> k (not b)) k'
+
+and cmp_eval cmp val1 val2 =
+(* cmp_eval : cmp_op_f -> val_f -> val_f -> bool
+Sert à comparer deux valeurs (à priori entières) *)
+	match val1, val2 with
+  | Int a, Int b -> 
     begin
-      let (val1, mem1, e) = bool_eval bexpr1 env mem0 in
-			if e = None then 
-		    if val1 = false then (false, mem1, None)
-		    else
-		      let (val2, mem2, e) = bool_eval bexpr2 env mem1 in
-		      if e = None then (val2, mem2, None)
-					else (false, mem2, e)
-			else (false, mem1, e)
+      match cmp with
+      | Eq  -> a =  b
+      | Neq -> a <> b
+      | Leq -> a <= b
+      | Lt  -> a <  b
+      | Geq -> a >= b
+      | Gt  -> a >  b
     end
+  | _, _ -> failwith "cmp_eval : non-int values"
