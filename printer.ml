@@ -31,11 +31,11 @@ let bool_op2str = function
   | Or -> "Or"
 
 let rec expr2str = function
-  | Bin (expr1, op, expr2) -> "Bin("^(expr2str expr1)^","^(op2str op) ^ (expr2str expr2) ^ ")"
-  | Var x     -> "Var "^x
-  | Bang expr -> "Bang(" ^ (expr2str expr)^")"
-  | Cst c     -> "Cst "^string_of_int c
-  | Unit      -> "()"
+  | Bin (expr1, op, expr2) -> "Bin(" ^ (expr2str expr1) ^ ", " ^ (op2str op) ^ ", " ^ (expr2str expr2) ^ ")"
+  | Var x     -> "Var " ^ x
+  | Bang expr -> "Bang(" ^ (expr2str expr) ^ ")"
+  | Cst c     -> "Cst " ^ string_of_int c
+  | Unit      -> "Unit"
 
   | PrInt expr            -> "prInt(" ^ (expr2str expr) ^ ")"
   | Let (x, expr1, expr2) -> "Let(" ^ (pattern2str x) ^ ", "

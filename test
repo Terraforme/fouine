@@ -1,4 +1,3 @@
-fun s -> let (v2, s2) = e2 s in
-	let (v1, s1) = e1 s2 in
-	(v1+v2,s1)
+fun s -> let (b0, s0) = b_____ s in
+	if (b0=0) then e1____ s0 else e2____ s0
 ;;
