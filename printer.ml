@@ -17,6 +17,15 @@ let op2str = function
   | Times -> "Times"
   | Div   -> "Div"
   | Mod   -> "Mod"
+  | Eq -> "Eq"
+  | Neq -> "Neq"
+  | Leq -> "Leq"
+  | Lt -> "Lt"
+  | Geq -> "Geq"
+  | Gt -> "Gt"
+  | And -> "And"
+  | Or -> "Or"
+
 
 let cmp_op2str = function
   | Eq -> "Eq"
@@ -31,10 +40,12 @@ let bool_op2str = function
   | Or -> "Or"
 
 let rec expr2str = function
-  | Bin (expr1, op, expr2) -> "Bin(" ^ (expr2str expr1) ^ ", " ^ (op2str op) ^ ", " ^ (expr2str expr2) ^ ")"
-  | Var x     -> "Var " ^ x
-  | Bang expr -> "Bang(" ^ (expr2str expr) ^ ")"
-  | Cst c     -> "Cst " ^ string_of_int c
+  | Neg expr               -> "Neg(" ^ (expr2str expr) ^ ")"
+  | Bin (expr1, op, expr2) -> "Bin("^(expr2str expr1)^","^(op2str op) ^ "," ^ (expr2str expr2) ^ ")"
+  | Var x     -> "Var "^x
+  | Bang expr -> "Bang(" ^ (expr2str expr)^")"
+  | Cst c     -> "Cst "^string_of_int c
+  | Bool b    -> "Bool " ^ string_of_bool b
   | Unit      -> "Unit"
 
   | PrInt expr            -> "prInt(" ^ (expr2str expr) ^ ")"
@@ -46,7 +57,7 @@ let rec expr2str = function
 	^ (pmatch2str pmatch) ^ ")"
 
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
-  | IfElse (bexpr, expr1, expr2) -> "IfElse(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
+  | IfElse (bexpr, expr1, expr2) -> "IfElse(" ^ expr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
 
   | Fun (var, expr) -> "Fun(" ^ (pattern2str var) ^ ", " ^ (expr2str expr) ^ ")"
   | App (expr1, expr2) -> "App(" ^ (expr2str expr1) ^ "," ^ (expr2str expr2) ^ ")"
@@ -99,6 +110,14 @@ let pretty_op2str = function
   | Times -> print_string " * "
   | Div   -> print_string " / "
   | Mod   -> print_string " % "
+  | Eq -> print_string " = "
+  | Neq -> print_string " <> "
+  | Leq -> print_string " <= "
+  | Lt -> print_string " < "
+  | Geq -> print_string " >= "
+  | Gt -> print_string " > "
+  | Or -> print_string " || "
+  | And -> print_string " && "
 
 let pretty_cmp = function
   | Eq -> print_string " = "
@@ -138,6 +157,12 @@ let pretty_print_expr expr =
   in
 
   let rec pretty_aux indent = function
+    | Neg expr ->
+      begin
+        print_string (cons_color ^ "not " ^ def_color ^ "(" );
+        pretty_aux (indent + 1) expr;
+        print_string ")"
+      end
     | Bin (expr1, op, expr2) ->
       begin
         print_string "(";
@@ -149,6 +174,7 @@ let pretty_print_expr expr =
     | Var x -> print_string (var_color ^ x ^ def_color)
     | Cst c -> print_string (cst_color ^ (string_of_int c) ^ def_color)
     | Unit -> print_string "()"
+    | Bool b -> print_string (string_of_bool b)
     | Bang expr ->
       begin
         print_string "!(";
@@ -199,7 +225,7 @@ let pretty_print_expr expr =
     | IfElse (bexpr, expr1, expr2) ->
       begin
         print_string (cons_color ^ "if " ^ def_color);
-        bpretty_aux indent bexpr;
+        pretty_aux indent bexpr;
         print_newline ();
         print_tab indent;
         print_string (cons_color ^ "then\n" ^ def_color);
@@ -341,6 +367,7 @@ val f : tree -> unit = <fun>
 *)
 
 	| Unit 	   -> print_string "()"
+	| Bool b   -> print_string (string_of_bool b)
 	| Int x 	 -> print_int x
 	| Ref addr -> print_string ("ref " ^ (string_of_int addr))
 	| Cons (c, value) ->

@@ -23,10 +23,29 @@ La mémoire est globale et d'utilisation transparente.
 Pour les continuations : k correspond à la continuation normale et
                          k' à une pile de couple (continuations * environnement)
                             correspondant aux scénarios exceptionnels *)
-
+  | Neg expr               -> 
+        eval expr env (function   Bool b -> k (Bool (not b)) 
+                                | _ -> failwith "eval : non-Bool value") k'
   | Bin (expr1, op, expr2) ->
-         eval expr2 env (fun val2 ->
-                         eval expr1 env (fun val1 -> k (aeval op val1 val2)) k') k'
+    begin match op with
+    | Or -> eval expr1 env (function
+                            | Bool b1 -> if b1 then Bool true else 
+                                         eval expr2 env (function
+                                                         | Bool b2 as val2 -> val2
+                                                         | _ -> failwith "eval : non-Bool value") k'
+                            | _ -> failwith "eval : non-Bool value") 
+                            k'
+    | And ->  eval expr1 env (fun val1 -> match val1 with 
+                            | Bool b1 -> if not b1 then Bool false else 
+                                         eval expr2 env (function
+                                                         | Bool b2 as val2 -> val2
+                                                         | _ -> failwith "eval : non-Bool value") k'
+                            | _ -> failwith "eval : non-Bool value") 
+                            k'
+    | _ -> eval expr2 env (fun val2 ->
+                           eval expr1 env (fun val1 -> k (aeval op val1 val2)) k') k'
+    end
+  | Bool b                 -> k (Bool b)
   | Var x                  -> k (env_read x env)
   | Bang expr              ->
          eval expr env (function   Ref  addr -> k (read_mem addr)
@@ -55,7 +74,8 @@ Pour les continuations : k correspond à la continuation normale et
   C'est une relique du passé. *)
     failwith "TODO"
   | IfElse (bexpr, expr1, expr2) ->
-    beval bexpr env (fun b -> eval (if b then expr1 else expr2) env k k') k'
+    eval bexpr env (function Bool b -> eval (if b then expr1 else expr2) env k k'
+                             | _ -> failwith "eval : non-Boolean value in a test") k'
   | Fun (x, expr0) -> k (Fun_val (x, expr0, env))
   | App (expr1, expr2) ->
   (* On évalue bien d'abord l'argument, puis la fonction *)
@@ -99,15 +119,47 @@ operator_f -> val_f -> val_f -> val_f
 Sert à faire des opérations arithmétiques *)
   match val1, val2 with
   | Int a, Int b ->
-    begin
-      match op with
+    begin match op with
       | Plus  -> Int(a + b)
       | Minus -> Int(a - b)
       | Times -> Int(a * b)
       | Div   -> Int(a / b)
       | Mod   -> Int(a mod b)
+      | Eq    -> Bool(a =  b)
+      | Neq   -> Bool(a <> b)
+      | Leq   -> Bool(a <= b)
+      | Lt    -> Bool(a <  b)
+      | Geq   -> Bool(a >= b)
+      | Gt    -> Bool(a >  b)
+      | _     -> failwith "aeval : non-Int operator"
     end
-  | _, _ -> failwith "aeval : non-Int values"
+  | Bool b1, Bool b2 -> 
+    begin match op with
+      | Or    -> Bool(b1 || b2)
+      | And   -> Bool(b1 && b2)
+      | _     -> failwith "aeval : non-Bool operator"
+    end
+  | Unit, Unit -> 
+    begin match op with
+      | Eq  -> Bool true
+      | Neq -> Bool false
+      | Lt  -> Bool false
+      | Leq -> Bool true
+      | Gt  -> Bool false
+      | Geq -> Bool true
+      | _   -> failwith "aeval : non-Unit operator"
+    end
+   | _, _ ->
+    begin match op with
+      | Eq  -> Bool false
+      | Neq -> Bool true
+      | Lt  -> Bool false
+      | Leq -> Bool false
+      | Gt  -> Bool false
+      | Geq -> Bool false
+      | _   -> failwith "aeval : operation between different types"
+    end
+   
 
 and beval bexpr env k k' = match bexpr with
 (* beval :
