@@ -148,4 +148,6 @@ Sert à comparer deux valeurs (à priori entières) *)
       | Geq -> a >= b
       | Gt  -> a >  b
     end
+  | Unit, Unit -> true
+  | Unit,_ | _, Unit -> false
   | _, _ -> failwith "cmp_eval : non-int values"

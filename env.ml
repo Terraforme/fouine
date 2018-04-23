@@ -37,8 +37,8 @@ let rec pat_env_aff pattern value env =
   (*| (Var_Pat x, Int _) -> env_aff x value env
   | (Var_Pat x, Fun_var (_,_,_)) -> env_aff x value env
   | (Var_Pat x, Ref _) -> env_aff x value env*)
-  | (Pair_Pat (x, pattern), Pair_val(value0, value_next))
-    -> pat_env_aff pattern value_next (env_aff x value0 env)
+  | (Pair_Pat (pat1, pat2), Pair_val(val1, val2))
+    -> pat_env_aff pat2 val2 (pat_env_aff pat1 val1 env)
   | (_,_) -> failwith "ERROR : Pattern Matching failed"
 
 let rec env_unaff x = function
