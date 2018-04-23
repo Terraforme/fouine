@@ -88,8 +88,8 @@ Le code qu'il donne peut être normalement utilisé
 en code OCamL *)
 
 let cons_color = "\027[33;1m"
-let var_color  = "\027[36m"
-let cst_color  = "\027[31m"
+let var_color  = "\027[36;2m"
+let cst_color  = "\027[31;2m"
 let def_color  = "\027[0;m"
 
 
@@ -165,9 +165,9 @@ let pretty_print_expr expr =
       end
     | Let (x, expr1, expr2) ->
       begin
-        print_string (cons_color ^ "let " ^ def_color);
+        print_string (cons_color ^ "let " ^ var_color);
         pretty_pattern x;
-        print_string " = ";
+        print_string (def_color ^ " = ");
         pretty_aux (indent+1) expr1;
         (* print_newline ();
         print_tab indent; *)
@@ -177,43 +177,43 @@ let pretty_print_expr expr =
       end
     | LetRec (f, expr1, expr2) ->
       begin
-        print_string ("let rec " ^ f ^ " = ");
+        print_string (cons_color ^ "let rec " ^ var_color ^ f ^ def_color ^ " = ");
         pretty_aux (indent+1) expr1;
         (* print_newline ();
         print_tab indent; *)
-        print_string " in\n";
+        print_string (cons_color ^ " in\n" ^ def_color);
         print_tab indent;
         pretty_aux indent expr2
       end
 		| Match (expr, patmatch) -> failwith "TODO - match"
     | If (bexpr, expr) ->
       begin
-        print_string "if ";
+        print_string (cons_color ^ "if " ^ def_color);
         bpretty_aux indent bexpr;
         print_newline ();
         print_tab indent;
-        print_string "then\n";
+        print_string (cons_color ^ "then\n" ^ def_color);
         print_tab (indent + 1);
         pretty_aux (indent + 1) expr
       end
     | IfElse (bexpr, expr1, expr2) ->
       begin
-        print_string "if ";
+        print_string (cons_color ^ "if " ^ def_color);
         bpretty_aux indent bexpr;
         print_newline ();
         print_tab indent;
-        print_string "then\n";
+        print_string (cons_color ^ "then\n" ^ def_color);
         print_tab (indent + 1);
         pretty_aux (indent + 1) expr1;
         print_newline ();
         print_tab indent;
-        print_string "else\n";
+        print_string (cons_color ^ "else\n" ^ def_color);
         print_tab (indent + 1);
         pretty_aux (indent + 1) expr2;
       end
     | Fun (x, expr) ->
       begin
-        print_string "fun ";
+        print_string (cons_color ^ "fun " ^ def_color);
         pretty_pattern x;
         print_string " -> ";
         pretty_aux (indent+1) expr;
@@ -236,7 +236,7 @@ let pretty_print_expr expr =
       end
     | Alloc expr ->
       begin
-        print_string "ref (";
+        print_string (cons_color ^ "ref (" ^ def_color);
         pretty_aux indent expr;
         print_string ")"
       end
@@ -250,17 +250,17 @@ let pretty_print_expr expr =
       end
     | Try (expr1, x, expr2) ->
       begin
-        print_string "try\n";
+        print_string (cons_color ^ "try\n" ^ def_color);
         print_tab (indent + 1);
         pretty_aux (indent + 1) expr1;
         print_string "\n";
         print_tab indent;
-        print_string ("with E " ^ x ^ " -> ");
+        print_string (cons_color ^ "with" ^ def_color ^ " E " ^ x ^ " -> ");
         pretty_aux (indent + 1) expr2;
       end
     | Raise a ->
       begin
-        print_string "raise (E ";
+        print_string (cons_color ^ "raise" ^ def_color ^ "(E ");
 				pretty_aux (indent + 1) a;
 				print_string ")"
       end
