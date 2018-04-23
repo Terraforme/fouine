@@ -110,6 +110,7 @@ expression:
 
   /* exceptions */
   | TRY expression WITH E VAR FLECHE expression { Try($2, $5, $7) } %prec TRY
+  | TRY expression WITH E ANON FLECHE expression { Try($2, "_", $7) } %prec TRY
   | RAISE LPAREN E expression RPAREN { Raise $4 } %prec RAISE/*les parenthèses imitent de manière artificielle le fait que raise ait une très forte priorité en Ocmal.
   Par ex:
 exception E of int;;

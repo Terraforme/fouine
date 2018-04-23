@@ -87,6 +87,11 @@ let print_expr expr = print_string (expr2str expr) ; print_newline ()
 Le code qu'il donne peut être normalement utilisé
 en code OCamL *)
 
+let cons_color = "\027[33;1m"
+let var_color  = "\027[36m"
+let cst_color  = "\027[31m"
+let def_color  = "\027[0;m"
+
 
 let pretty_op2str = function
   | Plus  -> print_string " + "
@@ -139,8 +144,8 @@ let pretty_print_expr expr =
         pretty_aux indent expr2;
         print_string ")"
       end
-    | Var x -> print_string x
-    | Cst c -> print_int c
+    | Var x -> print_string (var_color ^ x ^ def_color)
+    | Cst c -> print_string (cst_color ^ (string_of_int c) ^ def_color)
     | Unit -> print_string "()"
     | Bang expr ->
       begin
@@ -158,13 +163,13 @@ let pretty_print_expr expr =
       end
     | Let (x, expr1, expr2) ->
       begin
-        print_string ("let ");
+        print_string (cons_color ^ "let " ^ def_color);
         pretty_pattern x;
         print_string " = ";
         pretty_aux (indent+1) expr1;
         (* print_newline ();
         print_tab indent; *)
-        print_string " in\n";
+        print_string (cons_color ^ " in\n" ^ def_color);
         print_tab indent;
         pretty_aux indent expr2
       end

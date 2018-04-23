@@ -78,7 +78,7 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
   | ['0'-'9']+ as s { INT (int_of_string s) }
 
 	(* VARIABLES : On n'autorise pas aux variables de commencer par une majuscule *)
-  | ['a'-'z'](['A'-'Z']|['a'-'z']|'_'|['0'-'9'])* as s { VAR s }
+  | (['a'-'z']|'_')(['A'-'Z']|['a'-'z']|'_'|['0'-'9'])* as s { VAR s }
   (*| (['A'-'Z']|['a'-'z'])*+['0'-'9']* as s { VAR s }*)
 
 	(* CONSTRUCTEURS : comme les variables sauf qu'on a une majuscule au début *)
