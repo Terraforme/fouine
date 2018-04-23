@@ -46,7 +46,7 @@ let rec expr2str = function
 	^ (pmatch2str pmatch) ^ ")"
 
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
-  | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
+  | IfElse (bexpr, expr1, expr2) -> "IfElse(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
 
   | Fun (var, expr) -> "Fun(" ^ (pattern2str var) ^ ", " ^ (expr2str expr) ^ ")"
   | App (expr1, expr2) -> "App(" ^ (expr2str expr1) ^ "," ^ (expr2str expr2) ^ ")"
@@ -69,7 +69,7 @@ and bexpr2str = function
 
 and pattern2str = function
   | Var_Pat x -> "Var_Pat " ^ x
-  | Pair_Pat (pat1, pat2) -> "Pair(" ^ (pattern2str pat1) ^ "," ^ (pattern2str pat2) ^ ")"
+  | Pair_Pat (pat1, pat2) -> "Pair_Pat(" ^ (pattern2str pat1) ^ ", " ^ (pattern2str pat2) ^ ")"
 	| Cons_Pat (c, pattern) -> "Cons_Pat(" ^ c  ^ "," ^ (pattern2str pattern) ^ ")"
 
 and pmatch2str  = function
