@@ -1,28 +1,28 @@
 open Types
 
-(* Fonctionnement de la mémoire :
+(* La mémoire est un tableau qui pourra être modifié.
+On retient une variable globale available qui pointe
+sur la prochaine case libre dans la mémoire *)
 
-C'est un dictionnaire int -> val_f
-On donne un entier addr, et la mémoire
-renvoie la valeur associée à cet entier *)
+let mem = Array.make 1000000 Unit
+let available = ref 0;;
 
-let available = ref Int32.zero;;
-
-module Mem_f = Map.Make(Int32)
-
-let init_mem () =
-  Mem_f.empty
-
-let alloc_mem value mem =
-  let new_mem = Mem_f.add !available value mem in
-  available := Int32.succ !available;
-  (new_mem, Ref(Int32.pred !available))
+let init_mem () = available := 0
 ;;
 
-let set_mem addr value mem = 
-  Mem_f.add (*Int32.of_int*) addr value mem
+let alloc_mem value =
+  if !available = 1000000 then failwith "Out of Memory"
+	else begin
+         incr available;
+         mem.(!available - 1) <- value;
+         !available - 1
+       end
 ;;
 
-let read_mem addr mem =
-  Mem_f.find (*Int32.of_int*) addr mem
+let set_mem addr value = 
+	mem.(addr) <- value
+;;
+
+let read_mem addr =
+  mem.(addr)
 ;;

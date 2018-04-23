@@ -1,6 +1,19 @@
 # fouine
 
 
+## Important : À propos du rendu intermédiaire
+
+	On a réparé notre rendu 1, et le parser est plus succint. On a grandement amélioré notre système de test : `testing.sh`. Les exceptions ont été implémentées mais ont rendu le code lourd voire illisible.
+
+	Mainteant on renvoie en plus du nouvel état de la mémoire et de la valeur, une valeur d'exception, un `int option` en pratique. Si celui-ci vaut `None`, c'est qu'il n'y a pas d'exception à rattraper et qu'on peut poursuivre le calcul normalement. Ainsi, entre chaque évaluation, il faut vérifier si on n'a pas une exception sur les bras, auquel cas il faut refiler le bébé jusqu'à ce qu'un `try` le rattrape.
+
+	On a imaginé les tests les plus vicieux possibles, mais notre "fouine" semble résister encore et toujours. On compte modifier ça et mettre des continuations, pour rendre le code plus lisible. Par ailleurs, il y a un début de pattern-matching.
+
+
+## README version Documentation
+
+	Je tiens à préciser que la documentation latex n'est pas à jour (parce qu'il faut avouer qu'on ne va pas refaire le latex à chaque fois qu'on modifie une ligne de code). Elle sera toute belle pour le rendu final. Lots of Love. Bisous.
+
 
 	On s’intéresse à fouine , un sous-ensemble de Caml qui est décrit en <http://www.ens-lyon.fr/DI/?p=5451> . Le but est d’écrire un interprète, mais attention, pas au sens d’un programme interactif qui propose, comme OCaml, de saisir des expressions au clavier et de les  évaluer dans la foulée. L’interprète prend en entrée un fichier Caml, exécute le code qui s’y trouve, et affiche ce qu’on lui demande d’afficher.
 
@@ -11,7 +24,6 @@
 	L'architecture globale (i.e ce qui est types) a été discuté et débattu comme il se doit en binôme.
 	Ensuite, Victor Boone s'est concentré sur l'interpréteur.
 		     Gabrielle Pauvert s'est concentrée sur le parseur.
-
 	Les fichiers de tests et la doc ont été fait un peu à deux. Le LateX est de Victor, car il aime bien taper de la doc.
 
 --

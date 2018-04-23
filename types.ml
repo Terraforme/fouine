@@ -42,7 +42,8 @@ type expr_f =
   | Bin    of expr_f * operator_f * expr_f (* opérations binaires *)
   | PrInt  of expr_f
   | Let    of pattern_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
-  | LetRec of var_f * expr_f * expr_f      (* let rec *)
+  | LetRec of var_f   * expr_f * expr_f      (* let rec *)
+  | Match  of expr_f  * pmatch_f					 (* match [expr_f] with [pattern_matching] *) 
   | If     of bexpr_f * expr_f             (* FIXME : obsolète *)
   | IfElse of bexpr_f * expr_f * expr_f
   | Fun    of pattern_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
@@ -62,7 +63,12 @@ and bexpr_f =
 
 and pattern_f =
   | Var_Pat  of var_f
-  | Pair_Pat of var_f * pattern_f
+  | Pair_Pat of var_f  * pattern_f
+  | Cons_Pat of string * pattern_f 	(* 'Cons' comme 'Constructor'
+                                    autrement dit tout ce qui est de la forme 
+                                    Something (pattern) *)
+
+and pmatch_f  = (pattern_f * expr_f) list
 ;;
 
 
@@ -85,8 +91,8 @@ Sachant que Fouine n'est pas typé, on ne distingue pas types et valeurs : *)
 
 and val_f = Unit
 					| Int         of int
-					| Ref					of int32
+					| Ref					of int
 					| Cons				of string * val_f
-          | Pair_val    of val_f * val_f 
-          | Fun_val     of pattern_f * expr_f * env_f
+					| Pair_val    of val_f * val_f 
+					| Fun_val     of pattern_f * expr_f * env_f
 ;;

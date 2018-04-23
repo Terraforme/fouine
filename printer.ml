@@ -33,24 +33,33 @@ let bool_op2str = function
 let rec expr2str = function
   | Bin (expr1, op, expr2) -> (op2str op) ^
   "(" ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
-  | Var x -> x
+  | Var x     -> x
   | Bang expr -> "!" ^ (expr2str expr)
-  | Cst c -> string_of_int c
-  | PrInt expr -> "prInt(" ^ (expr2str expr) ^ ")"
+  | Cst c     -> string_of_int c
+  | Unit      -> "()"
+
+  | PrInt expr            -> "prInt(" ^ (expr2str expr) ^ ")"
   | Let (x, expr1, expr2) -> "Let(" ^ (pattern2str x) ^ ", "
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
   | LetRec (f, expr1, expr2) -> "LetRec(" ^ f ^ ", "
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
+	| Match (expr, pmatch)     -> "Match(" ^ (expr2str expr) ^ ", "
+	^ (pmatch2str pmatch) ^ ")" 
+
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
   | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
+
   | Fun (var, expr) -> "Fun " ^ (pattern2str var) ^ " -> (" ^ (expr2str expr) ^ ")"
   | App (expr1, expr2) -> (expr2str expr1) ^ "(" ^ (expr2str expr2) ^ ")"
+
   | Aff (expr1, expr2) -> "(" ^ (expr2str expr1)^ ") := " ^ "(" ^ (expr2str expr2) ^ ")"
   | Alloc expr -> "Alloc(" ^ (expr2str expr) ^ ")"
+
   | Pair (expr1, expr2) -> "Pair("^(expr2str expr1)^" , "^(expr2str expr2)^")"
-  | Unit -> "()"
+
   | Try (expr1, var, expr2) -> "Try(" ^ (expr2str expr1) ^ ", with E " ^ var ^ " -> " ^ (expr2str expr2) ^ ")"
   | Raise a -> "Raise (E " ^ (expr2str a) ^ ")"
+
 
 and bexpr2str = function
   | True -> "true"
@@ -62,6 +71,13 @@ and bexpr2str = function
 and pattern2str = function
   | Var_Pat x -> x
   | Pair_Pat (x, pattern) -> "Pair(" ^ x ^ "," ^ (pattern2str pattern) ^ ")"
+	| Cons_Pat (c, pattern) -> c ^ "(" ^ (pattern2str pattern) ^ ")"
+
+and pmatch2str  = function
+	| [] -> ""
+	| (pat, expr) :: []     -> (pattern2str pat) ^ " -> " ^ (expr2str expr)
+	| (pat, expr) :: pmatch -> (pattern2str pat) ^ " -> " ^ (expr2str expr) 
+                             ^ " | " ^ (pmatch2str pmatch)
 
 let print_expr expr = print_string (expr2str expr) ; print_newline ()
 
@@ -96,7 +112,13 @@ let rec pretty_pattern = function
   | Var_Pat x -> print_string x
   | Pair_Pat (x, pattern) ->
     begin
-      print_string ("(" ^ x);
+      print_string ("(" ^ x ^ ", ");
+      pretty_pattern pattern;
+      print_string ")"
+    end
+	| Cons_Pat (c, pattern) ->
+    begin
+      print_string (c ^ "(");
       pretty_pattern pattern;
       print_string ")"
     end
@@ -156,6 +178,7 @@ let pretty_print_expr expr =
         print_tab indent;
         pretty_aux indent expr2
       end
+		| Match (expr, patmatch) -> failwith "TODO - match"
     | If (bexpr, expr) ->
       begin
         print_string "if ";
@@ -312,7 +335,7 @@ val f : tree -> unit = <fun>
 
 	| Unit 	   -> print_string "()"
 	| Int x 	 -> print_int x
-	| Ref addr -> print_string ("ref " ^ (Int32.to_string addr))
+	| Ref addr -> print_string ("ref " ^ (string_of_int addr))
 	| Cons (c, value) -> 
 		begin
 			print_string (c ^ "(");
