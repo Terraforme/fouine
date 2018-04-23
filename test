@@ -1,3 +1,0 @@
-fun s -> let (v,s0) = e0____ s in
-	(raise (E v), s0)
-;;

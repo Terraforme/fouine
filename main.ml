@@ -2,6 +2,7 @@ open Types
 open Eval
 open Printer
 open Mem
+open Transfo_ref
 
 (* Pour la commodité : *)
 
