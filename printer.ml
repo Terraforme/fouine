@@ -31,11 +31,10 @@ let bool_op2str = function
   | Or -> "Or"
 
 let rec expr2str = function
-  | Bin (expr1, op, expr2) -> (op2str op) ^
-  "(" ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
-  | Var x     -> x
-  | Bang expr -> "!" ^ (expr2str expr)
-  | Cst c     -> string_of_int c
+  | Bin (expr1, op, expr2) -> "Bin("^(expr2str expr1)^","^(op2str op) ^ (expr2str expr2) ^ ")"
+  | Var x     -> "Var "^x
+  | Bang expr -> "Bang(" ^ (expr2str expr)^")"
+  | Cst c     -> "Cst "^string_of_int c
   | Unit      -> "()"
 
   | PrInt expr            -> "prInt(" ^ (expr2str expr) ^ ")"
@@ -49,29 +48,29 @@ let rec expr2str = function
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
   | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
 
-  | Fun (var, expr) -> "Fun " ^ (pattern2str var) ^ " -> (" ^ (expr2str expr) ^ ")"
-  | App (expr1, expr2) -> (expr2str expr1) ^ "(" ^ (expr2str expr2) ^ ")"
+  | Fun (var, expr) -> "Fun(" ^ (pattern2str var) ^ ", " ^ (expr2str expr) ^ ")"
+  | App (expr1, expr2) -> "App(" ^ (expr2str expr1) ^ "," ^ (expr2str expr2) ^ ")"
 
-  | Aff (expr1, expr2) -> "(" ^ (expr2str expr1)^ ") := " ^ "(" ^ (expr2str expr2) ^ ")"
+  | Aff (expr1, expr2) -> "Aff(" ^ (expr2str expr1)^ "," ^ (expr2str expr2) ^ ")"
   | Alloc expr -> "Alloc(" ^ (expr2str expr) ^ ")"
 
   | Pair (expr1, expr2) -> "Pair("^(expr2str expr1)^" , "^(expr2str expr2)^")"
 
-  | Try (expr1, var, expr2) -> "Try(" ^ (expr2str expr1) ^ ", with E " ^ var ^ " -> " ^ (expr2str expr2) ^ ")"
-  | Raise a -> "Raise (E " ^ (expr2str a) ^ ")"
+  | Try (expr1, var, expr2) -> "Try(" ^ (expr2str expr1) ^ ", " ^ var ^ ", " ^ (expr2str expr2) ^ ")"
+  | Raise a -> "Raise( " ^ (expr2str a) ^ ")"
 
 
 and bexpr2str = function
-  | True -> "true"
-  | False -> "false"
-  | Cmp (expr1, op, expr2) -> cmp_op2str(op) ^ "(" ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
-  | Bin_op(bexpr1, op, bexpr2) -> bool_op2str(op) ^ "(" ^ bexpr2str(bexpr1) ^ ", " ^ bexpr2str(bexpr2) ^ ")"
+  | True -> "True"
+  | False -> "False"
+  | Cmp (expr1, op, expr2) -> "Cmp("^ expr2str(expr1) ^ ", "^ cmp_op2str(op) ^ ", " ^ expr2str(expr2) ^ ")"
+  | Bin_op(bexpr1, op, bexpr2) -> "Bin_op(" ^ bexpr2str(bexpr1)^ ", " ^ bool_op2str(op) ^ ", " ^ bexpr2str(bexpr2) ^ ")"
   | Not bexpr -> "Not(" ^ bexpr2str(bexpr) ^ ")"
 
 and pattern2str = function
-  | Var_Pat x -> x
+  | Var_Pat x -> "Var_Pat " ^ x
   | Pair_Pat (pat1, pat2) -> "Pair(" ^ (pattern2str pat1) ^ "," ^ (pattern2str pat2) ^ ")"
-	| Cons_Pat (c, pattern) -> c ^ "(" ^ (pattern2str pattern) ^ ")"
+	| Cons_Pat (c, pattern) -> "Cons_Pat(" ^ c  ^ "," ^ (pattern2str pattern) ^ ")"
 
 and pmatch2str  = function
 	| [] -> ""
@@ -87,8 +86,9 @@ let print_expr expr = print_string (expr2str expr) ; print_newline ()
 Le code qu'il donne peut être normalement utilisé
 en code OCamL *)
 
-let cons_color = "\027[33;1m"
-let var_color  = "\027[36;2m"
+(*let cons_color = "\027[33;1m"*)
+let cons_color = "\027[0;1m"
+let var_color  = "\027[0;2m"
 let cst_color  = "\027[31;2m"
 let def_color  = "\027[0;m"
 
