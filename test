@@ -1,1 +1,1 @@
-expr (fun x -> x) (fun xE -> raise (E xE))
+prInt(2);;

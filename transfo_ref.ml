@@ -65,11 +65,9 @@ let s3 = write s2 l1 v2 in
   let (l,s2) = alloc s1 v in
   (l,s2)*)
   | Try(expr1, v, expr2) -> Fun(Var_Pat "s" , Try(Let(Pair_Pat(Var_Pat "v1" , Var_Pat "s1" ), App(transforme_ref expr1,Var "s" ),
-  Pair(Var "v1"  , Var "s1" )), v, App(transforme_ref expr2,Var "s1" ))) (* FIXME *)
-(* ???alternative???
-Fun(Var_Pat s, Try(App(transforme_ref expr1,Var s), x, App(transforme_ref expr2,Var s)))
-*)
-(*fun s -> try [[e1]] s *)
+  Pair(Var "v1"  , Var "s1" )), v, App(transforme_ref expr2,Var "s" )))
+(* FIXME: on ne peut pas prendre s1 au lieu de s car on n'est pas sur de pouvoir le définir,
+mais du coup on ne se souviendra plus des changements fait avant de rencontrer le raise! *)
   | Raise expr0 -> Fun(Var_Pat "s" , Let(Pair_Pat(Var_Pat "v" ,Var_Pat "s0" ), App(transforme_ref expr0,Var "s" ), Pair(Raise( Var "v" ) , Var "s0" )))
 (*fun s -> let (v,s0) = e0____ s in
 	(raise (E v), s0)*)
