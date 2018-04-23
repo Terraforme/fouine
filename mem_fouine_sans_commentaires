@@ -1,0 +1,44 @@
+let mem_init () =
+  ()
+;;
+
+let rec find_last mem =
+  let ((a,b,c),mem2) = mem in
+  if mem2 = () then a
+  else find_last mem2
+;;
+
+let rec find_ith mem i =
+  try
+  if mem = () then raise (E 0)
+  else
+    let ((a,b,c),mem2) = mem in
+    if mem2 = () && a <> i  then raise (E 0)
+    else if a = i then
+      if c = 0 raise (E 1)
+      else b
+    else find_ith mem2 i
+  with E x -> prInt(x)
+;;
+
+
+
+let alloc mem =
+  if mem = () then (((0,(),0),()),0)
+  else
+    let a = find_last mem in
+    (((a+1,(),0),mem),a+1)
+;;
+
+
+let read mem addr =
+  let b = find_ith mem addr in
+  b
+;;
+
+let rec write mem addr value =
+  let ((a,b,c),mem2) = mem in
+  if a = addr then ((a,value,1),mem2)
+  else if mem2 = () then raise (E 0)
+  else ((a,b,c), (write mem2 addr value))
+;;

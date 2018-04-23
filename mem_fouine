@@ -1,0 +1,76 @@
+(* Ce module implémente la mémoire directement en fouine. *)
+
+(*
+alloc: unit -> loc
+read: loc -> valeur
+write: loc -> valeur -> unit
+*)
+
+
+(* On n'a pas le droit aux aspects impératifs, donc en particulier aux variables globales.
+Donc il faut bien que la mémoire soit passée en argument à chaque fois pour s'en souvenir, et qu'elle le renvoie.
+Nouveaux types des fonctions:
+
+alloc: mem -> mem*loc
+read: mem -> loc -> val_f
+write: mem -> loc -> mem
+*)
+
+let mem_init () =
+  () (* paire "vide" (de toute façon fouine ne vérifie pas les types).
+  La mémoire sera organisée en triplets:
+  Le premier élément est l'adresse,
+  le deuxième élément est la valeur stockée à cette adresse,
+  et le troisième élément sert à indiquer si la case est libre (0) ou occupée (1).
+  Le troisième élément est utile si on souhaite autoriser à allouer la valeur unit (ref () est autorisé en Ocaml).
+  Enfin, on concatène le reste de la mémoire (qui est vide donc c'est unit ici).
+  Pourquoi toutes ces complications? Parce que comme ça on pourra faire un pattern matching de triplets en s'arrêtant avant de tomber sur ().
+  Et on peut allouer plusieurs cases à la fois puis écrire dans ces cases grâce à la distinction (on ne sait jamais, ça pourrait être utile).*)
+;;
+
+let rec find_last mem = (* renvoie une adresse *)
+  let ((a,b,c),mem2) = mem in
+  if mem2 = () then a
+  else find_last mem2
+;;
+(* pas le droit au pattern matching mais ce que j'aurais aimé écrire c'est ça:
+let rec find_last = function
+  | ((a,b,c),mem2) when mem2 = () -> a
+  | ((a,b,c),mem2) -> find_last mem2
+;;*)
+
+let rec find_ith mem i = (* renvoie une valeur *)
+  try
+  if mem = () then raise (E 0) (* ce cas n'est pas sensé se produire, on ne lit pas dans une mémoire vide svp *)
+  else
+    let ((a,b,c),mem2) = mem in
+    if mem2 = () && a <> i  then raise (E 0) (* ce cas n'est pas sensé se produire, on ne lit que des cases allouées svp *)
+    else if a = i then
+      if c = 0 raise (E 1) (*la case a été allouée mais on n'a rien écrit dedans*)
+      else b
+    else find_ith mem2 i
+  with E x -> prInt(x) (* a défaut d'un message d'erreur plus explicite, pour l'instant impossible en fouine *)
+;;
+
+
+
+let alloc mem =
+  if mem = () then (((0,(),0),()),0) (*cas de la mémoire vide*)
+  else
+    let a = find_last mem in
+    (((a+1,(),0),mem),a+1)
+  (* ATTENTION ici on renvoie un couple nouvelle_memoire,addresse *)
+;;
+
+
+let read mem addr =
+  let b = find_ith mem addr in
+  b (* a-t-on besoin de renvoyer la mémoire inchangée ici? *)
+;;
+
+let rec write mem addr value =
+  let ((a,b,c),mem2) = mem in
+  if a = addr then ((a,value,1),mem2)
+  else if mem2 = () then raise (E 0) (* encore une fois, ce cas n'est pas sensé se produire, on n'écrit que dans les cases allouées svp *)
+  else ((a,b,c), (write mem2 addr value))
+;;

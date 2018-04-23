@@ -17,9 +17,9 @@ Prend en paramètres une expression et un environnement,
 et évalue l'expression sur cet environnement. La valeur renvoyée
 est de type val_f décrite dans `types.ml`. On renvoie aussi
 le nouvel état de la mémoire ainsi qu'une valeur d'exception.
-Cette valeur d'exception est assez artificielle : elle demande 
-juste à être renvoyée telle quelle jusqu'au prochain `try` pour 
-être rattrapée. 
+Cette valeur d'exception est assez artificielle : elle demande
+juste à être renvoyée telle quelle jusqu'au prochain `try` pour
+être rattrapée.
 
 On passe la mémoire en argument. Bien-sûr, après l'évaluation
 d'une expression, il faut la renvoyer en plus de la valeur *)
@@ -78,7 +78,7 @@ d'une expression, il faut la renvoyer en plus de la valeur *)
   C'est une relique du passé. *)
     begin
       let (value, mem', e) = bool_eval bexpr env mem in
-			if e = None then 
+			if e = None then
 				begin
 				  if value then
 				    eval expr env mem'
@@ -104,7 +104,7 @@ d'une expression, il faut la renvoyer en plus de la valeur *)
   (* On évalue bien d'abord l'argument, puis la fonction *)
     begin
       let (value, mem, e) = eval expr2 env mem in
-			if e = None then 
+			if e = None then
 				begin
 				  let (f, mem, e) = eval expr1 env mem in
 					if e = None then
@@ -122,7 +122,7 @@ d'une expression, il faut la renvoyer en plus de la valeur *)
       let (value0, mem, e) = eval expr2 env mem in
 			if e = None then
 		    let (value, mem, e) = eval expr1 env mem in
-				if e = None then 
+				if e = None then
 				  match value with
 				  | Ref addr ->
 				      let mem = set_mem addr value0 mem in
@@ -135,7 +135,7 @@ d'une expression, il faut la renvoyer en plus de la valeur *)
   (* L'allocation mémoire : le terme gauche a toutes les libertés *)
     begin
       let (value, mem, e) = eval expr env mem in
-			if e = None then 
+			if e = None then
 		    let mem, addr = alloc_mem value mem in
 		    addr, mem, None
 			else (Unit, mem, e)
@@ -149,13 +149,13 @@ d'une expression, il faut la renvoyer en plus de la valeur *)
 			else (Unit, mem, e)
 		else (Unit, mem, e)
   | Unit -> (Unit, mem, None)
-  | Raise expr -> 
+  | Raise expr ->
 		let (value, mem, e) = eval expr env mem in
-		if e = None then match value with 
+		if e = None then match value with
 			| Int exn -> (Unit, mem, Some exn)
 			| _     -> failwith "Raise : non-int value"
-		else (Unit, mem, e) 
-  | Try (expr1, var_except, expr2) -> 
+		else (Unit, mem, e)
+  | Try (expr1, var_except, expr2) ->
 	(* Syntaxe: try expr1 with E var_except -> expr2 *)
 		let (value, mem, e) = eval expr1 env mem in
 		if e = None then (value, mem, None)
@@ -174,7 +174,7 @@ and bin_eval op expr1 expr2 env mem0 =
 operator_f -> expr_f -> expr_f -> env_f -> mem_f-> val_f * mem_f
 Sert à faire des opérations arithmétiques *)
   let (val2, mem1, e) = eval expr2 env mem0 in
-	if e = None then 
+	if e = None then
 		let (val1, mem2, e) = eval expr1 env mem1 in
 		if e = None then
 			match (val1, val2) with
@@ -201,13 +201,13 @@ and bool_eval bexpr env mem = match bexpr with
   | Not bexpr                   ->
     let (val0, mem', e) = bool_eval bexpr env mem in
 		if e = None then (not val0, mem', None)
-		else (false, mem', e)	
+		else (false, mem', e)
 
 and cmp_eval cmp expr1 expr2 env mem0 =
 (* cmp_eval : cmp_op_f -> expr_f -> expr_f -> env_f -> mem_f -> bool_eval
 Sert à comparer deux expressions *)
   let (val2, mem1, e) = eval expr2 env mem0 in
-	if e = None then 
+	if e = None then
 		let (val1, mem2, e) = eval expr1 env mem1 in
 		if e = None then
 			match (val1, val2) with
@@ -221,6 +221,27 @@ Sert à comparer deux expressions *)
 				  | Geq -> (a >= b, mem2, None)
 				  | Gt  -> (a > b,  mem2, None)
 				end
+      | (Unit, Unit) ->
+        begin
+          match cmp with
+          | Eq  -> (true,  mem2, None)
+          | Neq -> (false, mem2, None)
+          | _ -> failwith "ERROR : cmp_eval : functional values"
+        end
+      | (Unit,_) | (_, Unit) ->
+        begin
+          match cmp with
+          | Eq  -> (false,  mem2, None)
+          | Neq -> (true, mem2, None)
+          | _ -> failwith "ERROR : cmp_eval : functional values"
+        end
+      (*| (_, Unit) -> (False, mem2, None)
+        begin
+          match cmp with
+          | Eq  -> (False,  mem2, None)
+          | Neq -> (True, mem2, None)
+          | _ -> failwith "ERROR : cmp_eval : functional values"
+        end*)
 			| _,_ -> failwith "ERROR : cmp_eval : functional values"
 		else (false, mem2, e)
 	else (false, mem1, e)
@@ -231,7 +252,7 @@ Sert à faire des opérations booléennes *)
   | Or  ->
     begin
       let (val1, mem1, e) = bool_eval bexpr1 env mem0 in
-			if e = None then 
+			if e = None then
 		    if val1 = true then (true, mem1, None)
 		    else
 		      let (val2, mem2, e) = bool_eval bexpr2 env mem1 in
@@ -242,7 +263,7 @@ Sert à faire des opérations booléennes *)
   | And ->
     begin
       let (val1, mem1, e) = bool_eval bexpr1 env mem0 in
-			if e = None then 
+			if e = None then
 		    if val1 = false then (false, mem1, None)
 		    else
 		      let (val2, mem2, e) = bool_eval bexpr2 env mem1 in
