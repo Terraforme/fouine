@@ -1,0 +1,2 @@
+let y = 3;;
+try let y = 5 in raise (E 0) with E _ -> prInt y;;
