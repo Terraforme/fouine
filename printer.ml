@@ -129,7 +129,7 @@ let rec pretty_pattern = function
 let pretty_print_expr expr =
 
   let print_tab n =
-    for i = 0 to n-1 do print_string "\t" done
+    for i = 0 to n-1 do print_string "  " done
   in
 
   let rec pretty_aux indent = function

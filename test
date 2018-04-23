@@ -1,4 +1,14 @@
-let rec f p =
-  let ((a,b),c) = p in
-  c
+let rec find_ith mem i =
+  try
+  if mem = () then raise (E 0)
+  else
+    let ((a,b,c),mem2) = mem in
+    if mem2 = () && a <> i  then raise (E 0)
+    else if a = i then
+      begin
+      if c = 0 then raise (E 1)
+      else b
+      end
+    else find_ith mem2 i
+  with E x -> prInt(x)
 ;;
