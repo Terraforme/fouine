@@ -1,0 +1,2 @@
+let f = fun x y -> x + y in
+prInt (f 4 5);;

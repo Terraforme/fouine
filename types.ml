@@ -29,23 +29,25 @@ Donc de la formule expr_f * opérateur * expr_f
   On définit les différents opérateurs ci-après
   Qed des expressions booléennes et de comparaisons *)
 
-type operator_f = Plus | Minus | Times | Div | Mod;;
+type operator_f = Plus | Minus | Times | Div | Mod | Eq   | Neq   | Leq   | Lt  | Geq | Gt | Or | And;;
 type cmp_op_f   = Eq   | Neq   | Leq   | Lt  | Geq | Gt;;
 type bool_op_f  = Or   | And;;
 
 type expr_f =
   | Cst    of int                          (* Feuille : constante *)
+  | Bool   of bool
   | Var    of var_f                        (* Feuille : variable *)
   | Bang   of expr_f                       (* Feuille : le déréférençage *)
   | Unit                                   (* Feuille : le type unit *)
   | Pair   of expr_f * expr_f              (* Un couple d'expressions *)
+  | Neg    of expr_f                       (* Négation de Booléens *)
   | Bin    of expr_f * operator_f * expr_f (* opérations binaires *)
   | PrInt  of expr_f
   | Let    of pattern_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
   | LetRec of var_f   * expr_f * expr_f      (* let rec *)
   | Match  of expr_f  * pmatch_f					 (* match [expr_f] with [pattern_matching] *)
   | If     of bexpr_f * expr_f             (* FIXME : obsolète *)
-  | IfElse of bexpr_f * expr_f * expr_f
+  | IfElse of expr_f * expr_f * expr_f
   | Fun    of pattern_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
   | App    of expr_f * expr_f              (* Ce sont les applications *)
   | Aff    of expr_f * expr_f               (* Affectation i.e le `:=`*)
@@ -90,6 +92,7 @@ type ::= | int | float | bool | char | unit | string .....
 Sachant que Fouine n'est pas typé, on ne distingue pas types et valeurs : *)
 
 and val_f = Unit
+          | Bool        of bool
 					| Int         of int
 					| Ref					of int
 					| Cons				of string * val_f

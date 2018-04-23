@@ -42,6 +42,8 @@
 %left AND
 %nonassoc NOT
 
+%nonassoc LE GE LOWER GREATER EQUAL NE
+
 %nonassoc PRINT
 %left APPLICATION /* un faux token pour lui dire que expr1 expr2 est une application ssi ça ne peut rien être d'autre */
 /*%nonassoc EOI*/
@@ -101,6 +103,8 @@ var_pattern:
 expression:
   | INT   { Cst $1 }
   | VAR { Var $1 }
+  | TRUE { Bool true }
+  | FALSE { Bool false }
 
   | LPAREN expression RPAREN { $2 }
   | LPAREN RPAREN { Unit }
@@ -126,6 +130,16 @@ raise (E 2);; -> valide
   | expression MINUS expression { Bin($1,Minus,$3) }
   | expression DIV expression { Bin($1,Div,$3) }
   | expression MOD expression { Bin($1,Mod,$3) }
+  | expression OR  expression { Bin($1,Or,$3) }
+  | expression AND  expression { Bin($1,And,$3) }
+  | expression EQUAL  expression { Bin($1,Eq,$3) }
+  | expression NE  expression { Bin($1,Neq,$3) }
+  | expression LOWER  expression { Bin($1,Lt,$3) }
+  | expression LE  expression { Bin($1,Leq,$3) }
+  | expression GREATER  expression { Bin($1,Gt,$3) }
+  | expression GE  expression { Bin($1,Geq,$3) }
+  | NOT expression             { Neg($2) }
+  
   | MINUS expression %prec UMINUS       { Bin(Cst 0, Minus, $2) } /*un peu spécial: c'est le seul opérateur "unaire" pour le parseur */
 
   /*let ... in ...*/
@@ -144,16 +158,21 @@ raise (E 2);; -> valide
   | LET VAR func IN expression { Let(Var_Pat $2,$3,$5) }
   | REC VAR func IN expression { LetRec($2,$3,$5) }
   | FUN VAR FLECHE expression { Fun(Var_Pat $2,$4) } %prec FUN
+  | FUN VAR func_vchain { Fun(Var_Pat $2, $3) } %prec FUN
 
   /*Application (cas possibles: VAR VAR, VAR INT, (expr) INT, (expr) VAR, VAR (expr), (expr) (expr))*/
   | applicator applicated { App($1,$2) } %prec APPLICATION
 
   /* if ... then ... else ...*/
-  | IF bool_expr THEN expression { If($2,$4) } /* FIXME : parser en format IfElse */
-  | IF bool_expr THEN expression ELSE expression { IfElse($2,$4,$6) }
+  | IF expression THEN expression { IfElse($2,$4, Cst 0) } /* FIXME : parser en format IfElse */
+  | IF expression THEN expression ELSE expression { IfElse($2,$4,$6) } 
 
   | PRINT expression { PrInt($2) }
 ;
+
+func_vchain:
+  | VAR FLECHE expression { Fun(Var_Pat $1, $3) } %prec FUN
+  | VAR func_vchain { Fun(Var_Pat $1, $2) }
 
 applicator:
   | VAR { Var $1 }
@@ -164,6 +183,8 @@ applicator:
 applicated: /* il faut garder la distinction avec applicator car on ne peut pas appliquer une constante à quelque chose */
   | VAR { Var $1 }
   | INT { Cst $1 }
+  | TRUE { Bool true }
+  | FALSE { Bool false }
   | LPAREN expression RPAREN { $2 }
   | LPAREN RPAREN { Unit }
 ;
@@ -177,7 +198,7 @@ func:
   | LPAREN RPAREN func { Fun(Var_Pat "_", $3) }
 ;
 
-
+/*
 bool_expr:
   | LPAREN bool_expr RPAREN           { $2 }
   | TRUE { True }
@@ -193,4 +214,4 @@ bool_expr:
   | bool_expr OR bool_expr { Bin_op($1,Or,$3) }
   | bool_expr AND bool_expr { Bin_op($1,And,$3) }
   | NOT bool_expr { Not($2) }
-;
+;*/
