@@ -52,7 +52,7 @@ type expr_f =
   | App    of expr_f * expr_f              (* Ce sont les applications *)
   | Aff    of expr_f * expr_f               (* Affectation i.e le `:=`*)
   | Alloc  of expr_f                       (* Allocation mémoire *)
-  | Try    of expr_f * var_f * expr_f      (* Le 'try ... with E ... -> ...' *)
+  | Try    of expr_f * var_f * expr_f      (* Le 'try ... with E ... -> g...' *)
   | Raise  of expr_f                       (* raise E ... : qui sera un int en pratique *)
 
 (* On co-définit les expressions booléennes - pour les tests *)

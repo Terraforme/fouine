@@ -1,1 +1,1 @@
-fun k kE -> e____ (fun vE -> kE vE) kE
+expr (fun x -> x) (fun xE -> raise (E xE))
