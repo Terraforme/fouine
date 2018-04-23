@@ -10,25 +10,25 @@ let rec regroup_pair pair1 pair2 = match pair1 with
   | _ -> Pair_val(pair1, pair2)
 ;;
 
-(* FIXME : exceptions ...  : 
+(* FIXME : exceptions ...  :
 Environnements locaux des exceptions *)
 
 
 let rec eval expr env k k' = match expr with
-(* eval : 
+(* eval :
 expr_f -> env_f -> (val_f -> val_f) -> ((val_f -> val_f) * env_f) list -> val_f
 
-La fonction d'évaluation principale. Fonctionne en style par continuation 
+La fonction d'évaluation principale. Fonctionne en style par continuation
 La mémoire est globale et d'utilisation transparente.
-Pour les continuations : k correspond à la continuation normale et 
+Pour les continuations : k correspond à la continuation normale et
                          k' à une pile de couple (continuations * environnement)
                             correspondant aux scénarios exceptionnels *)
 
-  | Bin (expr1, op, expr2) -> 
+  | Bin (expr1, op, expr2) ->
          eval expr2 env (fun val2 ->
                          eval expr1 env (fun val1 -> k (aeval op val1 val2)) k') k'
   | Var x                  -> k (env_read x env)
-  | Bang expr              -> 
+  | Bang expr              ->
          eval expr env (function   Ref  addr -> k (read_mem addr)
                                  | _ -> failwith "! : Dereferecing non-addr") k'
   | Cst c                  -> k (Int c)
@@ -44,7 +44,7 @@ Pour les continuations : k correspond à la continuation normale et
   | LetRec (f, expr1, expr2) ->
   (* f n'est pas un pattern : cf doc *)
 		begin
-      match expr1 with | Fun (pat, expr0) -> 
+      match expr1 with | Fun (pat, expr0) ->
                          let rec env0 = (f, Fun_val (pat, expr0, env0)) :: env in
                          eval expr2 env0 k k'
                        | _ -> eval (Let (Var_Pat f, expr1, expr2)) env k k'
@@ -59,30 +59,30 @@ Pour les continuations : k correspond à la continuation normale et
   | Fun (x, expr0) -> k (Fun_val (x, expr0, env))
   | App (expr1, expr2) ->
   (* On évalue bien d'abord l'argument, puis la fonction *)
-    eval expr2 env (fun value -> eval expr1 env 
-                   (function Fun_val (x, expr0, env) -> 
+    eval expr2 env (fun value -> eval expr1 env
+                   (function Fun_val (x, expr0, env) ->
                                 eval expr0 (pat_env_aff x value env) k k'
-                             | _ -> failwith "App : applicator is not a function") 
+                             | _ -> failwith "App : applicator is not a function")
                     k') k'
   | Aff (expr1, expr2) ->
   (* Affectation : le terme gauche doit être une référence *)
-		eval expr2 env (fun value -> eval expr1 env 
+		eval expr2 env (fun value -> eval expr1 env
                    (function Ref addr -> begin set_mem addr value; k Unit end
-                             | _ -> failwith "Aff : affecting non-ref" ) k') k'  
+                             | _ -> failwith "Aff : affecting non-ref" ) k') k'
   | Alloc (expr) ->
   (* L'allocation mémoire : le terme gauche a toutes les libertés *)
     eval expr env (fun value -> let addr = alloc_mem value in k (Ref addr)) k'
   | Pair (expr1, expr2) ->
-		eval expr2 env (fun val2 -> 
+		eval expr2 env (fun val2 ->
                     eval expr1 env (fun val1 -> k (regroup_pair val1 val2)) k') k'
   | Unit -> k Unit
-  | Raise expr -> 
+  | Raise expr ->
 		begin
 		  match k' with
 		  | [] -> failwith "Raise : Nothing to catch exception"
 		  | k_exn :: k' -> eval expr env k_exn k'
     end
-  | Try (expr1, var_except, expr2) -> 
+  | Try (expr1, var_except, expr2) ->
 	(* Syntaxe: try expr1 with E var_except -> expr2 *)
     eval expr1 env k ((fun exn -> eval expr2 (env_aff var_except exn env) k k') :: k')
 
@@ -98,9 +98,9 @@ and aeval op val1 val2 =
 operator_f -> val_f -> val_f -> val_f
 Sert à faire des opérations arithmétiques *)
   match val1, val2 with
-  | Int a, Int b -> 
+  | Int a, Int b ->
     begin
-      match op with 
+      match op with
       | Plus  -> Int(a + b)
       | Minus -> Int(a - b)
       | Times -> Int(a * b)
@@ -110,7 +110,7 @@ Sert à faire des opérations arithmétiques *)
   | _, _ -> failwith "aeval : non-Int values"
 
 and beval bexpr env k k' = match bexpr with
-(* beval : 
+(* beval :
 
 bexpr_f -> env_f -> (bool -> val_f) -> ((val_f -> val_f) * env_f) list -> val_f
 
@@ -119,17 +119,17 @@ La continuation normale considérée est différentes des autres :
 de type "bool" -> val_f au lieu de val_f -> val_f *)
   | True -> k true
   | False -> k false
-  | Cmp (expr1, cmp, expr2)     -> 
-    eval expr2 env (fun val2 -> eval expr1 env 
+  | Cmp (expr1, cmp, expr2)     ->
+    eval expr2 env (fun val2 -> eval expr1 env
                                (fun val1 -> k (cmp_eval cmp val1 val2)) k') k'
   | Bin_op (bexpr1, op, bexpr2) ->
     (* Je n'encapsule pas cette section à cause de l'évaluation fainéante *)
     begin match op with
     | Or  -> beval bexpr1 env (fun b1 -> if b1 then k true
-                                         else beval bexpr2 env 
+                                         else beval bexpr2 env
                                              (fun b2 -> k b2) k' ) k'
-    | And -> beval bexpr1 env (fun b1 -> if not b1 then k false 
-                                         else beval bexpr2 env 
+    | And -> beval bexpr1 env (fun b1 -> if not b1 then k false
+                                         else beval bexpr2 env
                                              (fun b2 -> k b2) k' ) k'
     end
   | Not bexpr                   -> beval bexpr env (fun b -> k (not b)) k'
@@ -138,7 +138,7 @@ and cmp_eval cmp val1 val2 =
 (* cmp_eval : cmp_op_f -> val_f -> val_f -> bool
 Sert à comparer deux valeurs (à priori entières) *)
 	match val1, val2 with
-  | Int a, Int b -> 
+  | Int a, Int b ->
     begin
       match cmp with
       | Eq  -> a =  b
@@ -148,4 +148,6 @@ Sert à comparer deux valeurs (à priori entières) *)
       | Geq -> a >= b
       | Gt  -> a >  b
     end
+  | Unit, Unit -> true
+  | Unit,_ | _, Unit -> false
   | _, _ -> failwith "cmp_eval : non-int values"

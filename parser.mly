@@ -93,7 +93,9 @@ var_pattern:
   | VAR { Var_Pat $1 }
   | ANON { Var_Pat "_" }
   | LPAREN var_pattern RPAREN { $2 }
-  | VAR COMA var_pattern { Pair_Pat($1,$3) }
+  | var_pattern COMA var_pattern { Pair_Pat($1,$3) }
+  /*| LPAREN var_pattern RPAREN COMA var_pattern { Pair_Pat($2, $5) }*/
+  /*FIXME: Pair_Pat n'accepte que les paires associatives à droites!! Pair_Pat of var_f*pattern_f*/
 ;
 
 expression:

@@ -44,7 +44,7 @@ let rec expr2str = function
   | LetRec (f, expr1, expr2) -> "LetRec(" ^ f ^ ", "
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
 	| Match (expr, pmatch)     -> "Match(" ^ (expr2str expr) ^ ", "
-	^ (pmatch2str pmatch) ^ ")" 
+	^ (pmatch2str pmatch) ^ ")"
 
   | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
   | IfElse (bexpr, expr1, expr2) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
@@ -70,13 +70,13 @@ and bexpr2str = function
 
 and pattern2str = function
   | Var_Pat x -> x
-  | Pair_Pat (x, pattern) -> "Pair(" ^ x ^ "," ^ (pattern2str pattern) ^ ")"
+  | Pair_Pat (pat1, pat2) -> "Pair(" ^ (pattern2str pat1) ^ "," ^ (pattern2str pat2) ^ ")"
 	| Cons_Pat (c, pattern) -> c ^ "(" ^ (pattern2str pattern) ^ ")"
 
 and pmatch2str  = function
 	| [] -> ""
 	| (pat, expr) :: []     -> (pattern2str pat) ^ " -> " ^ (expr2str expr)
-	| (pat, expr) :: pmatch -> (pattern2str pat) ^ " -> " ^ (expr2str expr) 
+	| (pat, expr) :: pmatch -> (pattern2str pat) ^ " -> " ^ (expr2str expr)
                              ^ " | " ^ (pmatch2str pmatch)
 
 let print_expr expr = print_string (expr2str expr) ; print_newline ()
@@ -115,10 +115,12 @@ let pretty_bool_op = function
 
 let rec pretty_pattern = function
   | Var_Pat x -> print_string x
-  | Pair_Pat (x, pattern) ->
+  | Pair_Pat (pat1, pat2) ->
     begin
-      print_string ("(" ^ x ^ ", ");
-      pretty_pattern pattern;
+      print_string "(";
+      pretty_pattern pat1;
+      print_string ", ";
+      pretty_pattern pat2;
       print_string ")"
     end
 	| Cons_Pat (c, pattern) ->
@@ -300,22 +302,22 @@ let pretty_print_expr expr =
 
 (* On définit une un pretty-printer de valeurs *)
 
-(* Le printeur de valeurs est définit co-inductivement avec le printeur 
+(* Le printeur de valeurs est définit co-inductivement avec le printeur
 de clôtures. *)
 
-let rec pretty_closure = function 
+let rec pretty_closure = function
 (* pretty_closure : env_f -> unit
 Prend en paramètre un environnement et tente de l'afficher joliment *)
 	| [] -> print_string "[]"
 	| (var, value) :: closure ->
-		begin 
+		begin
 			print_string (var ^ " ::= ");
 			pretty_value 0 value;
-			print_string " :: "; 
+			print_string " :: ";
 			pretty_closure closure
 		end
 
-and pretty_value opt = function 
+and pretty_value opt = function
 (* pretty_value : int -> val_f -> unit
 Prend en paramètre une valeur et tente de l'afficher correctement
 L'argument entier est un renseignement pour améliorer l'affichage	*)
@@ -324,9 +326,9 @@ L'argument entier est un renseignement pour améliorer l'affichage	*)
 	| 0 -> comportement usuel (i.e par défaut)
 	| 1 -> liste de couples déjà parenthésée
 
-FIXME : 
+FIXME :
 
-si 
+si
 
 type tree = Nil | Node of int * tree * tree ;;
 let f (Node(x, _, _)) = print_int x ;;
@@ -341,13 +343,13 @@ val f : tree -> unit = <fun>
 	| Unit 	   -> print_string "()"
 	| Int x 	 -> print_int x
 	| Ref addr -> print_string ("ref " ^ (string_of_int addr))
-	| Cons (c, value) -> 
+	| Cons (c, value) ->
 		begin
 			print_string (c ^ "(");
 			pretty_value 0 value;
 			print_string ")"
 		end
-	| Pair_val (val1, val2) -> 
+	| Pair_val (val1, val2) ->
 		begin
 			print_string "(";  pretty_value 0 val1;
 			print_string ", "; pretty_value 0 val2;

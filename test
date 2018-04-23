@@ -1,0 +1,4 @@
+let rec f p =
+  let ((a,b),c) = p in
+  c
+;;
