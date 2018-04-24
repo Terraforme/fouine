@@ -34,11 +34,26 @@ let lexbuf2 = Lexing.from_channel (Pervasives.open_in ("mem_fouine_sans_commenta
 
 let parse () = Parser.main Lexer.token lexbuf;;
 
+let rec e_concat e1 e2 tag =
+(* concatène e1 sous la forme Let(......) avec e2
+selon le tag en paramètre *)
+  match e1 with
+  | Let(truc,e1_0, Var smg) -> if smg = tag then Let(truc, e1_0, e2)
+                               else failwith "Cannot merge"
+  | LetRec(truc,e1_0, Var smg) -> if smg = tag then LetRec(truc, e1_0, e2)
+                                  else failwith "Cannot merge"
+  | Let(truc,e1_0, e1)      -> Let(truc,e1_0, (e_concat e1 e2 tag))
+  | LetRec(truc,e1_0, e1)      -> LetRec(truc,e1_0, (e_concat e1 e2 tag))
+  | _ -> failwith "Cannot merge"
+
+
 (* la fonction que l'on lance ci-dessous *)
 let calc exec_mod =
   let expr = parse () in
   match exec_mod with
-  | Normal -> let _ = eval expr [] id [] in ()
+  | Normal -> if !outcode_option
+    then pretty_print_expr expr
+    else let _ = eval expr [] id [] in ()
   | Continuation -> if !outcode_option
     then let cexpr = ccont expr in pretty_print_expr cexpr
     else let _ = eval (ctransform expr) [] id [] in ()

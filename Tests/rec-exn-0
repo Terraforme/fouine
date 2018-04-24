@@ -1,0 +1,14 @@
+let rec f x =
+  try
+    if x = 100 then
+      raise (E 10)
+    else
+      f (x+1)
+  with E y ->
+      if x = y then
+        prInt y
+      else
+        raise (E y)
+in
+  f 0
+

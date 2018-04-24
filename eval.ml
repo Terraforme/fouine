@@ -1,6 +1,7 @@
 open Env
 open Types
 open Mem
+open Printer
 
 
 let id = fun x -> x ;;
@@ -32,8 +33,9 @@ Pour les continuations : k correspond à la continuation normale et
                             | Bool b1 -> if b1 then Bool true else 
                                          eval expr2 env (function
                                                          | Bool b2 as val2 -> val2
-                                                         | _ -> failwith "eval : non-Bool value") k'
-                            | _ -> failwith "eval : non-Bool value") 
+                                                         | _ -> debug_print expr expr2;
+                                                                failwith "eval : non-Bool value") k'
+                            | _ -> debug_print expr expr1; failwith "eval : non-Bool value") 
                             k'
     | And ->  eval expr1 env (fun val1 -> match val1 with 
                             | Bool b1 -> if not b1 then Bool false else 
@@ -49,14 +51,15 @@ Pour les continuations : k correspond à la continuation normale et
   | Var x                  -> k (env_read x env)
   | Bang expr              ->
          eval expr env (function   Ref  addr -> k (read_mem addr)
-                                 | _ -> failwith "! : Dereferecing non-addr") k'
+                                 | _ -> debug_print (Bang expr) expr; 
+                                        failwith "! : Dereferecing non-addr") k'
   | Cst c                  -> k (Int c)
   | PrInt expr             ->
   (* On autorise seulement l'affichage d'entiers *)
     eval expr env (function Int a -> begin print_int a; print_newline ();
                                        k (Int a)
                                      end
-                            | _ -> failwith "prInt : non-int") k'
+                            | _ -> debug_print (PrInt expr) expr; failwith "prInt : non-int") k'
   | Let (pattern, expr1, expr2)  ->
   (* pattern : pour faire 'let (x, y) = c in' *)
     eval expr1 env (fun value -> eval expr2 (pat_env_aff pattern value env) k k') k'
@@ -75,20 +78,21 @@ Pour les continuations : k correspond à la continuation normale et
     failwith "TODO"
   | IfElse (bexpr, expr1, expr2) ->
     eval bexpr env (function Bool b -> eval (if b then expr1 else expr2) env k k'
-                             | _ -> failwith "eval : non-Boolean value in a test") k'
+                             | _ -> debug_print expr bexpr; failwith "eval : non-Boolean value in a test") k'
   | Fun (x, expr0) -> k (Fun_val (x, expr0, env))
   | App (expr1, expr2) ->
   (* On évalue bien d'abord l'argument, puis la fonction *)
     eval expr2 env (fun value -> eval expr1 env
                    (function Fun_val (x, expr0, env) ->
                                 eval expr0 (pat_env_aff x value env) k k'
-                             | _ -> failwith "App : applicator is not a function")
+                             | _ -> debug_print expr expr1; failwith "App : applicator is not a function")
                     k') k'
   | Aff (expr1, expr2) ->
   (* Affectation : le terme gauche doit être une référence *)
 		eval expr2 env (fun value -> eval expr1 env
                    (function Ref addr -> begin set_mem addr value; k Unit end
-                             | _ -> failwith "Aff : affecting non-ref" ) k') k'
+                             | _ -> debug_print expr expr1; 
+                                    failwith "Aff : affecting non-ref" ) k') k'
   | Alloc (expr) ->
   (* L'allocation mémoire : le terme gauche a toutes les libertés *)
     eval expr env (fun value -> let addr = alloc_mem value in k (Ref addr)) k'
