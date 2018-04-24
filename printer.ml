@@ -239,10 +239,11 @@ let pretty_print_expr expr =
       end
     | Fun (x, expr) ->
       begin
-        print_string (cons_color ^ "fun " ^ def_color);
+        print_string ("(" ^ cons_color ^ "fun " ^ def_color);
         pretty_pattern x;
         print_string " -> ";
         pretty_aux (indent+1) expr;
+        print_string ")"
       end
 
     | App (expr1, expr2) ->
@@ -384,6 +385,7 @@ val f : tree -> unit = <fun>
 		end
 	| Fun_val (pat, expr, env) ->
 		begin
+		  print_string (cons_color ^ "fun " ^ def_color);
 			pretty_pattern pat;
 			print_string " -> ";
 			pretty_print_expr expr;

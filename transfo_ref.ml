@@ -27,7 +27,7 @@ let rec transforme_ref expr = match expr with
 
 
   | Bin(expr1, op, expr2) -> Fun(Var_Pat "s" , Let(Pair_Pat(Var_Pat "v2" ,Var_Pat "s2" ), App(transforme_ref expr2,Var "s" ),
-  Let(Pair_Pat(Var_Pat "v1" ,Var_Pat "s1" ), App(transforme_ref expr1,Var "s2" ), Pair(Bin(Var "v1" , Plus, Var "v2" ) , Var "s1" ))))
+  Let(Pair_Pat(Var_Pat "v1" ,Var_Pat "s1" ), App(transforme_ref expr1,Var "s2" ), Pair(Bin(Var "v1" , op, Var "v2" ) , Var "s1" ))))
 (*fun s -> let (v2,s2 ) = [[e2]] s in
   let (v1,s1) = [[e1]] s2 in
   (v1 op v2,s1)*)
@@ -47,12 +47,20 @@ let rec transforme_ref expr = match expr with
 	if b0 then e1_____ s0
 	else e2_____ s0*)
   | Fun(pat, expr0) -> Fun(Var_Pat "s" , Pair(Fun(pat, transforme_ref expr0) , Var "s" ))
-(*fun s -> fun s -> ((fun pat -> [[e]]), s)*)
-  | App(expr1, expr2) -> Fun(Var_Pat "s" , Let(Pair_Pat(Var_Pat "v2" , Var_Pat "s2" ), App(transforme_ref expr2,Var "s" ),
-  Let(Pair_Pat(Var_Pat "f1", Var_Pat "s1" ), App(transforme_ref expr1,Var "s2" ), Pair(App(Var "f1",Var "v2" ) , Var "s1" ))))
+(*fun s -> ((fun pat -> [[e]]), s)*)
+  | App(expr1, expr2) -> 
+      Fun(Var_Pat "s", Let(Pair_Pat(Var_Pat "v2", Var_Pat "s2"), App(transforme_ref expr2,Var "s"), 
+      Let(Pair_Pat(Var_Pat "f1", Var_Pat "s1"), App(transforme_ref expr1,Var "s2"), 
+      App(App(Var "f1",Var "v2"),Var "s1"))))
+
+  
+  
+  
+  (*Fun(Var_Pat "s" , Let(Pair_Pat(Var_Pat "v2" , Var_Pat "s2" ), App(transforme_ref expr2,Var "s" ),
+  Let(Pair_Pat(Var_Pat "f1", Var_Pat "s1" ), App(transforme_ref expr1,Var "s2" ), Pair(App(Var "f1",Var "v2" ) , Var "s1" )))) *)
 (*fun s -> let (v2,s2) = [[e2]] s in
   let (f1,s1) = [[e1]] s2 in
-  (f1 v2, s1)*)
+  let (r, s0) = f1 v2 s1 *)
   | Aff(expr1, expr2) -> Fun(Var_Pat "s" , Let(Pair_Pat(Var_Pat "l1",Var_Pat "s1" ), App(transforme_ref expr1,Var "s" ), Let(Pair_Pat(Var_Pat "v2" ,Var_Pat "s2" ),
   App(transforme_ref expr2,Var "s2" ), Let(Var_Pat "s3", App(App(App(Var "write",Var "s2" ),Var "l1"),Var "v2" ), Pair(Unit , Var "s3")))))
 (*fun s -> let (l1,s1 ) = [[e1]] s in

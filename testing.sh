@@ -43,12 +43,12 @@ done;
 
 $becho -e "\n""\e[34;1m"Starting Tests"\e[0m" "\n"
 
-$becho -e "\e[34;1mC\e[33;1mP\e[0m"
+$becho -e "\e[33;1mERP\e[0m"
 for test in $(ls $tests)
 do
 	#cat $tests/$test
 	
-	cfouine=$(./main.native $tests/$test -C 2> /dev/null)  #continuation
+	cfouine=$(./main.native $tests/$test -E 2> /dev/null)  #continuation
 	caml=$(cat $prInt $tests/$test | ocaml -w -26 -stdin 2> /dev/null)
 	# parce que omg ce warning 26 qui me casse les pieds !!!
 	
@@ -56,10 +56,18 @@ do
 	then 
 	  $becho -e -n " "
 	else
-	  $becho -e -n "\e[34;1mC\e[0m"
+	  $becho -e -n "\e[33;1mE\e[0m"
 	fi
 	
-	fouine=$(./main.native $tests/$test 2> errors.log)  #continuation
+	rfouine=$(./main.native $tests/$test -R 2> /dev/null)  #sans références
+	if [ "$rfouine" = "$caml" ]
+	then
+	  $becho -e -n " "
+	else
+	  $becho -e -n "\e[33;1mR\e[0m"
+	fi
+	
+	fouine=$(./main.native $tests/$test 2> errors.log)  #normal
 	error=$(cat errors.log)
 	if [ "$error" = "Fatal error: exception Parsing.Parse_error" ]
 	then

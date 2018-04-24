@@ -94,7 +94,7 @@ Pour les continuations : k correspond à la continuation normale et
     eval expr env (fun value -> let addr = alloc_mem value in k (Ref addr)) k'
   | Pair (expr1, expr2) ->
 		eval expr2 env (fun val2 ->
-                    eval expr1 env (fun val1 -> k (regroup_pair val1 val2)) k') k'
+                    eval expr1 env (fun val1 -> k (Pair_val(val1, val2))) k') k'
   | Unit -> k Unit
   | Raise expr ->
 		begin
