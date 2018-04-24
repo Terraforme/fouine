@@ -38,7 +38,8 @@ let rec transforme_ref expr = match expr with
   App(transforme_ref expr2,Var "s1")))
 (*fun s -> let (pat,s1) = [[e1]] s in
   [[e2]] s1*)
-  | LetRec(v, expr1, expr2) -> failwith "TODO"
+  | LetRec(v, expr1, expr2) -> Fun(Var_Pat "s", LetRec(v, Let(Pair_Pat(Var_Pat "f", Var_Pat "s0"), App(tranforme_ref expr1,Var "s"), Var "f"),
+   App(transforme_ref expr2,Var "s0")))
   | Match(expr0, patm) -> failwith "TODO"
   | If(b,expr0) -> failwith "Obsolete"
   | IfElse(bexpr, expr1, expr2) -> Fun(Var_Pat "s" , Let(Pair_Pat(Var_Pat "b0", Var_Pat "s0" ), App(transforme_ref bexpr,Var "s" ),
