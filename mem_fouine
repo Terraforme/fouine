@@ -30,8 +30,7 @@ let mem_init () =
 
 let rec find_last mem = (* renvoie une adresse *)
   let ((a,b,c),mem2) = mem in
-  if mem2 = () then a
-  else find_last mem2
+  a
 ;;
 (* pas le droit au pattern matching mais ce que j'aurais aimé écrire c'est ça:
 let rec find_last = function

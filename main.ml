@@ -37,9 +37,9 @@ let rec e_concat e1 e2 tag =
 (* concatène e1 sous la forme Let(......) avec e2
 selon le tag en paramètre *)
   match e1 with
-  | Let(truc,e1_0, Var smg) -> if smg = tag then Let(truc, e1_0, e2) 
+  | Let(truc,e1_0, Var smg) -> if smg = tag then Let(truc, e1_0, e2)
                                else failwith "Cannot merge"
-  | LetRec(truc,e1_0, Var smg) -> if smg = tag then LetRec(truc, e1_0, e2) 
+  | LetRec(truc,e1_0, Var smg) -> if smg = tag then LetRec(truc, e1_0, e2)
                                   else failwith "Cannot merge"
   | Let(truc,e1_0, e1)      -> Let(truc,e1_0, (e_concat e1 e2 tag))
   | LetRec(truc,e1_0, e1)      -> LetRec(truc,e1_0, (e_concat e1 e2 tag))
@@ -50,7 +50,7 @@ selon le tag en paramètre *)
 let calc exec_mod =
   let expr = parse () in
   match exec_mod with
-  | Normal -> if !outcode_option 
+  | Normal -> if !outcode_option
     then pretty_print_expr expr
     else let _ = eval expr [] id [] in ()
   | Continuation -> if !outcode_option
@@ -66,8 +66,6 @@ let calc exec_mod =
         let _ = eval expr_finale [] id [] in ()
       end
 
- (* FIXME: CR et RC ne fonctionnent pas, il doit y avoir un problème de compatibilité de types.
- Notes: Le code transformé par élimination des aspects impératifs renvoie un couple (value, s) *)
   | CR -> if !outcode_option then
       let expr_trans = transforme_ref (ccont expr) in
       pretty_print_expr expr_trans
@@ -88,7 +86,7 @@ let calc exec_mod =
         let _ = eval expr_finale [] id [] in ()
       end
 
-  
+
   | Parsing ->
   (* On a rajouté une option de parsing *)
     begin
@@ -136,6 +134,3 @@ let exec_mod = if !debug_option then Debug else if !parsing_only_option then Par
 else if !c_option then Continuation else if !r_option then References
 else if !cr_option then CR else if !rc_option then RC else Normal in
 calc exec_mod;;
-
-
-
