@@ -1,0 +1,19 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{o}{[|} \PYG{n+nb+bp}{()} \PYG{o}{|]} \PYG{c}{(* devient *)} \PYG{k}{fun} \PYG{n}{k} \PYG{n}{kE} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{k} \PYG{n+nb+bp}{()}
+\PYG{o}{[|} \PYG{n+nb+bp}{true} \PYG{o}{|]} \PYG{c}{(* devient *)} \PYG{k}{fun} \PYG{n}{k} \PYG{n}{kE} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{k} \PYG{n+nb+bp}{true}
+\PYG{o}{[|} \PYG{l+m+mi}{42} \PYG{o}{|]} \PYG{c}{(* devient *)} \PYG{k}{fun} \PYG{n}{k} \PYG{n}{kE} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{k} \PYG{l+m+mi}{42}
+\PYG{o}{[|} \PYG{n}{x} \PYG{o}{|]}  \PYG{c}{(* devient *)} \PYG{k}{fun} \PYG{n}{k} \PYG{n}{kE} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{k} \PYG{n}{x}
+
+\PYG{o}{[|} \PYG{o}{!}\PYG{n}{e} \PYG{o}{|]} \PYG{c}{(* devient *)}
+	\PYG{k}{fun} \PYG{n}{k} \PYG{n}{kE} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{[|} \PYG{n}{e} \PYG{o}{|]} \PYG{o}{(}\PYG{k}{fun} \PYG{n}{addr} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{k} \PYG{o}{(!}\PYG{n}{addr}\PYG{o}{))} \PYG{n}{kE}
+
+\PYG{o}{[|} \PYG{n}{not} \PYG{n}{e} \PYG{o}{|]}   \PYG{c}{(* devient *)}
+	\PYG{k}{fun} \PYG{n}{k} \PYG{n}{kE} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{[|} \PYG{n}{e} \PYG{o}{|]} \PYG{o}{(}\PYG{k}{fun} \PYG{n}{b} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{k} \PYG{o}{(}\PYG{n}{not} \PYG{n}{b}\PYG{o}{))} \PYG{n}{kE}
+\PYG{o}{[|} \PYG{n}{e1} \PYG{o}{+} \PYG{n}{e2} \PYG{o}{|]} \PYG{c}{(* devient *)}
+	\PYG{k}{fun} \PYG{n}{k} \PYG{n}{kE} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{[|} \PYG{n}{e2} \PYG{o}{|]} \PYG{o}{(}\PYG{k}{fun} \PYG{n}{v2} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{[|} \PYG{n}{e1} \PYG{o}{|]} \PYG{o}{(}\PYG{k}{fun} \PYG{n}{v1} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{k} \PYG{o}{(}\PYG{n}{v1} \PYG{o}{+} \PYG{n}{v2}\PYG{o}{))} \PYG{n}{kE}\PYG{o}{)} \PYG{n}{kE}
+\PYG{o}{[|} \PYG{n}{prInt} \PYG{n}{e} \PYG{o}{|]} \PYG{c}{(* devient *)}
+	\PYG{k}{fun} \PYG{n}{k} \PYG{n}{kE} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{[|} \PYG{n}{e} \PYG{o}{|]} \PYG{o}{(}\PYG{k}{fun} \PYG{n}{v} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{k} \PYG{o}{(}\PYG{n}{prInt} \PYG{n}{v}\PYG{o}{))} \PYG{n}{kE}
+
+\PYG{o}{[|} \PYG{k}{if} \PYG{n}{be} \PYG{k}{then} \PYG{n}{e1} \PYG{k}{else} \PYG{n}{e2} \PYG{o}{|]} \PYG{c}{(* devient *)}
+	\PYG{k}{fun} \PYG{n}{k} \PYG{n}{kE} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{[|} \PYG{n}{be} \PYG{o}{|]} \PYG{o}{(}\PYG{k}{fun} \PYG{n}{b} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{(}\PYG{k}{if} \PYG{n}{b} \PYG{k}{then} \PYG{o}{[|} \PYG{n}{e1} \PYG{o}{|]} \PYG{k}{else} \PYG{o}{[|} \PYG{n}{e2} \PYG{o}{|])} \PYG{n}{k} \PYG{n}{kE}\PYG{o}{)} \PYG{n}{kE}
+\end{Verbatim}

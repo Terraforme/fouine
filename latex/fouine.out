@@ -1,14 +1,20 @@
 \BOOKMARK [1][-]{section.1}{G\351n\351ralit\351s}{}% 1
 \BOOKMARK [2][-]{subsection.1.1}{Expressions}{section.1}% 2
-\BOOKMARK [2][-]{subsection.1.2}{Valeurs}{section.1}% 3
-\BOOKMARK [2][-]{subsection.1.3}{Environnement}{section.1}% 4
-\BOOKMARK [2][-]{subsection.1.4}{M\351moire}{section.1}% 5
-\BOOKMARK [1][-]{section.2}{Fonctions}{}% 6
-\BOOKMARK [2][-]{subsection.2.1}{Fonctions classiques}{section.2}% 7
-\BOOKMARK [2][-]{subsection.2.2}{Fonctions R\351cursives}{section.2}% 8
-\BOOKMARK [1][-]{section.3}{Parsing}{}% 9
-\BOOKMARK [2][-]{subsection.3.1}{let ... in}{section.3}% 10
-\BOOKMARK [2][-]{subsection.3.2}{L'application de fonction}{section.3}% 11
-\BOOKMARK [1][-]{section.4}{Pathologies}{}% 12
-\BOOKMARK [2][-]{subsection.4.1}{Types unit -> 'a}{section.4}% 13
-\BOOKMARK [2][-]{subsection.4.2}{Fonctions r\351cursives}{section.4}% 14
+\BOOKMARK [2][-]{subsection.1.2}{Evaluation}{section.1}% 3
+\BOOKMARK [2][-]{subsection.1.3}{Valeurs}{section.1}% 4
+\BOOKMARK [2][-]{subsection.1.4}{Environnement}{section.1}% 5
+\BOOKMARK [2][-]{subsection.1.5}{M\351moire}{section.1}% 6
+\BOOKMARK [1][-]{section.2}{Fonctions}{}% 7
+\BOOKMARK [2][-]{subsection.2.1}{Fonctions classiques}{section.2}% 8
+\BOOKMARK [2][-]{subsection.2.2}{Fonctions R\351cursives}{section.2}% 9
+\BOOKMARK [1][-]{section.3}{Exceptions}{}% 10
+\BOOKMARK [1][-]{section.4}{Transformations de Programmes}{}% 11
+\BOOKMARK [2][-]{subsection.4.1}{Imp\351ratives}{section.4}% 12
+\BOOKMARK [2][-]{subsection.4.2}{Continuations}{section.4}% 13
+\BOOKMARK [1][-]{section.5}{Parsing}{}% 14
+\BOOKMARK [2][-]{subsection.5.1}{let ... in}{section.5}% 15
+\BOOKMARK [2][-]{subsection.5.2}{L'application de fonction}{section.5}% 16
+\BOOKMARK [1][-]{section.6}{Pathologies}{}% 17
+\BOOKMARK [2][-]{subsection.6.1}{Types unit -> 'a}{section.6}% 18
+\BOOKMARK [2][-]{subsection.6.2}{Fonctions r\351cursives}{section.6}% 19
+\BOOKMARK [2][-]{subsection.6.3}{R\351f\351rences}{section.6}% 20

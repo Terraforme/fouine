@@ -14,13 +14,16 @@ let rec regroup_pair pair1 pair2 = match pair1 with
 
 let rec eval expr env k k' = match expr with
 (* eval :
-expr_f -> env_f -> (val_f -> val_f) -> ((val_f -> val_f) * env_f) list -> val_f
+expr_f -> env_f -> (val_f -> val_f) -> (val_f -> val_f) list -> val_f
 
 La fonction d'évaluation principale. Fonctionne en style par continuation
 La mémoire est globale et d'utilisation transparente.
 Pour les continuations : k correspond à la continuation normale et
-                         k' à une pile de couple (continuations * environnement)
-                            correspondant aux scénarios exceptionnels *)
+                         k' à une pile de couple de continuations
+                         correspondant aux continuations d'exceptions 
+
+Remarque : On pourrait de passer d'une pile. Il s'agit de rétro-ingéniring
+qui sera fait dans des rendus futurs. *)
   | Neg expr               -> 
         eval expr env (function   Bool b -> k (Bool (not b)) 
                                 | _ -> failwith "eval : non-Bool value") k'
@@ -68,10 +71,6 @@ Pour les continuations : k correspond à la continuation normale et
                              | val1 -> eval expr2 (env_aff f val1 env) k k') k'
         
 	| Match (expr, pmatch)   -> failwith "TODO - Matchings"
-  | If (bexpr, expr)       ->
-  (* On pourrait se passer de ce constructeur en pratique
-  C'est une relique du passé. *)
-    failwith "TODO"
   | IfElse (bexpr, expr1, expr2) ->
     eval bexpr env (function Bool b -> eval (if b then expr1 else expr2) env k k'
                              | _ -> debug_print expr bexpr; failwith "eval : non-Boolean value in a test") k'

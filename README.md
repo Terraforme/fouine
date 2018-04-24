@@ -1,18 +1,23 @@
 # fouine
 
 
-## Important : À propos du rendu intermédiaire
+## Important : À propos du rendu 
 
-	On a réparé notre rendu 1, et le parser est plus succint. On a grandement amélioré notre système de test : `testing.sh`. Les exceptions ont été implémentées mais ont rendu le code lourd voire illisible.
-
-	Mainteant on renvoie en plus du nouvel état de la mémoire et de la valeur, une valeur d'exception, un `int option` en pratique. Si celui-ci vaut `None`, c'est qu'il n'y a pas d'exception à rattraper et qu'on peut poursuivre le calcul normalement. Ainsi, entre chaque évaluation, il faut vérifier si on n'a pas une exception sur les bras, auquel cas il faut refiler le bébé jusqu'à ce qu'un `try` le rattrape.
-
-	On a imaginé les tests les plus vicieux possibles, mais notre "fouine" semble résister encore et toujours. On compte modifier ça et mettre des continuations, pour rendre le code plus lisible. Par ailleurs, il y a un début de pattern-matching.
+  Depuis le rendu intermédiaire : la fonction `eval` a subi une grosse refonte. Maintenant, `eval` est implémenté par continuations. Les transformations de continuations et impératives ont été traitées, et les options `-outcode`, `-E -R -ER -RE` ont été ajoutées.
+  L'interpréteur est capable d'afficher joliment les valeurs, ainsi que les endroits où il plante pour aider au déboggage.
+  
+  Concernant les tests, il s'agit de l'exécutable `testing.sh` qui s'exécute tel quel. Il teste aussi les transformations par continuations et impératives. Il affiche un `E` jaune si la transformation par continuation ne donne pas le même résultat que CamL, un `R` jaune si la transformation impérative ne donne pas le même résultat que CamL, et un `P` jaune en cas de crash dans le parsing.
+  Si le test "normal" (ie sans transformation) ne donne pas le même résultat que CamL, le script met la ligne en rouge avec une croix X, et rajoute des informations rapides de déboggage plus haut (section `Debug`). Si cela ne suffit pas, on peut toujours faire à la main
+  
+  `./main.native [Tests/test] -debug`, `-debug` étant une option fourre-tout de déboggage qui essaie de donner le plus d'informations possible (arbre d'expression parsé, expression pretty-printée, les deux transformations classiques, les évaluations de chaque transformation (ainsi que la version non transformée), et les valeurs renvoyées de chaque version affichées joliment).
+  
+ *Attention* : pour le pretty-printer de valeurs, en cas de valeur fonctionnelle récursive, on ne termine pas (car le printer affiche aussi la clôture dans laquelle la fonction est encore définie)
 
 
 ## README version Documentation
 
-	Je tiens à préciser que la documentation latex n'est pas à jour (parce qu'il faut avouer qu'on ne va pas refaire le latex à chaque fois qu'on modifie une ligne de code). Elle sera toute belle pour le rendu final. Lots of Love. Bisous.
+	On a mis à jour la documentation latex, dans le répertoire /latex. Il contient les informations nécessaires pour comprendre l'interpréteur et le parseur. Il y a des commentaires disséminés un peu partout dans le code qui aideront à la compréhension.
+	Certains codes restent néanmoins "obscurs" en commentaires, notamment le printer, et autres. Faire un pretty_printer qui essaie de minimiser le nombre de parenthèses et de faire une belle indentation serait presque un projet en soi, donc veuillez-nous excuser s'il est parfois peu performant. Il est possible qu'il donne parfois des codes ambigus, car il ne met pas toujours de parenthèses pour éviter de surcharger.
 
 
 	On s’intéresse à fouine , un sous-ensemble de Caml qui est décrit en <http://www.ens-lyon.fr/DI/?p=5451> . Le but est d’écrire un interprète, mais attention, pas au sens d’un programme interactif qui propose, comme OCaml, de saisir des expressions au clavier et de les  évaluer dans la foulée. L’interprète prend en entrée un fichier Caml, exécute le code qui s’y trouve, et affiche ce qu’on lui demande d’afficher.
@@ -25,6 +30,8 @@
 	Ensuite, Victor Boone s'est concentré sur l'interpréteur.
 		     Gabrielle Pauvert s'est concentrée sur le parseur.
 	Les fichiers de tests et la doc ont été fait un peu à deux. Le LateX est de Victor, car il aime bien taper de la doc.
+	
+	Gabrielle s'est occupée des transformations impératives, et Victor des transformations par continuations.
 
 --
 
@@ -35,7 +42,6 @@
 	La liste des types est donnée dans `types.ml`. Par convention, tous les types reliés à l'interpréteur portent l'extension `_f` pour être faciles à distinguer.
 
 	Le type des expressions fouines est `expr_f`.
-	Le type des expressions booléennes est `bexpr_f`.
 
 	Une expression fouine renvoie un type `val_f` à l'exécution. Ainsi, les variables contiennent des valeurs de types `val_f`, qui comprend donc les entiers et les fonctions. 
 

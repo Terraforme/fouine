@@ -1,0 +1,9 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{type} \PYG{n}{val\PYGZus{}f} \PYG{o}{=} \PYG{n+nc}{Unit}
+          \PYG{o}{|} \PYG{n+nc}{Bool}        \PYG{k}{of} \PYG{k+kt}{bool}
+          \PYG{o}{|} \PYG{n+nc}{Int}         \PYG{k}{of} \PYG{k+kt}{int}
+          \PYG{o}{|} \PYG{n+nc}{Ref}         \PYG{k}{of} \PYG{k+kt}{int}
+          \PYG{o}{|} \PYG{n+nc}{Cons}        \PYG{k}{of} \PYG{k+kt}{string} \PYG{o}{*} \PYG{n}{val\PYGZus{}f}
+          \PYG{o}{|} \PYG{n+nc}{Pair\PYGZus{}val}    \PYG{k}{of} \PYG{n}{val\PYGZus{}f} \PYG{o}{*} \PYG{n}{val\PYGZus{}f}
+          \PYG{o}{|} \PYG{n+nc}{Fun\PYGZus{}val}     \PYG{k}{of} \PYG{n}{pattern\PYGZus{}f} \PYG{o}{*} \PYG{n}{expr\PYGZus{}f} \PYG{o}{*} \PYG{n}{env\PYGZus{}f}
+\end{Verbatim}

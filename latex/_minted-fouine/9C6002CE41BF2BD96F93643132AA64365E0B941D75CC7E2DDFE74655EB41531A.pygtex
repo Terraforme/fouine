@@ -1,0 +1,10 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{o}{|} \PYG{n+nc}{Raise} \PYG{n}{expr} \PYG{o}{\PYGZhy{}\PYGZgt{}}
+		\PYG{k}{begin}
+		  \PYG{k}{match} \PYG{n}{k\PYGZsq{}} \PYG{k}{with}
+		  \PYG{o}{|} \PYG{n+nb+bp}{[]} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{failwith} \PYG{l+s+s2}{\PYGZdq{}Raise : Nothing to catch exception\PYGZdq{}}
+		  \PYG{o}{|} \PYG{n}{k\PYGZus{}exn} \PYG{o}{::} \PYG{n}{k\PYGZsq{}} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{eval} \PYG{n}{expr} \PYG{n}{env} \PYG{n}{k\PYGZus{}exn} \PYG{n}{k\PYGZsq{}}
+    \PYG{k}{end}
+\PYG{o}{|} \PYG{n+nc}{Try} \PYG{o}{(}\PYG{n}{expr1}\PYG{o}{,} \PYG{n}{var\PYGZus{}except}\PYG{o}{,} \PYG{n}{expr2}\PYG{o}{)} \PYG{o}{\PYGZhy{}\PYGZgt{}}
+   \PYG{n}{eval} \PYG{n}{expr1} \PYG{n}{env} \PYG{n}{k} \PYG{o}{((}\PYG{k}{fun} \PYG{n}{exn} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{eval} \PYG{n}{expr2} \PYG{o}{(}\PYG{n}{env\PYGZus{}aff} \PYG{n}{var\PYGZus{}except} \PYG{n}{exn} \PYG{n}{env}\PYG{o}{)} \PYG{n}{k} \PYG{n}{k\PYGZsq{}}\PYG{o}{)} \PYG{o}{::} \PYG{n}{k\PYGZsq{}}\PYG{o}{)}
+\end{Verbatim}

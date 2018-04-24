@@ -1,0 +1,4 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+					\PYG{k}{let} \PYG{n}{f} \PYG{o}{=} \PYG{l+m+mi}{5} \PYG{k}{in}
+					\PYG{k}{let} \PYG{k}{rec} \PYG{n}{f} \PYG{o}{=} \PYG{n}{f}\PYG{o}{;;}
+\end{Verbatim}

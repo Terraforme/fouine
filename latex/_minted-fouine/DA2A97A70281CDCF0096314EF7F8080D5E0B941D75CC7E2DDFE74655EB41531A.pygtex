@@ -1,0 +1,4 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{let} \PYG{n}{mem} \PYG{o}{=} \PYG{n+nn}{Array}\PYG{p}{.}\PYG{n}{make} \PYG{l+m+mi}{1000000} \PYG{n+nc}{Unit}
+\PYG{k}{let} \PYG{n}{available} \PYG{o}{=} \PYG{n}{ref} \PYG{l+m+mi}{0}\PYG{o}{;;}
+\end{Verbatim}

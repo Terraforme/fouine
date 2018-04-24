@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{val} \PYG{n}{eval} \PYG{o}{:} \PYG{n}{expr\PYGZus{}f} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{env\PYGZus{}f} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{(}\PYG{n}{val\PYGZus{}f} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{val\PYGZus{}f}\PYG{o}{)} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{(}\PYG{n}{val\PYGZus{}f} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{val\PYGZus{}f}\PYG{o}{)} \PYG{k+kt}{list} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{val\PYGZus{}f}
+\end{Verbatim}

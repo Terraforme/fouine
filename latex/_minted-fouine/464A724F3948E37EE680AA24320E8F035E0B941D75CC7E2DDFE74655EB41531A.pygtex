@@ -1,0 +1,62 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{o}{[|} \PYG{l+m+mi}{42} \PYG{o}{|]} \PYG{c}{(* devient *)} \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{(}\PYG{l+m+mi}{42}\PYG{o}{,}\PYG{n}{s}\PYG{o}{)}
+\PYG{o}{[|} \PYG{n+nb+bp}{true} \PYG{o}{|]} \PYG{c}{(* devient *)} \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{(}\PYG{n+nb+bp}{true}\PYG{o}{,}\PYG{n}{s}\PYG{o}{)}
+\PYG{o}{[|} \PYG{n}{x} \PYG{o}{|]}  \PYG{c}{(* devient *)} \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{(}\PYG{n}{x}\PYG{o}{,}\PYG{n}{s}\PYG{o}{)}
+\PYG{o}{[|} \PYG{o}{!}\PYG{n}{e} \PYG{o}{|]} \PYG{c}{(* devient *)} \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{l}\PYG{o}{,}\PYG{n}{s1}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in}
+                       \PYG{k}{let} \PYG{n}{v} \PYG{o}{=} \PYG{n}{read} \PYG{n}{s1} \PYG{n}{l} \PYG{k}{in} \PYG{o}{(}\PYG{n}{v}\PYG{o}{,}\PYG{n}{s1}\PYG{o}{)}
+\PYG{o}{[|} \PYG{n+nb+bp}{()} \PYG{o}{|]} \PYG{c}{(* devient *)} \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{(}\PYG{n+nb+bp}{()}\PYG{o}{,}\PYG{n}{s}\PYG{o}{)}
+
+\PYG{o}{[|} \PYG{o}{(}\PYG{n}{e1}\PYG{o}{,} \PYG{n}{e2}\PYG{o}{)} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{v2}\PYG{o}{,}\PYG{n}{s2}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e2} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in}
+           \PYG{k}{let} \PYG{o}{(}\PYG{n}{v1}\PYG{o}{,}\PYG{n}{s1}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e1} \PYG{o}{|]} \PYG{n}{s2} \PYG{k}{in}
+           \PYG{o}{((}\PYG{n}{v1}\PYG{o}{,}\PYG{n}{v2}\PYG{o}{),}\PYG{n}{s1}\PYG{o}{)}
+
+\PYG{o}{[|} \PYG{n}{not} \PYG{n}{e0} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{b}\PYG{o}{,}\PYG{n}{s0}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e0} \PYG{o}{|]} \PYG{k}{in}
+           \PYG{o}{(}\PYG{n}{not} \PYG{n}{b}\PYG{o}{,} \PYG{n}{s0}\PYG{o}{)}
+\PYG{o}{[|} \PYG{n}{e1} \PYG{o}{+} \PYG{n}{e2} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{v2}\PYG{o}{,}\PYG{n}{s2} \PYG{o}{)} \PYG{o}{=} \PYG{o}{[[}\PYG{n}{e2}\PYG{o}{]]} \PYG{n}{s} \PYG{k}{in}
+           \PYG{k}{let} \PYG{o}{(}\PYG{n}{v1}\PYG{o}{,}\PYG{n}{s1}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[[}\PYG{n}{e1}\PYG{o}{]]} \PYG{n}{s2} \PYG{k}{in}
+           \PYG{o}{(}\PYG{n}{v1} \PYG{n}{op} \PYG{n}{v2}\PYG{o}{,}\PYG{n}{s1}\PYG{o}{)}
+
+\PYG{o}{[|} \PYG{n}{prInt} \PYG{n}{e0} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{v0}\PYG{o}{,}\PYG{n}{s0}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e0} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in}
+           \PYG{o}{(}\PYG{n}{prInt} \PYG{n}{v0}\PYG{o}{,} \PYG{n}{s0}\PYG{o}{)}
+\PYG{o}{[|} \PYG{k}{let} \PYG{n}{pat} \PYG{o}{=} \PYG{n}{e1} \PYG{k}{in} \PYG{n}{e2} \PYG{o}{|]}   \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{pat}\PYG{o}{,}\PYG{n}{s1}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e1} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in}
+           \PYG{o}{[|} \PYG{n}{e2} \PYG{o}{|]} \PYG{n}{s1}
+\PYG{o}{[|} \PYG{k}{let} \PYG{k}{rec} \PYG{n}{v} \PYG{o}{=} \PYG{n}{e1} \PYG{k}{in} \PYG{n}{e2} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{k}{rec} \PYG{n}{v} \PYG{o}{=} \PYG{o}{(}\PYG{k}{let} \PYG{o}{(}\PYG{n}{f}\PYG{o}{,}\PYG{n}{s0}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e1} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in} \PYG{n}{f}\PYG{o}{)}
+           \PYG{k}{in} \PYG{o}{[|} \PYG{n}{e2} \PYG{o}{|]} \PYG{n}{s}
+
+\PYG{o}{[|} \PYG{k}{match} \PYG{o}{|]} \PYG{c}{(* non supporté *)}
+\PYG{o}{[|} \PYG{k}{if} \PYG{n}{b} \PYG{k}{then} \PYG{n}{e1} \PYG{k}{else} \PYG{n}{e2} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{b0}\PYG{o}{,} \PYG{n}{s0}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{b} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in}
+           \PYG{k}{if} \PYG{n}{b0} \PYG{k}{then} \PYG{o}{[|} \PYG{n}{e1} \PYG{o}{|]} \PYG{n}{s0}
+           \PYG{k}{else} \PYG{o}{[|} \PYG{n}{e2} \PYG{o}{|]} \PYG{n}{s0}
+
+\PYG{o}{[|} \PYG{k}{fun} \PYG{n}{pat} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{e} \PYG{o}{|]} \PYG{c}{(* devient *)}  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{((}\PYG{k}{fun} \PYG{n}{pat} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{[|} \PYG{n}{e} \PYG{o}{|]),} \PYG{n}{s}\PYG{o}{)}
+\PYG{o}{[|} \PYG{n}{e1} \PYG{n}{e2} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{v}\PYG{o}{,} \PYG{n}{s2}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e2} \PYG{o}{|]} \PYG{n}{s}  \PYG{k}{in}
+           \PYG{k}{let} \PYG{o}{(}\PYG{n}{f}\PYG{o}{,} \PYG{n}{s1}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e1} \PYG{o}{|]} \PYG{n}{s2} \PYG{k}{in}
+           \PYG{n}{f} \PYG{n}{v} \PYG{n}{s1}
+
+\PYG{o}{[|} \PYG{n}{e1} \PYG{o}{:=} \PYG{n}{e2} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{l1}\PYG{o}{,} \PYG{n}{s1}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e1} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in}
+           \PYG{k}{let} \PYG{o}{(}\PYG{n}{v2}\PYG{o}{,} \PYG{n}{s2}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e2} \PYG{o}{|]} \PYG{n}{s2} \PYG{k}{in}
+           \PYG{k}{let} \PYG{n}{s3} \PYG{o}{=} \PYG{n}{write} \PYG{n}{s2} \PYG{n}{l1} \PYG{n}{v2} \PYG{k}{in}
+           \PYG{o}{(}\PYG{n+nb+bp}{()}\PYG{o}{,} \PYG{n}{s3}\PYG{o}{)}
+\PYG{o}{[|} \PYG{n}{ref} \PYG{n}{e0} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{let} \PYG{o}{(}\PYG{n}{v}\PYG{o}{,}\PYG{n}{s1}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e0} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in}
+           \PYG{k}{let} \PYG{o}{(}\PYG{n}{s2}\PYG{o}{,}\PYG{n}{l}\PYG{o}{)} \PYG{o}{=} \PYG{n}{alloc} \PYG{n}{s1} \PYG{k}{in}
+           \PYG{k}{let} \PYG{n}{s3} \PYG{o}{=} \PYG{n}{write} \PYG{n}{s2} \PYG{n}{l} \PYG{n}{v} \PYG{k}{in}
+           \PYG{o}{(}\PYG{n}{l}\PYG{o}{,}\PYG{n}{s3}\PYG{o}{)}
+
+\PYG{o}{[|} \PYG{k}{try} \PYG{n}{e1} \PYG{k}{with} \PYG{n+nc}{E} \PYG{n}{x} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{e2} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{try} \PYG{k}{let} \PYG{o}{(}\PYG{n}{v1}\PYG{o}{,} \PYG{n}{s1}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e1} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in} \PYG{o}{(}\PYG{n}{v1}\PYG{o}{,} \PYG{n}{s1}\PYG{o}{)}
+           \PYG{k}{with} \PYG{n+nc}{E} \PYG{n}{x} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{o}{[|} \PYG{n}{e2} \PYG{o}{|]} \PYG{n}{s}
+
+\PYG{o}{[|} \PYG{k}{raise} \PYG{n}{e0} \PYG{o}{|]} \PYG{c}{(* devient *)}
+  \PYG{k}{fun} \PYG{n}{s} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{k}{try} \PYG{k}{let} \PYG{o}{(}\PYG{n}{v}\PYG{o}{,}\PYG{n}{s0}\PYG{o}{)} \PYG{o}{=} \PYG{o}{[|} \PYG{n}{e0} \PYG{o}{|]} \PYG{n}{s} \PYG{k}{in}
+	       \PYG{o}{(}\PYG{k}{raise} \PYG{o}{(}\PYG{n+nc}{E} \PYG{n}{v}\PYG{o}{),} \PYG{n}{s0}\PYG{o}{)}
+\end{Verbatim}

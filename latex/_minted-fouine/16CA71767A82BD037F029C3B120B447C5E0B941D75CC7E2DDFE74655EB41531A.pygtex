@@ -1,0 +1,5 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+				\PYG{k}{let} \PYG{n}{a} \PYG{o}{=} \PYG{n}{ref} \PYG{o}{(}\PYG{n}{ref} \PYG{l+m+mi}{42}\PYG{o}{)} \PYG{k}{in}
+				\PYG{n}{a} \PYG{o}{:=} \PYG{n}{ref} \PYG{o}{(}\PYG{n}{ref} \PYG{l+m+mi}{4}\PYG{o}{);}
+				\PYG{n}{prInt} \PYG{o}{!(!(!}\PYG{n}{a}\PYG{o}{));;}
+\end{Verbatim}

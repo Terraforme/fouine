@@ -50,12 +50,13 @@
 	
 	\begin{minted}{ocaml}
 	
-		val eval : expr_f -> env_f -> mem_f -> val_f * mem_f
+val eval : expr_f -> env_f -> (val_f -> val_f) -> (val_f -> val_f) list -> val_f
 	
 	\end{minted}
 	
-	La mémoire associée à un programme fouine n'est pas vue comme un contexte qui pourra être modifié par effet de bord. Elle est passée en argument à la fonction d'évaluation, qui renvoie la valeur de l'expression évaluée \textbf{et} le nouvel état de la mémoire. Il en va différemment de l'environnement ; celui-ci est passé en paramètre et agit comme un "contexte" dans lequel s'évalue l'expression, mais ne peut être modifié de manière globale, donc on ne le renvoie pas.
-	
+	utilisée de la forme \code{eval expr env k kE}, et implémentée par continuations.
+	La mémoire \code{mem\_f} est globale.
+
 \subsection{Expressions}
 
 	Les expressions regroupent tout ce qui a été demandé dans le sujet. Leur type est :
@@ -63,21 +64,25 @@
 	\begin{minted}{ocaml}
 	
 type expr_f =
-  | Var    of var_f                        (* Feuille : variable *)
-  | Bang   of expr_f                       (* Le déréférençage *)
   | Cst    of int                          (* Feuille : constante *)
+  | Bool   of bool                         (* Feuille : booléen  *)
+  | Var    of var_f                        (* Feuille : variable *)
+  | Bang   of expr_f                       (* Feuille : le déréférençage *)
+  | Unit                                   (* Feuille : le type unit *)
+  | Pair   of expr_f * expr_f              (* Un couple d'expressions *)
+  | Neg    of expr_f                       (* Négation de Booléens *)
   | Bin    of expr_f * operator_f * expr_f (* opérations binaires *)
-  | PrInt  of expr_f
-  | Let    of pattern_f * expr_f * expr_f      (* let <var_f> = <expr_f> in <exec_f>   *)
-  | LetRec of var_f * expr_f * expr_f      (* let rec *)
-  | If     of bexpr_f * expr_f
-  | IfElse of bexpr_f * expr_f * expr_f
-  | Fun    of pattern_f * expr_f               (* car les fonctions sont un objet fun var -> expr *)
+  | PrInt  of expr_f                       (* built-in prInt *)
+  | Let    of pattern_f * expr_f * expr_f  (* let <var_f> = <expr_f> in <exec_f>   *)
+  | LetRec of var_f   * expr_f * expr_f    (* let rec *)
+  | Match  of expr_f  * pmatch_f           (* match [expr_f] with [pattern_matching] *)
+  | IfElse of expr_f * expr_f * expr_f     (* If .. then .. else *)
+  | Fun    of pattern_f * expr_f           (* car les fonctions sont un objet fun var -> expr *)
   | App    of expr_f * expr_f              (* Ce sont les applications *)
-  | Aff    of expr_f * expr_f               (* Affectation i.e le `:=`*)
+  | Aff    of expr_f * expr_f              (* Affectation i.e le `:=`*)
   | Alloc  of expr_f                       (* Allocation mémoire *)
-  | Pair   of expr_f * expr_f
-  | Unit
+  | Try    of expr_f * var_f * expr_f      (* Le 'try ... with E ... -> g...' *)
+  | Raise  of expr_f                       (* raise E ... : qui sera un int en pratique *)
 
 
 	\end{minted}
@@ -91,40 +96,57 @@ type expr_f =
 		\hline
 		\code{Var of var\_f} & \code{x, y, c0, variable\_1} : nom de variable \\
   		\code{Bang of expr\_f} & \code{!} : déréférençage\\
+  		\code{Bool of bool} & \code{true}, \code{false} : les booléens\\
 		\code{Cst of int} & \code{0}, \code{1} : les entiers\\
-		\code{Bin of expr\_f * operator\_f * expr\_f} & \code{x+5} : opérations binaires (\code{+, -, *, /, mod}) \\
+		\code{Neg of expr\_f} & \code{not ...} : négation booléenne \\
+		\code{Bin of expr\_f * operator\_f * expr\_f} & \code{x+5} : opérations binaires (\code{+, -, *, /, mod, ||, <, =, ...}) \\
   		\code{PrInt of expr\_f} & \code{let prInt x = print\_int x; print\_newline ()} \\
 		\code{Let of pattern\_f * expr\_f * expr\_f} & \code{let ... = ... in ... } \\
 		\code{LetRec of var\_f * expr\_f * expr\_f} & \code{let rec ... = ... in ... }\\
-		\code{If of bexpr\_f * expr\_f} & \code{if ... then ... else 0} \\
-		\code{IfElse of bexpr\_f * expr\_f * expr\_f} & \code{if ... then ... else ...} \\
+		\code{IfElse of expr\_f * expr\_f * expr\_f} & \code{if ... then ... else ...} \\
 		\code{Fun of pattern\_f * expr\_f} & \code{fun x -> ... } \\
 		\code{App of expr\_f * expr\_f} & \code{ a b } : application \\
-		\code{Aff of var\_f * expr\_f} & \code{... := ...} \\
+		\code{Aff of expr\_f * expr\_f} & \code{... := ...} \\
   		\code{Alloc of expr\_f} & \code{ref ...} : allocation mémoire \\
-  		\code{Pair of expr\_f * expr\_f} & \code{... , ...} : couples \\ 
+  		\code{Pair of expr\_f * expr\_f} & \code{... , ...} : couples \\
+  		\code{Raise of expr\_f } & \code{raise (E ...) } : levée d'exceptions \code{E}\\
+  		\code{Try of expr\_f * var\_f * expr\_f} & \code{try ... with E x -> ...} 
 	\end{tabular}
 	\end{center}
 	
 	\vspace{0.5cm}
 	
 	Certains constructeurs intermédiaires sont détaillés dans \code{type.ml}.
+	Les booléens font leur apparition dans les expressions de ce \emph{Fouine}, principalement pour simplifier les transformations de programmes. \code{Bin} a été étendu en conséquence.
+
+\subsection{Evaluation}
+
+	L'évaluation se fait par continuation : \code{eval expr env k kE}. La fonction d'évaluation reçoit quatre arguments :
+
+	\begin{itemize}
+		\item \code{expr} l'expression à évaluer
+		\item \code{env}  l'environnement courant (définition des variables)
+		\item \code{k}	  la continuation courante
+		\item \code{kE}	  la pile de continuations d'exceptions	
+	\end{itemize}
 	
+	Nous renvoyons au code pour l'implémentation de \code{eval}. Certains passages du code sont plus lourd car \code{eval} est capable d'afficher l'expression courante en cas d'erreur - l'implémentation de l'évaluation fainéante a aussi été gourmande en lignes de code.
+
 \subsection{Valeurs}
 
 
 	Les programmes fouine sont des expressions \code{expr\_f}, et sont évaluées par la fonction \code{eval}. Une évaluation renvoie une valeur du type donné ci-dessous :
 \begin{minted}{ocaml}
-type val_f = 
-    Unit
-  | Int  of int
-  | Addr of Int32
-  | Fun  of var_f * expr_f * env_f
-  | Pair of val_f * val_f
- ;; 
+type val_f = Unit
+          | Bool        of bool
+          | Int         of int
+          | Ref         of int
+          | Cons        of string * val_f
+          | Pair_val    of val_f * val_f
+          | Fun_val     of pattern_f * expr_f * env_f
 \end{minted}
 
-	Concernant les fonctions, celles-ci sont de la forme \code{fun x -> expr}. On sauvegarde de plus l'environnement dans lequel elles ont été définies (notion de clotûre). Nous y reviendrons.
+	Concernant les fonctions, celles-ci sont de la forme \code{fun x -> expr}. On sauvegarde de plus l'environnement dans lequel elles ont été définies (notion de clotûre). Nous y reviendrons. \code{Cons} n'est pas utilisé.
 
 
 \subsection{Environnement}
@@ -137,17 +159,16 @@ type val_f =
 	
 	Si \code{x} est une variable, sa valeur associée dans un environnement \code{env} est la première occurrence \code{("x", ...)} dans l'environnement. Donc, si on considère la liste \code{l = [("x", Int(0)); ("x", Int(5))]}, la valeur de \code{x} courante est \code{Int(0)}.
 	
-	Si on essaie de lire la valeur d'une variable non-existante, l'interpréteur lève une exception.
+	Si on essaie de lire la valeur d'une variable non-existante, l'interpréteur lève une exception \code{Failure}.
 
 \subsection{Mémoire}
 
 	
-	La mémoire est un dictionnaire d'association \code{Int32 -> val\_f}. On définit \code{mem\_f} comme le module \code{Mem\_f} :
+	La mémoire est un tableau de valeurs de taille fixe \code{1000000}. Ainsi, on impose à \emph{Fouine} une quantité bornée de mémoire. Si celle-ci est dépassée, l'interpréteur lève \code{Failure "Out of Memory"}. Les cases mémoires étant typées \code{val\_f}, elles peuvent occuper une taille non bornée de mémoire.
 	
 	\begin{minted}{ocaml}
-module Mem_f = Map.make(Int32)
-(* ici, on est obligé de prendre des 'Int32' pour faire les adressages *)
-(* car 'Map.make' doit prendre un module en argument *)
+let mem = Array.make 1000000 Unit
+let available = ref 0;;
 	\end{minted}
 	
 	\vspace{0.5cm}
@@ -195,12 +216,190 @@ f 10;;
 	
 	\vspace{0.5cm}
 	
-	Le \code{let rec} est un peu particulier. Il regarde si on est en train de définir une fonction ou non. Si oui, il construit la clôture de \code{f} en y rajoutant l'association \code{(f, clôture où f est défini)}. Il y a donc une définition cyclique ici, qui fera apparaître \code{<cycle>}. Je renvoie au code pour l'implémentation de ça.
+	Le \code{let rec} est un peu particulier. Il regarde si on est en train de définir une fonction ou non. Si oui, il construit la clôture de \code{f} en y rajoutant l'association \code{(f, clôture où f est défini)}. Il y a donc une définition cyclique ici, qui fera apparaître \code{<cycle>}. Un détail important ; lors d'un
+	
+	\begin{minted}{ocaml}
+let rec f = e1 in e2
+  \end{minted}
+  
+  on commence par évaluer \code{e1}. Il y a alors deux possibilitées. Soit on reçoit une valeur fonctionnelle \code{Fun\_val("f", e0, env0)}, avec \code{env0} une clôture dans laquelle \code{f} n'est pas défini. C'est là qu'on utilise le \code{let rec} d'OCamL pour redéfinir la clôture de la fonction avant de rajouter \code{f} dans l'environnement. On évalue ensuite \code{e2}.
 	
 	\vspace{0.5cm}
 	
 	Si c'est une variable quelconque, qui n'est pas une fonction, on se comporte comme un \code{let} classique. Ceci ne pose pas trop de problèmes si on ne joue qu'avec des \code{int} ou des couples, mais fait tout de même apparaître quelques petits cas pathologiques (cf dernière partie).
+
+
+
+\section{Exceptions}
+
+  \code{eval} est implémenté par continuations, et dispose d'une pile de continuations d'exceptions. En cas de \code{try e1 with e2} l'interpréteur ajoute une nouvelle continuation d'exception sur la pile pour l'évaluation de \code{e1}. Quant à \code{raise e1}, il évalue \code{e1}, puis dépile la pile de continuations d'exceptions pour traiter le résultat.
+  
+  \vspace{0.5cm}
+  
+  \code{Remarque :} On pourrait se débarasser de la pile, pour n'avoir qu'une continuation d'exception à chaque fois en changeant 
+  
+  \begin{minted}{ocaml}
+| Raise expr ->
+		begin
+		  match k' with
+		  | [] -> failwith "Raise : Nothing to catch exception"
+		  | k_exn :: k' -> eval expr env k_exn k'
+    end
+| Try (expr1, var_except, expr2) ->
+   eval expr1 env k ((fun exn -> eval expr2 (env_aff var_except exn env) k k') :: k')
+  \end{minted}
+  
+  en
+  
+  \begin{minted}{ocaml}
+| Raise expr ->
+	 eval expr1 env k' k'
+| Try (expr1, var_except, expr2) ->
+   eval expr1 env k (fun exn -> eval expr2 (env_aff var_except exn env) k k')
+   \end{minted}
+  
+  Ce qui nous a surpris à première vue, mais c'est ce qu'on a fait pour les transformations de programme et cela semble très bien marcher.
+
+\newpage
+\section{Transformations de Programmes}
+
+	On met ici les formules utilisées pour les transformations de programmes. Ces dernières ont été converties en expressions d'arbres de programme en utilisant directement le parser.
 	
+\subsection{Impératives}
+
+	On rajoute en pratique un \code{\_\_} aux variables utilisées pour différencier de celles du programme initial.
+	
+	\begin{minted}{ocaml}
+
+[| 42 |] (* devient *) fun s -> (42,s)
+[| true |] (* devient *) fun s -> (true,s)
+[| x |]  (* devient *) fun s -> (x,s)
+[| !e |] (* devient *) fun s -> let (l,s1) = [| e |] s in
+                       let v = read s1 l in (v,s1)
+[| () |] (* devient *) fun s -> ((),s)
+
+[| (e1, e2) |] (* devient *) 
+  fun s -> let (v2,s2) = [| e2 |] s in
+           let (v1,s1) = [| e1 |] s2 in
+           ((v1,v2),s1)
+
+[| not e0 |] (* devient *) 
+  fun s -> let (b,s0) = [| e0 |] in
+           (not b, s0)
+[| e1 + e2 |] (* devient *) 
+  fun s -> let (v2,s2 ) = [[e2]] s in
+           let (v1,s1) = [[e1]] s2 in
+           (v1 op v2,s1)
+
+[| prInt e0 |] (* devient *) 
+  fun s -> let (v0,s0) = [| e0 |] s in
+           (prInt v0, s0)
+[| let pat = e1 in e2 |]   (* devient *) 
+  fun s -> let (pat,s1) = [| e1 |] s in
+           [| e2 |] s1
+[| let rec v = e1 in e2 |] (* devient *) 
+  fun s -> let rec v = (let (f,s0) = [| e1 |] s in f)
+           in [| e2 |] s
+
+[| match |] (* non supporté *)
+[| if b then e1 else e2 |] (* devient *) 
+  fun s -> let (b0, s0) = [| b |] s in
+           if b0 then [| e1 |] s0
+           else [| e2 |] s0
+           
+[| fun pat -> e |] (* devient *)  fun s -> ((fun pat -> [| e |]), s)
+[| e1 e2 |] (* devient *) 
+  fun s -> let (v, s2) = [| e2 |] s  in
+           let (f, s1) = [| e1 |] s2 in
+           f v s1
+
+[| e1 := e2 |] (* devient *) 
+  fun s -> let (l1, s1) = [| e1 |] s in
+           let (v2, s2) = [| e2 |] s2 in
+           let s3 = write s2 l1 v2 in
+           ((), s3)
+[| ref e0 |] (* devient *) 
+  fun s -> let (v,s1) = [| e0 |] s in
+           let (s2,l) = alloc s1 in
+           let s3 = write s2 l v in
+           (l,s3)
+           
+[| try e1 with E x -> e2 |] (* devient *) 
+  fun s -> try let (v1, s1) = [| e1 |] s in (v1, s1)
+           with E x -> [| e2 |] s
+           
+[| raise e0 |] (* devient *) 
+  fun s -> try let (v,s0) = [| e0 |] s in
+	       (raise (E v), s0)
+	
+	\end{minted}
+	
+	Il y a quelques difficultés sur les exceptions.
+	
+
+\subsection{Continuations}
+
+	On rajoute en pratique un \code{\_} aux variables utilisées pour les différencier de celles du programme initial.
+
+	\begin{minted}{ocaml}
+
+[| () |] (* devient *) fun k kE -> k ()
+[| true |] (* devient *) fun k kE -> k true
+[| 42 |] (* devient *) fun k kE -> k 42
+[| x |]  (* devient *) fun k kE -> k x
+
+[| !e |] (* devient *) 
+	fun k kE -> [| e |] (fun addr -> k (!addr)) kE
+
+[| not e |]   (* devient *) 
+	fun k kE -> [| e |] (fun b -> k (not b)) kE
+[| e1 + e2 |] (* devient *) 
+	fun k kE -> [| e2 |] (fun v2 -> [| e1 |] (fun v1 -> k (v1 + v2)) kE) kE
+[| prInt e |] (* devient *) 
+	fun k kE -> [| e |] (fun v -> k (prInt v)) kE
+
+[| if be then e1 else e2 |] (* devient *) 
+	fun k kE -> [| be |] (fun b -> (if b then [| e1 |] else [| e2 |]) k kE) kE
+	
+	\end{minted}
+	
+	C'est là qu'il est agréable de supporter les booléens, car \code([| be |]) renvoie une valeur booléenne. Il est possible d'esquiver ce problème autrement, mais de manière moins fluide.
+	
+	\begin{minted}{ocaml}
+	
+[| let x = e1 in e2 |] (* devient *) 
+	fun k kE -> [| e1 |] (fun v -> let x = v in [| e2 |] k kE) kE 
+[| let rec f = e1 in e2 |] (* devient *) 
+	fun k kE -> [| e1 |] (fun v -> let rec f = v in [| e2 |] k kE) kE
+
+	\end{minted}
+	
+	Ici, on utilise le fait \code{[| e1 |]} renvoie une valeur fonctionnelle, mais non récursive. L'utilisation d'un \code{let rec} juste derrière permet de redéfinir cette valeur fonctionnelle comme étant récursive. Ceci fonctionne car \emph{Fouine} n'évalue pas les fonctions, mais les renvoie directement avec leur clôture.
+	
+	\begin{minted}{ocaml}
+	
+[| match |] (* non supporté *)
+[| fun x -> e |] (* devient *) 
+	fun k kE -> k (fun x -> [| e |]) 
+[| e1 e2 |] (* devient *) 
+	fun k kE -> [| e2 |] (fun v -> [| e1 |] (fun f -> f v k kE) kE) kE
+
+[| e1 := e2 |] (* devient *) 
+	fun k kE -> [| e2 |] (fun v -> [| e1 |] (fun addr -> k (addr := v)) kE) kE
+[| ref e |]    (* devient *) 
+	fun k kE -> [| e |] (fun v -> k (ref v)) kE
+
+[| (e1, e2) |] (* devient *) 
+	fun k kE -> [| e2 |] (fun v2 -> [| e1 |] (fun v1 -> k (v1, v2)) kE) kE	
+
+[| try e1 with E x -> e2 |] (* devient *) 
+	fun k kE -> [| e1 |] k (fun x -> [| e2 |] k kE)
+[| raise e |]               (* devient *) 
+	fun k kE -> [| e |] (fun v -> kE v) kE
+	
+	
+	\end{minted}
+
 \section{Parsing}
 
 
@@ -247,6 +446,16 @@ Pour la définition de fonction, il a fallu faire attention aux différentes fa�
 	\begin{minted}{ocaml}
 					let rec f = fun x -> f;;
 	\end{minted}
+	
+	\subsection{Références}
+	
+	\begin{minted}{ocaml}
+				let a = ref (ref 42) in
+				a := ref (ref 4);
+				prInt !(!(!a));;
+	\end{minted}
+	
+	Ici, on a un code fouine accepté, qui ne l'est pas en OCamL, car OCamL perçoit une erreur de typage.
 
 \end{document}
 

@@ -25,19 +25,7 @@ let op2str = function
   | Gt -> "Gt"
   | And -> "And"
   | Or -> "Or"
-
-
-let cmp_op2str = function
-  | Eq -> "Eq"
-  | Neq -> "Neq"
-  | Leq -> "Leq"
-  | Lt -> "Lt"
-  | Geq -> "Geq"
-  | Gt -> "Gt"
-
-let bool_op2str = function
-  | And -> "And"
-  | Or -> "Or"
+;;
 
 let rec expr2str = function
   | Neg expr               -> "Neg(" ^ (expr2str expr) ^ ")"
@@ -55,8 +43,6 @@ let rec expr2str = function
   ^ (expr2str expr1) ^ ", " ^ (expr2str expr2) ^ ")"
 	| Match (expr, pmatch)     -> "Match(" ^ (expr2str expr) ^ ", "
 	^ (pmatch2str pmatch) ^ ")"
-
-  | If (bexpr, expr) -> "If(" ^ bexpr2str(bexpr) ^ ", " ^ expr2str(expr) ^ ")"
   | IfElse (bexpr, expr1, expr2) -> "IfElse(" ^ expr2str(bexpr) ^ ", " ^ expr2str(expr1) ^ ", " ^ expr2str(expr2) ^ ")"
 
   | Fun (var, expr) -> "Fun(" ^ (pattern2str var) ^ ", " ^ (expr2str expr) ^ ")"
@@ -69,14 +55,6 @@ let rec expr2str = function
 
   | Try (expr1, var, expr2) -> "Try(" ^ (expr2str expr1) ^ ", " ^ var ^ ", " ^ (expr2str expr2) ^ ")"
   | Raise a -> "Raise( " ^ (expr2str a) ^ ")"
-
-
-and bexpr2str = function
-  | True -> "True"
-  | False -> "False"
-  | Cmp (expr1, op, expr2) -> "Cmp("^ expr2str(expr1) ^ ", "^ cmp_op2str(op) ^ ", " ^ expr2str(expr2) ^ ")"
-  | Bin_op(bexpr1, op, bexpr2) -> "Bin_op(" ^ bexpr2str(bexpr1)^ ", " ^ bool_op2str(op) ^ ", " ^ bexpr2str(bexpr2) ^ ")"
-  | Not bexpr -> "Not(" ^ bexpr2str(bexpr) ^ ")"
 
 and pattern2str = function
   | Var_Pat x -> "Var_Pat " ^ x
@@ -118,19 +96,6 @@ let pretty_op2str = function
   | Gt -> print_string " > "
   | Or -> print_string " || "
   | And -> print_string " && "
-
-let pretty_cmp = function
-  | Eq -> print_string " = "
-  | Neq -> print_string " <> "
-  | Leq -> print_string " <= "
-  | Lt -> print_string " < "
-  | Geq -> print_string " >= "
-  | Gt -> print_string " > "
-
-let pretty_bool_op = function
-  | Or -> print_string " || "
-  | And -> print_string " && "
-
 
 let rec pretty_pattern = function
   | Var_Pat x -> print_string x
@@ -212,16 +177,6 @@ let pretty_print_expr expr =
         pretty_aux indent expr2
       end
 		| Match (expr, patmatch) -> failwith "TODO - match"
-    | If (bexpr, expr) ->
-      begin
-        print_string (cons_color ^ "if " ^ def_color);
-        bpretty_aux indent bexpr;
-        print_newline ();
-        print_tab indent;
-        print_string (cons_color ^ "then\n" ^ def_color);
-        print_tab (indent + 1);
-        pretty_aux (indent + 1) expr
-      end
     | IfElse (bexpr, expr1, expr2) ->
       begin
         print_string (cons_color ^ "if " ^ def_color);
@@ -292,31 +247,6 @@ let pretty_print_expr expr =
 				print_string ")"
       end
 
-  and bpretty_aux indent = function
-    | True -> print_string "true"
-    | False -> print_string "false"
-    | Cmp (expr1, cmp, expr2) ->
-      begin
-        pretty_aux (indent+1) expr1;
-        pretty_cmp cmp;
-        pretty_aux (indent+1) expr2
-      end
-    | Bin_op (bexpr1, op, bexpr2) ->
-      begin
-        print_string "(";
-        bpretty_aux indent bexpr1;
-        print_string ") ";
-        pretty_bool_op op;
-        print_string " (";
-        bpretty_aux indent bexpr2;
-        print_string ")"
-      end
-    | Not bexpr ->
-      begin
-        print_string "not(";
-        bpretty_aux indent bexpr;
-        print_string ")"
-      end
   in
 
 

@@ -19,9 +19,6 @@ let rec ccont (e : expr_f) = match e with
       App(App(ccont e1,Fun(Var_Pat "_v1", App(Var "_k",Bin(Var "_v1",op,Var "_v2")))),
       Var "_kE"))),Var "_kE")))
 
-
-  
-  | If (be, e) -> failwith "Obsolète"  
   | IfElse(be, e1, e2) -> 
       Fun(Var_Pat "_k", Fun(Var_Pat "_kE", App(App(ccont be,Fun(Var_Pat "_b", 
       App(App(IfElse(Var "_b", ccont e1, ccont e2),Var "_k"),Var "_kE"))),Var "_kE")))
