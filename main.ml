@@ -4,6 +4,7 @@ open Printer
 open Mem
 open Continuations
 open Transfo_ref
+open Connection
 
 (* Pour la commodité : *)
 
@@ -47,7 +48,14 @@ let calc exec_mod =
     else
       begin
         let expr_mem = Parser.main Lexer.token lexbuf2 in
-        let expr_finale = App(Let(Var_Pat "_", expr_mem, transforme_ref expr), Unit) in
+        (*let expr_finale = App(Let(Var_Pat "_", expr_mem, transforme_ref expr), Unit) in*)
+        let expr_finale = connecte expr_mem (App(transforme_ref expr, Unit)) in
+
+        pretty_print_expr (expr_finale);
+        (*pour le déboggage -> a enlever apres:*)
+        (*pretty_print_expr expr_finale;*)
+        (*print_expr expr_mem;*)
+
         let _ = eval expr_finale [] id [] in ()
       end
 
@@ -73,7 +81,7 @@ let calc exec_mod =
         let _ = eval expr_finale [] id [] in ()
       end
 
-  
+
   | Parsing ->
   (* On a rajouté une option de parsing *)
     begin
