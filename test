@@ -1,3 +1,1 @@
-fun s -> let (v2,s2) = e2___ s in
-  let (f1,s1) = e1___ s2 in
-  f1 s1 v2 
+prInt 2

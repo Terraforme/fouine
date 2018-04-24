@@ -392,3 +392,12 @@ val f : tree -> unit = <fun>
 			print_string "\nin closure ";
 			pretty_closure env
 		end
+
+
+
+let debug_print e1 e0 =
+  print_string ("\027[31;1mIn\n" ^ def_color);
+  pretty_print_expr e1;
+  print_string ("\027[31;1mError at\n" ^ def_color);
+  pretty_print_expr e0
+  

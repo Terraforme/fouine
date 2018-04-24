@@ -33,11 +33,26 @@ let lexbuf2 = Lexing.from_channel (Pervasives.open_in ("mem_fouine_sans_commenta
 
 let parse () = Parser.main Lexer.token lexbuf;;
 
+let rec e_concat e1 e2 tag =
+(* concatène e1 sous la forme Let(......) avec e2
+selon le tag en paramètre *)
+  match e1 with
+  | Let(truc,e1_0, Var smg) -> if smg = tag then Let(truc, e1_0, e2) 
+                               else failwith "Cannot merge"
+  | LetRec(truc,e1_0, Var smg) -> if smg = tag then LetRec(truc, e1_0, e2) 
+                                  else failwith "Cannot merge"
+  | Let(truc,e1_0, e1)      -> Let(truc,e1_0, (e_concat e1 e2 tag))
+  | LetRec(truc,e1_0, e1)      -> LetRec(truc,e1_0, (e_concat e1 e2 tag))
+  | _ -> failwith "Cannot merge"
+
+
 (* la fonction que l'on lance ci-dessous *)
 let calc exec_mod =
   let expr = parse () in
   match exec_mod with
-  | Normal -> let _ = eval expr [] id [] in ()
+  | Normal -> if !outcode_option 
+    then pretty_print_expr expr
+    else let _ = eval expr [] id [] in ()
   | Continuation -> if !outcode_option
     then let cexpr = ccont expr in pretty_print_expr cexpr
     else let _ = eval (ctransform expr) [] id [] in ()
@@ -47,7 +62,7 @@ let calc exec_mod =
     else
       begin
         let expr_mem = Parser.main Lexer.token lexbuf2 in
-        let expr_finale = App(Let(Var_Pat "_", expr_mem, transforme_ref expr), Unit) in
+        let expr_finale = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
         let _ = eval expr_finale [] id [] in ()
       end
 
@@ -121,3 +136,6 @@ let exec_mod = if !debug_option then Debug else if !parsing_only_option then Par
 else if !c_option then Continuation else if !r_option then References
 else if !cr_option then CR else if !rc_option then RC else Normal in
 calc exec_mod;;
+
+
+
