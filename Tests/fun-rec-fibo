@@ -1,0 +1,9 @@
+let rec fibo n =
+  if n = 0 || n = 1 then 1
+  else fibo (n-1) + fibo (n-2)
+;;
+
+prInt (fibo 1);;
+prInt (fibo 2);;
+prInt (fibo 5);;
+prInt (fibo 10);;

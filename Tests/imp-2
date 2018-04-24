@@ -1,0 +1,3 @@
+let a = ref (ref 42) in
+a := ref (ref 4);
+prInt !(!(!a));;

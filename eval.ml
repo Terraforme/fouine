@@ -11,9 +11,6 @@ let rec regroup_pair pair1 pair2 = match pair1 with
   | _ -> Pair_val(pair1, pair2)
 ;;
 
-(* FIXME : exceptions ...  :
-Environnements locaux des exceptions *)
-
 
 let rec eval expr env k k' = match expr with
 (* eval :
@@ -65,12 +62,11 @@ Pour les continuations : k correspond à la continuation normale et
     eval expr1 env (fun value -> eval expr2 (pat_env_aff pattern value env) k k') k'
   | LetRec (f, expr1, expr2) ->
   (* f n'est pas un pattern : cf doc *)
-		begin
-      match expr1 with | Fun (pat, expr0) ->
-                         let rec env0 = (f, Fun_val (pat, expr0, env0)) :: env in
-                         eval expr2 env0 k k'
-                       | _ -> eval (Let (Var_Pat f, expr1, expr2)) env k k'
-    end
+		eval expr1 env (function | Fun_val (pat, expr0, env00) ->
+                               let rec env0 = (f, Fun_val (pat, expr0, env0)) :: env in
+                               eval expr2 env0 k k'
+                             | val1 -> eval expr2 (env_aff f val1 env) k k') k'
+        
 	| Match (expr, pmatch)   -> failwith "TODO - Matchings"
   | If (bexpr, expr)       ->
   (* On pourrait se passer de ce constructeur en pratique
@@ -164,47 +160,3 @@ Sert à faire des opérations arithmétiques *)
       | Geq -> Bool false
       | _   -> failwith "aeval : operation between different types"
     end
-   
-
-and beval bexpr env k k' = match bexpr with
-(* beval :
-
-bexpr_f -> env_f -> (bool -> val_f) -> ((val_f -> val_f) * env_f) list -> val_f
-
-Évalue l'expression booléenne en entrée sur l'environnement donné
-La continuation normale considérée est différentes des autres :
-de type "bool" -> val_f au lieu de val_f -> val_f *)
-  | True -> k true
-  | False -> k false
-  | Cmp (expr1, cmp, expr2)     ->
-    eval expr2 env (fun val2 -> eval expr1 env
-                               (fun val1 -> k (cmp_eval cmp val1 val2)) k') k'
-  | Bin_op (bexpr1, op, bexpr2) ->
-    (* Je n'encapsule pas cette section à cause de l'évaluation fainéante *)
-    begin match op with
-    | Or  -> beval bexpr1 env (fun b1 -> if b1 then k true
-                                         else beval bexpr2 env
-                                             (fun b2 -> k b2) k' ) k'
-    | And -> beval bexpr1 env (fun b1 -> if not b1 then k false
-                                         else beval bexpr2 env
-                                             (fun b2 -> k b2) k' ) k'
-    end
-  | Not bexpr                   -> beval bexpr env (fun b -> k (not b)) k'
-
-and cmp_eval cmp val1 val2 =
-(* cmp_eval : cmp_op_f -> val_f -> val_f -> bool
-Sert à comparer deux valeurs (à priori entières) *)
-	match val1, val2 with
-  | Int a, Int b ->
-    begin
-      match cmp with
-      | Eq  -> a =  b
-      | Neq -> a <> b
-      | Leq -> a <= b
-      | Lt  -> a <  b
-      | Geq -> a >= b
-      | Gt  -> a >  b
-    end
-  | Unit, Unit -> true
-  | Unit,_ | _, Unit -> false
-  | _, _ -> failwith "cmp_eval : non-int values"
