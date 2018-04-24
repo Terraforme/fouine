@@ -34,19 +34,6 @@ let lexbuf2 = Lexing.from_channel (Pervasives.open_in ("mem_fouine_sans_commenta
 
 let parse () = Parser.main Lexer.token lexbuf;;
 
-let rec e_concat e1 e2 tag =
-(* concatène e1 sous la forme Let(......) avec e2
-selon le tag en paramètre *)
-  match e1 with
-  | Let(truc,e1_0, Var smg) -> if smg = tag then Let(truc, e1_0, e2)
-                               else failwith "Cannot merge"
-  | LetRec(truc,e1_0, Var smg) -> if smg = tag then LetRec(truc, e1_0, e2)
-                                  else failwith "Cannot merge"
-  | Let(truc,e1_0, e1)      -> Let(truc,e1_0, (e_concat e1 e2 tag))
-  | LetRec(truc,e1_0, e1)      -> LetRec(truc,e1_0, (e_concat e1 e2 tag))
-  | _ -> failwith "Cannot merge"
-
-
 (* la fonction que l'on lance ci-dessous *)
 let calc exec_mod =
   let expr = parse () in
@@ -66,7 +53,7 @@ let calc exec_mod =
         (*let expr_finale = App(Let(Var_Pat "_", expr_mem, transforme_ref expr), Unit) in*)
         let expr_finale = connecte expr_mem (App(transforme_ref expr, Unit)) in
 
-        pretty_print_expr (expr_finale);
+        (*pretty_print_expr (expr_finale);*)
         (*pour le déboggage -> a enlever apres:*)
         (*pretty_print_expr expr_finale;*)
         (*print_expr expr_mem;*)
@@ -115,9 +102,8 @@ let calc exec_mod =
 
       print_string "\nTransformation impérative : \n";
       let expr_mem = Parser.main Lexer.token lexbuf2 in
-      let expr_trans = transforme_ref expr in
-      let expr_finale = App(Let(Var_Pat "_", expr_mem, expr_trans), Unit) in
-      pretty_print_expr expr_trans;
+      let expr_finale = connecte expr_mem (App(transforme_ref expr, Unit)) in
+      pretty_print_expr expr_finale;
 
       print_string "\nContinuation : \n";
       let cexpr = ccont expr in

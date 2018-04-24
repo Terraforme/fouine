@@ -1,7 +1,3 @@
-let mem_init () =
-  ()
-;;
-
 let rec find_last mem =
   let ((a,b,c),mem2) = mem in
   if mem2 = () then a
@@ -44,6 +40,3 @@ let rec write mem addr value =
   else if mem2 = () then raise (E 0)
   else ((a,b,c), (write mem2 addr value))
 ;;
-
-
-this_is_a_tag

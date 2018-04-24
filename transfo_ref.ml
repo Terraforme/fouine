@@ -62,7 +62,7 @@ let rec transforme_ref expr = match expr with
   let (f1,s1) = [[e1]] s2 in
   let (r, s0) = f1 v2 s1 *)
   | Aff(expr1, expr2) -> Fun(Var_Pat "s" , Let(Pair_Pat(Var_Pat "l1",Var_Pat "s1" ), App(transforme_ref expr1,Var "s" ), Let(Pair_Pat(Var_Pat "v2" ,Var_Pat "s2" ),
-  App(transforme_ref expr2,Var "s2" ), Let(Var_Pat "s3", App(App(App(Var "write",Var "s2" ),Var "l1"),Var "v2" ), Pair(Unit , Var "s3")))))
+  App(transforme_ref expr2,Var "s1" ), Let(Var_Pat "s3", App(App(App(Var "write",Var "s2" ),Var "l1"),Var "v2" ), Pair(Unit , Var "s3")))))
 (*fun s -> let (l1,s1 ) = [[e1]] s in
 let (v2,s2) = [[e2]] s2 in
 let s3 = write s2 l1 v2 in
