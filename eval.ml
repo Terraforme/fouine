@@ -30,17 +30,17 @@ Pour les continuations : k correspond à la continuation normale et
   | Bin (expr1, op, expr2) ->
     begin match op with
     | Or -> eval expr1 env (function
-                            | Bool b1 -> if b1 then Bool true else 
+                            | Bool b1 -> if b1 then k (Bool true) else 
                                          eval expr2 env (function
-                                                         | Bool b2 as val2 -> val2
+                                                         | Bool b2 as val2 -> k val2
                                                          | _ -> debug_print expr expr2;
                                                                 failwith "eval : non-Bool value") k'
                             | _ -> debug_print expr expr1; failwith "eval : non-Bool value") 
                             k'
     | And ->  eval expr1 env (fun val1 -> match val1 with 
-                            | Bool b1 -> if not b1 then Bool false else 
+                            | Bool b1 -> if not b1 then k (Bool false) else 
                                          eval expr2 env (function
-                                                         | Bool b2 as val2 -> val2
+                                                         | Bool b2 as val2 -> k val2
                                                          | _ -> failwith "eval : non-Bool value") k'
                             | _ -> failwith "eval : non-Bool value") 
                             k'
@@ -153,6 +153,7 @@ Sert à faire des opérations arithmétiques *)
       | Geq -> Bool true
       | _   -> failwith "aeval : non-Unit operator"
     end
+   | Pair_val(v1, v2), Pair_val(v3, v4) ->  failwith "aeval : pair cmp"
    | _, _ ->
     begin match op with
       | Eq  -> Bool false
