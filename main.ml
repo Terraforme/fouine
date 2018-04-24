@@ -74,7 +74,7 @@ let calc exec_mod =
     else
     begin
       let expr_mem = Parser.main Lexer.token lexbuf2 in
-      let expr_finale = App(Let(Var_Pat "_", expr_mem, transforme_ref (ctransform expr)), Unit) in
+      let expr_finale = App(e_concat expr_mem (transforme_ref (ccont expr)) "this_is_a_tag", Unit) in
       let _ = eval expr_finale [] id [] in ()
     end
     | RC -> if !outcode_option then
@@ -83,7 +83,7 @@ let calc exec_mod =
       else
       begin
         let expr_mem = Parser.main Lexer.token lexbuf2 in
-        let expr_inter = App(Let(Var_Pat "_", expr_mem, transforme_ref expr), Unit) in
+        let expr_inter = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
         let expr_finale = ctransform expr_inter in
         let _ = eval expr_finale [] id [] in ()
       end
@@ -108,7 +108,7 @@ let calc exec_mod =
       print_string "\nTransformation impérative : \n";
       let expr_mem = Parser.main Lexer.token lexbuf2 in
       let expr_trans = transforme_ref expr in
-      let expr_finale = App(Let(Var_Pat "_", expr_mem, expr_trans), Unit) in
+      let expr_finale = App(e_concat expr_mem (expr_trans) "this_is_a_tag", Unit) in
       pretty_print_expr expr_trans;
 
       print_string "\nContinuation : \n";
