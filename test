@@ -1,1 +1,5 @@
-prInt 2
+fun s -> let (v,s1) = e0_____ s in
+  let (s2,l) = alloc s1 in
+  let s3 = write s2 l v in
+  (l,s3)
+;;

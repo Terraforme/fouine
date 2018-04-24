@@ -48,14 +48,14 @@ let rec transforme_ref expr = match expr with
 	else e2_____ s0*)
   | Fun(pat, expr0) -> Fun(Var_Pat "s" , Pair(Fun(pat, transforme_ref expr0) , Var "s" ))
 (*fun s -> ((fun pat -> [[e]]), s)*)
-  | App(expr1, expr2) -> 
-      Fun(Var_Pat "s", Let(Pair_Pat(Var_Pat "v2", Var_Pat "s2"), App(transforme_ref expr2,Var "s"), 
-      Let(Pair_Pat(Var_Pat "f1", Var_Pat "s1"), App(transforme_ref expr1,Var "s2"), 
+  | App(expr1, expr2) ->
+      Fun(Var_Pat "s", Let(Pair_Pat(Var_Pat "v2", Var_Pat "s2"), App(transforme_ref expr2,Var "s"),
+      Let(Pair_Pat(Var_Pat "f1", Var_Pat "s1"), App(transforme_ref expr1,Var "s2"),
       App(App(Var "f1",Var "v2"),Var "s1"))))
 
-  
-  
-  
+
+
+
   (*Fun(Var_Pat "s" , Let(Pair_Pat(Var_Pat "v2" , Var_Pat "s2" ), App(transforme_ref expr2,Var "s" ),
   Let(Pair_Pat(Var_Pat "f1", Var_Pat "s1" ), App(transforme_ref expr1,Var "s2" ), Pair(App(Var "f1",Var "v2" ) , Var "s1" )))) *)
 (*fun s -> let (v2,s2) = [[e2]] s in
@@ -67,11 +67,13 @@ let rec transforme_ref expr = match expr with
 let (v2,s2) = [[e2]] s2 in
 let s3 = write s2 l1 v2 in
 ( (), s3)*)
-  | Alloc(expr0) -> Fun(Var_Pat "s" , Let(Pair_Pat(Var_Pat "v" ,Var_Pat "s1" ), App(transforme_ref expr0,Var "s" ), Let(Pair_Pat(Var_Pat "l" ,Var_Pat "s2" ),
-  App(App(Var "alloc",Var "s1" ),Var "v" ), Pair(Var "l"  , Var "s2" ))))
-(*fun s -> let (v,s1) = [[e0]] s in
-  let (l,s2) = alloc s1 v in
-  (l,s2)*)
+  | Alloc(expr0) -> Fun(Var_Pat "s", Let(Pair_Pat(Var_Pat "v", Var_Pat "s1"), App(transforme_ref expr0,Var "s"), Let(Pair_Pat(Var_Pat "s2", Var_Pat "l"),
+  App(Var "alloc",Var "s1"), Let(Var_Pat "s3", App(App(App(Var "write",Var "s2"),Var "l"),Var "v"), Pair(Var "l" , Var "s3")))))
+(*fun s -> let (v,s1) = e0_____ s in
+  let (s2,l) = alloc s1 in
+  let s3 = write s2 l v in
+  (l,s3)
+;;*)
   | Try(expr1, v, expr2) -> Fun(Var_Pat "s" , Try(Let(Pair_Pat(Var_Pat "v1" , Var_Pat "s1" ), App(transforme_ref expr1,Var "s" ),
   Pair(Var "v1"  , Var "s1" )), v, App(transforme_ref expr2,Var "s" )))
 (* FIXME: on ne peut pas prendre s1 au lieu de s car on n'est pas sur de pouvoir le définir,
