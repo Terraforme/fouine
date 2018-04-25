@@ -88,3 +88,27 @@ and val_f = Unit
           | Pair_val    of val_f * val_f
           | Fun_val     of pattern_f * expr_f * env_f
 ;;
+
+type instr_f =
+  | PRINT
+  | Const of int
+  | ADD 
+  | SUB
+  | MULT
+  | DIV
+  | MOD
+  (*if then else et booléens :  TODO*)
+  | LET
+  | ENDLET
+  | ACCESS of var_f
+  | CLOSURE of asm_f
+  | APPLY
+  | RETURN
+  (* ref et exceptions : TODO*)
+
+(* on réinvente la liste avec les notations du cours 
+and asm_f == instr_f list*)
+and asm_f =
+    EPSILON
+  | SEQ of instr_f*asm_f
+;;
