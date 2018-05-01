@@ -175,8 +175,7 @@ func_vchain:
   | VAR func_vchain { Fun(Var_Pat $1, $2) }
 
 applicator:
-  | VAR { Var $1 }
-  | LPAREN expression RPAREN { $2 }
+  | applicated { $1 }
   | applicator applicated { App($1,$2) } %prec APPLICATION
 ;
 
