@@ -41,7 +41,7 @@ let rec langage_SECD expr = match expr with
   | Fun(pat, e0) ->
   begin
     match pat with
-    | Var_Pat v -> [CLOSURE(v, langage_SECD e0)]
+    | Var_Pat v -> [CLOSURE(v, (langage_SECD e0) @ [RETURN])]
     | Pair_Pat(pat1, pat2) -> failwith "TODO" (*TODO*)
     | Cons_Pat(v, pat2) -> failwith "TODO" (*TODO*)
   end

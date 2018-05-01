@@ -67,6 +67,14 @@ do
 	  $becho -e -n "\e[33;1mR\e[0m"
 	fi
 	
+	mfouine=$(./main.native $tests/$test -machine 2> /dev/null) #machine secd
+	if [ "$mfouine" = "$caml" ]
+	then 
+	  $becho -e -n " "
+	else 
+	  $becho -e -n "\e[33;1mM\e[0m"
+	fi
+	
 	fouine=$(./main.native $tests/$test 2> errors.log)  #normal
 	error=$(cat errors.log)
 	if [ "$error" = "Fatal error: exception Parsing.Parse_error" ]

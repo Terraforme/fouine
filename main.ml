@@ -9,11 +9,13 @@ open Secd
 
 (* Pour la commodité : *)
 
-type exec_mod_f = Normal | Continuation | Parsing | Debug | References | CR | RC;;
+type exec_mod_f = Normal | Continuation | Parsing | Debug | References | CR | RC | Machine | Stackcode;;
 
 let debug_option = ref false and parsing_only_option = ref false and c_option = ref false and r_option = ref false
   and cr_option = ref false and rc_option = ref false
-  and outcode_option = ref  false;;
+  and outcode_option = ref  false
+  and machine_option = ref  false
+  and stackcode_option = ref false;;
 
 let anon_fonction s = () in (* print_endline ?*)
 let speclist = [("-debug", Arg.Set debug_option, "Switch to debug mode");
@@ -22,7 +24,9 @@ let speclist = [("-debug", Arg.Set debug_option, "Switch to debug mode");
   ("-R", Arg.Set r_option, "Perform Transformation erasing the imperative aspects");
   ("-ER", Arg.Set cr_option, "Perform Continuation Transformation, then Transformation erasing the imperative aspects");
   ("-RE", Arg.Set rc_option, "Perform Transformation erasing the imperative aspects");
-  ("-outcode", Arg.Set outcode_option, "Print the result of the Transformation (use with -E, -R, -ER or -RE)")]
+  ("-outcode", Arg.Set outcode_option, "Print the result of the Transformation (use with -E, -R, -ER or -RE)");
+  ("-machine", Arg.Set machine_option, "Switch to Machine SECD mod");
+  ("-stackcode", Arg.Set stackcode_option, "Print stackcode")]
 in let usage_msg = "\nThis is an ocaml interpreter for the fouine language.\n";
 in Arg.parse speclist anon_fonction usage_msg;;
 
@@ -100,6 +104,12 @@ let calc exec_mod =
       pretty_print_expr expr;*)
       print_newline ()
     end
+  | Machine -> 
+    begin
+      let _ = secdm (langage_SECD expr) [] [] in ()
+    end
+  | Stackcode -> 
+    print_SECD (langage_SECD expr)
   | Debug ->
     begin
       print_string "Raw parsing : \n";
@@ -136,5 +146,7 @@ let calc exec_mod =
 
 let exec_mod = if !debug_option then Debug else if !parsing_only_option then Parsing
 else if !c_option then Continuation else if !r_option then References
-else if !cr_option then CR else if !rc_option then RC else Normal in
+else if !cr_option then CR else if !rc_option then RC
+else if !machine_option then Machine else if !stackcode_option then Stackcode
+else Normal in
 calc exec_mod;;
