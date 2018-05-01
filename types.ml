@@ -90,18 +90,18 @@ and val_f = Unit
 ;;
 
 type instr_f =
-  | PRINT
-  | Const of int
+  | CONST of int
+  | ACCESS of var_f
   | ADD 
   | SUB
   | MULT
   | DIV
   | MOD
   (*if then else et booléens :  TODO*)
-  | LET
+  | PRINT
+  | LET of var_f    (* les LET sont atomiques (i.e pas de let (a, b) = (0, 1) *)
   | ENDLET
-  | ACCESS of var_f
-  | CLOSURE of asm_f
+  | CLOSURE of var_f * asm_f
   | APPLY
   | RETURN
   (* ref et exceptions : TODO*)

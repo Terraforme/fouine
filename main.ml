@@ -4,6 +4,7 @@ open Printer
 open Mem
 open Continuations
 open Transfo_ref
+open Secd
 
 (* Pour la commodité : *)
 
