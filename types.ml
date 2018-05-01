@@ -74,7 +74,7 @@ type env_f = (var_f * val_f) list
 (* Rappel sur les types en OCamL : plusieurs constructeurs :
 
 type ::= | int | float | bool | char | unit | string .....
-         /* | (constructeur) of ... ? */  
+         /* | (constructeur) of ... ? */
          | type * type
          | type -> type
 
@@ -91,24 +91,25 @@ and val_f = Unit
 
 type instr_f =
   | PRINT
-  | Const of int
-  | ADD 
+  | CONST of int
+  | ADD
   | SUB
   | MULT
   | DIV
   | MOD
   (*if then else et booléens :  TODO*)
-  | LET
+  | LET of var_f
   | ENDLET
   | ACCESS of var_f
-  | CLOSURE of asm_f
+  | CLOSURE of var_f * asm_f
   | APPLY
   | RETURN
   (* ref et exceptions : TODO*)
 
-(* on réinvente la liste avec les notations du cours 
+(* on réinvente la liste avec les notations du cours
 and asm_f == instr_f list*)
-and asm_f =
+(*and asm_f =
     EPSILON
   | SEQ of instr_f*asm_f
-;;
+;;*)
+and asm_f = instr_f list;;
