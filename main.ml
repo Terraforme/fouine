@@ -5,6 +5,7 @@ open Mem
 open Continuations
 open Transfo_ref
 open Transfo_machine
+open Secd
 
 (* Pour la commodité : *)
 

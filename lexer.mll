@@ -10,6 +10,7 @@ rule token = parse    (* la "fonction" aussi s'appelle token .. *)
                                    (* lexbuf: argument implicite
                                       associé au tampon où sont
                                       lus les caractères *)
+  | "(*" ([^'*']* ('*'[^')'])?)* "*)"   { token lexbuf }
   | eof             { EOF }
 
 	(* PONCTUATION *)
