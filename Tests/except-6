@@ -1,2 +1,2 @@
-try if 1/0 = (raise (E 42)) then 41 else 42
-with E x -> 1 
+prInt(try if 1/0 = (raise (E 42)) then 41 else 42
+with E x -> 1 )

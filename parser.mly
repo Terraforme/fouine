@@ -33,16 +33,18 @@
 
 %right COMA
 
+%left OR
+%left AND
+%nonassoc NOT
+%nonassoc LE GE LOWER GREATER EQUAL NE
+
 %left MOD
 %left PLUS MINUS /* associativité gauche: a+b+c, c'est (a+b)+c */
 %left TIMES DIV
 %nonassoc UMINUS /* un "faux token", correspondant au "-" unaire */
 
-%left OR
-%left AND
-%nonassoc NOT
 
-%nonassoc LE GE LOWER GREATER EQUAL NE
+
 
 %nonassoc PRINT
 %left APPLICATION /* un faux token pour lui dire que expr1 expr2 est une application ssi ça ne peut rien être d'autre */

@@ -1,2 +1,2 @@
-try raise (E 2)
-with E x -> x+1;;
+prInt (try raise (E 2)
+with E x -> x+1);;

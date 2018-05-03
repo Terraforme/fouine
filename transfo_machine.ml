@@ -4,7 +4,7 @@ open Mem
 
 let rec langage_SECD expr = match expr with
   | Cst c -> [CONST c]
-  | Bool b -> failwith "Todo" (*TODO*)
+  | Bool b -> [ BOOL b ]
   | Var v -> [ACCESS v]
   | Bang e0 -> failwith "TODO" (*TODO*)
   | Unit -> []
@@ -18,14 +18,14 @@ let rec langage_SECD expr = match expr with
       | Times -> (langage_SECD e2)@(langage_SECD e1)@[MULT]
       | Div -> (langage_SECD e2)@(langage_SECD e1)@[DIV]
       | Mod -> (langage_SECD e2)@(langage_SECD e1)@[MOD]
-      | Eq -> failwith "TODO" (*TODO*)
-      | Neq -> failwith "TODO" (*TODO*)
-      | Leq -> failwith "TODO" (*TODO*)
-      | Lt -> failwith "TODO" (*TODO*)
-      | Geq -> failwith "TODO" (*TODO*)
-      | Gt -> failwith "TODO" (*TODO*)
-      | Or -> failwith "TODO" (*TODO*)
-      | And-> failwith "TODO" (*TODO*)
+      | Eq -> (langage_SECD e2)@(langage_SECD e1)@[EQ]
+      | Neq -> (langage_SECD e2)@(langage_SECD e1)@[EQ; NOT]
+      | Leq -> (langage_SECD e2)@(langage_SECD e1)@[LE]
+      | Lt -> (langage_SECD e2)@(langage_SECD e1)@[LT]
+      | Geq -> (langage_SECD e2)@(langage_SECD e1)@[LT; NOT]
+      | Gt -> (langage_SECD e2)@(langage_SECD e1)@[LE; NOT]
+      | Or -> langage_SECD (IfElse (e1, Bool true, e2))
+      | And-> langage_SECD (IfElse (e1, e2, Bool false))
     end
   | PrInt e0 -> (langage_SECD e0)@[PRINT]
   | Let(pat, e1, e2) ->
@@ -37,7 +37,8 @@ let rec langage_SECD expr = match expr with
   end
   | LetRec(v, e1, e2) -> failwith "TODO" (*TODO*)
   | Match(e0, patm) -> failwith "TODO"
-  | IfElse(bexpr, e1, e2) -> failwith "TODO" (*TODO*)
+  | IfElse(bexpr, e1, e2) -> 
+    (langage_SECD bexpr)@[SWITCH((langage_SECD e1) @ [RETURN], (langage_SECD e2) @ [RETURN])] (* besoin d'un return *)
   | Fun(pat, e0) ->
   begin
     match pat with

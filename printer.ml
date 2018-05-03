@@ -323,11 +323,13 @@ val f : tree -> unit = <fun>
 			pretty_closure env
 		end
 
-
+let pdebug = ref false;;
 
 let debug_print e1 e0 =
-  print_string ("\027[31;1mIn\n" ^ def_color);
-  pretty_print_expr e1;
-  print_string ("\027[31;1mError at\n" ^ def_color);
-  pretty_print_expr e0
+  if !pdebug then begin
+    print_string ("\027[31;1mIn\n" ^ def_color);
+    pretty_print_expr e1;
+    print_string ("\027[31;1mError at\n" ^ def_color);
+    pretty_print_expr e0
+  end else ()
   
