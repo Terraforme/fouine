@@ -30,16 +30,16 @@ let rec nb_of_instr = function
   | Neg e -> (nb_of_instr e) + 1
   | Bin (e1, op, e2) -> (nb_of_instr e2) + (nb_of_instr e1) + (nb_of_instr_op op)
   | PrInt e -> (nb_of_instr e) + 1
-  | Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 2
-  | LetRec (f, e1, e2) -> failwith "Gabzcr"
-  | Match (_, _)->  failwith "Gabzcr"
-  | IfElse (b, e1, e2) ->  failwith "Gabzcr"
-  | Fun (p, e) ->  failwith "Gabzcr"
-  | App (e1, e2) ->  failwith "Gabzcr"
-  | Aff (e1, e2) ->  failwith "Gabzcr"
-  | Alloc e -> failwith "Gabzcr"
-  | Try (e, x, eX) -> failwith "Gabzcr"
-  | Raise e -> failwith "Gabzcr"
+  | Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 2 (*let et endlet*)
+  | LetRec (f, e1, e2) -> failwith "TODO: fonctions récursives"
+  | Match (_, _)->  failwith "TODO or TO give up with"
+  | IfElse (b, e1, e2) ->  (nb_of_instr b) + (nb_of_instr e2) + (nb_of_instr e1) + 2 (*JUMPIF et JUMP*)
+  | Fun (p, e) ->  (nb_of_instr e) + 4 (*let, endlet, closure et return*)
+  | App (e1, e2) ->  (nb_of_instr e2) + (nb_of_instr e1)
+  | Aff (e1, e2) ->  failwith "TODO: références"
+  | Alloc e -> failwith "TODO: références"
+  | Try (e, x, eX) -> failwith "TODO: exceptions"
+  | Raise e -> failwith "TODO: exceptions"
 
 
 
@@ -75,15 +75,31 @@ let rec transform_SECD = function
   | PrInt e -> transform_SECD e; !result.(!current_address) <- PRINT; incr current_address
   | Let (p, e1, e2) -> transform_SECD e1; !result.(!current_address) <- (LET (extract_var p)); incr current_address;
                        transform_SECD e2; !result.(!current_address) <- ENDLET; incr current_address
-  | LetRec (f, e1, e2) -> failwith "Gabzcr"
-  | Match (_, _)->  failwith "Gabzcr"
-  | IfElse (b, e1, e2) ->  failwith "Gabzcr"
-  | Fun (p, e) ->  failwith "Gabzcr"
-  | App (e1, e2) ->  failwith "Gabzcr"
-  | Aff (e1, e2) ->  failwith "Gabzcr"
-  | Alloc e -> failwith "Gabzcr"
-  | Try (e, x, eX) -> failwith "Gabzcr"
-  | Raise e -> failwith "Gabzcr"
+  | LetRec (f, e1, e2) -> failwith "TODO: fonctions récursives"
+  | Match (_, _)->  failwith "TODO or to give up with..."
+  | IfElse (b, e1, e2) -> transform_SECD b;
+                          let save_address1 = !current_address in
+                          incr current_address;
+                          transform_SECD e2;
+                          !result.(save_address1) <- (JUMPIF (!current_address + 1));
+                          let save_address2 = !current_address in
+                          incr current_address;
+                          transform_SECD e1;
+                          !result.(save_address2) <- (JUMP !current_address)
+  | Fun (p, e) ->  let v = extract_var p in
+                    let save_address = !current_address in
+                    !result.(!current_address + 1) <- (LET v);
+                    current_address := !current_address + 2;
+                    transform_SECD e;
+                    !result.(!current_address) <- ENDLET;
+                    !result.(!current_address + 1) <- RETURN;
+                    current_address := !current_address + 2;
+                    !result.(save_address) <- (CLOSURE !current_address)
+  | App (e1, e2) ->  transform_SECD e2; transform_SECD e1; !result.(!current_address) <- APPLY; incr current_address
+  | Aff (e1, e2) ->  failwith "TODO: références" (*TODO*)
+  | Alloc e -> failwith "TODO: références" (*TODO*)
+  | Try (e, x, eX) -> failwith "TODO: exceptions" (*TODO*)
+  | Raise e -> failwith "TODO: exceptions" (*TODO*)
 
 
 let langage_SECD expr =
