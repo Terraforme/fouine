@@ -4,25 +4,32 @@ open Types
 On retient une variable globale available qui pointe
 sur la prochaine case libre dans la mémoire *)
 
-let mem = Array.make 1000000 Unit
+let mem_limiter = ref true
+
+let mem = ref (Array.make 1000000 Unit)
 let available = ref 0;;
 
+let new_mem () = Array.make 1000000 Unit
 let init_mem () = available := 0
 ;;
 
+let incr_mem () = mem := Array.append (!mem) (new_mem ())
+
 let alloc_mem value =
-  if !available = 1000000 then failwith "Out of Memory"
-	else begin
-         incr available;
-         mem.(!available - 1) <- value;
-         !available - 1
-       end
+  if !available >= Array.length !mem then 
+    begin if !mem_limiter then failwith "Out of Memory"
+          else incr_mem ()
+    end;
+	
+  incr available;
+  (!mem).(!available - 1) <- value;
+  !available - 1
 ;;
 
 let set_mem addr value = 
-	mem.(addr) <- value
+	(!mem).(addr) <- value
 ;;
 
 let read_mem addr =
-  mem.(addr)
+  (!mem).(addr)
 ;;

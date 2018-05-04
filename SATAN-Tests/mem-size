@@ -1,0 +1,8 @@
+let rec alloc n =
+  if n = 0 then 42
+  else let x = ref 5 in alloc (n - 1)
+let rec powten n =
+  if n = 0 then 1
+  else 10 * (powten (n - 1)) ;;
+prInt (alloc (powten 7))
+

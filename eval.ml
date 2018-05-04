@@ -66,8 +66,13 @@ qui sera fait dans des rendus futurs. *)
   | LetRec (f, expr1, expr2) ->
   (* f n'est pas un pattern : cf doc *)
 		eval expr1 env (function | Fun_val (pat, expr0, env00) ->
-                               let rec env0 = (f, Fun_val (pat, expr0, env0)) :: env in
+		                           (* On rend la fonction récursive *)
+		                           let rec env00' = (f, Fun_val (pat, expr0, env00')) :: env00 in
+                               let env0 = (f, Fun_val (pat, expr0, env00')) :: env in
                                eval expr2 env0 k k'
+                               (* Ancienne version :
+                               let rec env0 = (f, Fun_val (pat, expr0, env0)) :: env in
+                               eval expr2 env0 k k' *)
                              | val1 -> eval expr2 (env_aff f val1 env) k k') k'
         
 	| Match (expr, pmatch)   -> failwith "TODO - Matchings"
@@ -99,7 +104,7 @@ qui sera fait dans des rendus futurs. *)
 		begin
 		  match k' with
 		  | [] -> failwith "Raise : Nothing to catch exception"
-		  | k_exn :: k' -> eval expr env k_exn k'
+		  | k_exn :: k'' -> eval expr env k_exn k'
     end
   | Try (expr1, var_except, expr2) ->
 	(* Syntaxe: try expr1 with E var_except -> expr2 *)
