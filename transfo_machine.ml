@@ -3,44 +3,34 @@ open Types
 open Mem
 
 
-let cline = ref 0
+let current_address = ref 0
+let result = ref (Array.make 0 UNIT)
 
-let transform_op = function
-  | Plus -> [|ADD|]
-  | Minus -> [|SUB|]
-  | Times -> [|MULT|]
-  | Div   -> [|DIV|]
-  | Mod   -> [|MOD|]
-  | Eq    -> [|EQ|]
-  | Neq   -> [|EQ;NOT|]
-  | Leq   -> [|LE|]
-  | Lt    -> [|LT|]
-  | Geq   -> [|LT;NOT|]
-  | Gt    -> [|LE;NOT|]
+let nb_of_instr_op = function
+  | Plus -> 1
+  | Minus -> 1
+  | Times -> 1
+  | Div   -> 1
+  | Mod   -> 1
+  | Eq    -> 1
+  | Neq   -> 2
+  | Leq   -> 1
+  | Lt    -> 1
+  | Geq   -> 2
+  | Gt    -> 2
   | _     -> failwith "todo : Or, And"
 
-let extract_var = function
-  |  Var_Pat x -> x
-  | _ -> failwith "Not a singleton"
-
-let rec transform_SECD = function
-  | Cst  a -> [| CONST a |]
-  | Bool b -> [| BOOL b |]
-  | Var  x -> [| ACCESS x |]
-  | Bang e -> failwith "bang" 
-  | Unit   -> failwith "unit"
-  | Pair (e1, e2) -> failwith "pair"
-  | Neg e -> let code = transform_SECD e in
-             Array.append code [|NOT|]
-  | Bin (e1, op, e2) -> let code2 = transform_SECD e2 in
-                        let code1 = transform_SECD e1 in
-                        let code = Array.append code2 code1 in
-                        Array.append code (transform_op op) 
-  | PrInt e -> Array.append (transform_SECD e) [|PRINT|]
-  | Let (p, e1, e2) -> let code1 = Array.append (transform_SECD e1) [|LET (extract_var p)|] in
-                       let code2 = Array.append (transform_SECD e2) [|ENDLET|] in
-                       Array.append code1 code2
-                       
+let rec nb_of_instr = function
+  | Cst  a -> 1
+  | Bool b -> 1
+  | Var  x -> 1
+  | Bang e -> failwith "TODO: références" (* TODO *)
+  | Unit   -> 1
+  | Pair (e1, e2) -> failwith "TODO: paires" (* TODO *)
+  | Neg e -> (nb_of_instr e) + 1
+  | Bin (e1, op, e2) -> (nb_of_instr e2) + (nb_of_instr e1) + (nb_of_instr_op op)
+  | PrInt e -> (nb_of_instr e) + 1
+  | Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 2
   | LetRec (f, e1, e2) -> failwith "Gabzcr"
   | Match (_, _)->  failwith "Gabzcr"
   | IfElse (b, e1, e2) ->  failwith "Gabzcr"
@@ -50,12 +40,58 @@ let rec transform_SECD = function
   | Alloc e -> failwith "Gabzcr"
   | Try (e, x, eX) -> failwith "Gabzcr"
   | Raise e -> failwith "Gabzcr"
-   
 
-let langage_SECD expr = 
-  cline := 0;
-  transform_SECD expr;;
-    
+
+
+let transform_op = function
+  | Plus -> !result.(!current_address) <- ADD; incr current_address
+  | Minus -> !result.(!current_address) <- SUB; incr current_address
+  | Times -> !result.(!current_address) <- MULT; incr current_address
+  | Div   -> !result.(!current_address) <- DIV; incr current_address
+  | Mod   -> !result.(!current_address) <- MOD; incr current_address
+  | Eq    -> !result.(!current_address) <- EQ; incr current_address
+  | Neq   -> !result.(!current_address) <- EQ; !result.(!current_address + 1) <- NOT; current_address := !current_address + 2
+  | Leq   -> !result.(!current_address) <- LE; incr current_address
+  | Lt    -> !result.(!current_address) <- LT; incr current_address
+  | Geq   -> !result.(!current_address) <- LT; !result.(!current_address + 1) <- NOT; current_address := !current_address + 2
+  | Gt    -> !result.(!current_address) <- LE; !result.(!current_address) <- NOT; current_address := !current_address + 2
+  | _     -> failwith "todo : Or, And"
+
+let extract_var = function
+  |  Var_Pat x -> x
+  | _ -> failwith "Not a singleton"
+
+let rec transform_SECD = function
+  | Cst  a -> !result.(!current_address) <- (CONST a); incr current_address
+  | Bool b -> !result.(!current_address) <- (BOOL b); incr current_address
+  | Var  x -> !result.(!current_address) <- (ACCESS x); incr current_address
+  | Bang e -> failwith "TODO: références" (* TODO *)
+  | Unit   -> !result.(!current_address) <- UNIT; incr current_address
+(*inutile, cf initialisation, mais je le laisse pour l'instant au cas où UNIT est un jour remplacé par EPSILON*)
+
+  | Pair (e1, e2) -> failwith "TODO: paires" (* TODO *)
+  | Neg e -> transform_SECD e; !result.(!current_address) <- NOT; incr current_address
+  | Bin (e1, op, e2) -> transform_SECD e2; transform_SECD e1; transform_op op
+  | PrInt e -> transform_SECD e; !result.(!current_address) <- PRINT; incr current_address
+  | Let (p, e1, e2) -> transform_SECD e1; !result.(!current_address) <- (LET (extract_var p)); incr current_address;
+                       transform_SECD e2; !result.(!current_address) <- ENDLET; incr current_address
+  | LetRec (f, e1, e2) -> failwith "Gabzcr"
+  | Match (_, _)->  failwith "Gabzcr"
+  | IfElse (b, e1, e2) ->  failwith "Gabzcr"
+  | Fun (p, e) ->  failwith "Gabzcr"
+  | App (e1, e2) ->  failwith "Gabzcr"
+  | Aff (e1, e2) ->  failwith "Gabzcr"
+  | Alloc e -> failwith "Gabzcr"
+  | Try (e, x, eX) -> failwith "Gabzcr"
+  | Raise e -> failwith "Gabzcr"
+
+
+let langage_SECD expr =
+  let n = nb_of_instr expr in
+  result := Array.make n UNIT;
+  transform_SECD expr;
+  !result;;
+
 
 
 
@@ -106,7 +142,7 @@ let rec langage_SECD expr = match expr with
   end
   | LetRec(v, e1, e2) -> failwith "TODO" (*TODO*)
   | Match(e0, patm) -> failwith "TODO"
-  | IfElse(bexpr, e1, e2) -> 
+  | IfElse(bexpr, e1, e2) ->
     (langage_SECD bexpr)@[SWITCH((langage_SECD e1) @ [RETURN], (langage_SECD e2) @ [RETURN])] (* besoin d'un return *)
   | Fun(pat, e0) ->
   begin

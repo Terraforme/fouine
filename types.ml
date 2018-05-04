@@ -91,25 +91,26 @@ and val_f = Unit
 
 type instr_f =
 
-  | EPSILON 
+  | EPSILON
+  | UNIT (*Epsilon peut remplacer Unit au besoin si on veut enlever cette ligne*)
 
   | CONST of int
   | BOOL  of bool
   | ACCESS of var_f
-  
+
   | ADD
   | SUB
   | MULT
   | DIV
   | MOD
-  
+
   (* Opérateurs booléens *)
   | NOT
-  
+
   | EQ
   | LT
   | LE
-  
+
   (*if then else et booléens :  TODO*)
   | PRINT
   | LET of var_f    (* les LET sont atomiques (i.e pas de let (a, b) = (0, 1) *)
