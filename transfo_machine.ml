@@ -18,7 +18,7 @@ let nb_of_instr_op = function
   | Lt    -> 1
   | Geq   -> 2
   | Gt    -> 2
-  | _     -> failwith "todo : Or, And"
+  | _     -> failwith "TODO: Or, And"
 
 let rec nb_of_instr = function
   | Cst  a -> 1
@@ -30,16 +30,16 @@ let rec nb_of_instr = function
   | Neg e -> (nb_of_instr e) + 1
   | Bin (e1, op, e2) -> (nb_of_instr e2) + (nb_of_instr e1) + (nb_of_instr_op op)
   | PrInt e -> (nb_of_instr e) + 1
-  | Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 2 (*let et endlet*)
-  | LetRec (f, e1, e2) -> failwith "TODO: fonctions récursives"
-  | Match (_, _)->  failwith "TODO or TO give up with"
+  | Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 2 (*LET et ENDLET*)
+  | LetRec (f, e1, e2) -> failwith "TODO: fonctions récursives" (*TODO*)
+  | Match (_, _)->  failwith "TODO or to give up with"
   | IfElse (b, e1, e2) ->  (nb_of_instr b) + (nb_of_instr e2) + (nb_of_instr e1) + 2 (*JUMPIF et JUMP*)
-  | Fun (p, e) ->  (nb_of_instr e) + 4 (*let, endlet, closure et return*)
-  | App (e1, e2) ->  (nb_of_instr e2) + (nb_of_instr e1) + 1
-  | Aff (e1, e2) ->  failwith "TODO: références"
-  | Alloc e -> failwith "TODO: références"
-  | Try (e, x, eX) -> failwith "TODO: exceptions"
-  | Raise e -> failwith "TODO: exceptions"
+  | Fun (p, e) ->  (nb_of_instr e) + 4 (*LET, ENDLET, CLOSURE et RETURN*)
+  | App (e1, e2) ->  (nb_of_instr e2) + (nb_of_instr e1) + 1 (* APPLY *)
+  | Aff (e1, e2) ->  failwith "TODO: références" (*TODO*)
+  | Alloc e -> failwith "TODO: références" (*TODO*)
+  | Try (e, x, eX) -> failwith "TODO: exceptions" (*TODO*)
+  | Raise e -> failwith "TODO: exceptions" (*TODO*)
 
 
 
@@ -55,7 +55,7 @@ let transform_op = function
   | Lt    -> !result.(!current_address) <- LT; incr current_address
   | Geq   -> !result.(!current_address) <- LT; !result.(!current_address + 1) <- NOT; current_address := !current_address + 2
   | Gt    -> !result.(!current_address) <- LE; !result.(!current_address) <- NOT; current_address := !current_address + 2
-  | _     -> failwith "todo : Or, And"
+  | _     -> failwith "TODO: Or, And" (*TODO*)
 
 let extract_var = function
   |  Var_Pat x -> x
@@ -75,7 +75,7 @@ let rec transform_SECD = function
   | PrInt e -> transform_SECD e; !result.(!current_address) <- PRINT; incr current_address
   | Let (p, e1, e2) -> transform_SECD e1; !result.(!current_address) <- (LET (extract_var p)); incr current_address;
                        transform_SECD e2; !result.(!current_address) <- ENDLET; incr current_address
-  | LetRec (f, e1, e2) -> failwith "TODO: fonctions récursives"
+  | LetRec (f, e1, e2) -> failwith "TODO: fonctions récursives" (*TODO*)
   | Match (_, _)->  failwith "TODO or to give up with..."
   | IfElse (b, e1, e2) -> transform_SECD b;
                           let save_address1 = !current_address in
