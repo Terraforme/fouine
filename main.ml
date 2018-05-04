@@ -84,7 +84,7 @@ let calc exec_mod =
     | RC -> if !outcode_option then
         let expr_mem = Parser.main Lexer.token lexbuf2 in
         let expr_inter = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
-        let expr_finale = ctransform (transforme_ref expr) in
+        let expr_finale = ctransform expr_inter in
         pretty_print_expr expr_finale
       else
       begin

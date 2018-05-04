@@ -43,7 +43,7 @@ done;
 
 $becho -e "\n""\e[34;1m"Starting Tests"\e[0m" "\n"
 
-$becho -e "\e[33;1mERP\e[0m"
+$becho -e "\e[33;1mERMP\e[0m"
 for test in $(ls $tests)
 do
 	#cat $tests/$test

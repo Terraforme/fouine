@@ -1,0 +1,1 @@
+prInt(try (raise (E 1); 19324) with E x -> 42)

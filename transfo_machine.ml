@@ -35,7 +35,7 @@ let rec nb_of_instr = function
   | Match (_, _)->  failwith "TODO or TO give up with"
   | IfElse (b, e1, e2) ->  (nb_of_instr b) + (nb_of_instr e2) + (nb_of_instr e1) + 2 (*JUMPIF et JUMP*)
   | Fun (p, e) ->  (nb_of_instr e) + 4 (*let, endlet, closure et return*)
-  | App (e1, e2) ->  (nb_of_instr e2) + (nb_of_instr e1)
+  | App (e1, e2) ->  (nb_of_instr e2) + (nb_of_instr e1) + 1
   | Aff (e1, e2) ->  failwith "TODO: références"
   | Alloc e -> failwith "TODO: références"
   | Try (e, x, eX) -> failwith "TODO: exceptions"
