@@ -106,10 +106,9 @@ let calc exec_mod =
     end
   | Machine -> 
     begin
-      let _ = secdm (langage_SECD expr) [] [] in ()
+      let _ = secd (langage_SECD expr) in ()
     end
-  | Stackcode -> 
-    print_SECD (langage_SECD expr)
+  | Stackcode -> print_SECD (langage_SECD expr)
   | Debug ->
     begin
       print_string "Raw parsing : \n";

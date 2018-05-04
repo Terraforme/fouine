@@ -91,6 +91,8 @@ and val_f = Unit
 
 type instr_f =
 
+  | EPSILON 
+
   | CONST of int
   | BOOL  of bool
   | ACCESS of var_f
@@ -112,8 +114,9 @@ type instr_f =
   | PRINT
   | LET of var_f    (* les LET sont atomiques (i.e pas de let (a, b) = (0, 1) *)
   | ENDLET
-  | SWITCH of asm_f * asm_f (* pour le if then else *)
-  | CLOSURE of var_f * asm_f
+  | JUMP   of int
+  | JUMPIF of int
+  | CLOSURE of int
   | APPLY
   | RETURN
   (* ref et exceptions : TODO*)
@@ -124,4 +127,4 @@ and asm_f == instr_f list*)
     EPSILON
   | SEQ of instr_f*asm_f
 ;;*)
-and asm_f = instr_f list;;
+and asm_f = instr_f array;;
