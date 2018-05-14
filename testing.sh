@@ -2,7 +2,7 @@
 
 tests="Tests/"
 sol_dir="no sol dir"
-prInt="preludeCaml.ml"
+prInt="annexe/preludeCaml.ml"
 becho=$(which echo)
 
 debug=false
@@ -92,3 +92,6 @@ do
 	fi
 done;
 
+
+
+rm *.log

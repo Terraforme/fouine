@@ -32,7 +32,7 @@ in Arg.parse speclist anon_fonction usage_msg;;
 
 
 let lexbuf = Lexing.from_channel (Pervasives.open_in (Sys.argv.(1)));;
-let lexbuf2 = Lexing.from_channel (Pervasives.open_in ("mem_fouine_sans_commentaires"));;
+let lexbuf2 = Lexing.from_channel (Pervasives.open_in ("annexe/mem_fouine_sans_commentaires"));;
 
 (* on enchaîne les tuyaux: lexbuf est passé à Lexer.token,
    et le résultat est donné à Parser.main *)
