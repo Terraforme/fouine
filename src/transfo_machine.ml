@@ -38,8 +38,8 @@ let rec nb_of_instr = function
   | App (e1, e2) ->  (nb_of_instr e2) + (nb_of_instr e1) + 1 (* APPLY *)
   | Aff (e1, e2) ->  (nb_of_instr e2) + (nb_of_instr e1) + 1 (* WRITE *)
   | Alloc e -> (nb_of_instr e) + 1 (* ALLOC *)
-  | Try (e, x, eX) -> failwith "TODO: exceptions" (*TODO*)
-  | Raise e -> failwith "TODO: exceptions" (*TODO*)
+  | Try (e, x, eX) -> (nb_of_instr e) + (nb_of_instr eX) + 5 (* SETJMP, UNSETJMP, JUMP, LET, ENDLET *)
+  | Raise e -> (nb_of_instr e) + 1 (* LONGJMP *)
 
 
 
@@ -99,8 +99,18 @@ let rec transform_SECD = function
   | App (e1, e2) ->  transform_SECD e2; transform_SECD e1; !result.(!current_address) <- APPLY; incr current_address
   | Aff (e1, e2) ->  transform_SECD e2; transform_SECD e1; !result.(!current_address) <- WRITE; incr current_address
   | Alloc e -> transform_SECD e; !result.(!current_address) <- ALLOC; incr current_address
-  | Try (e, x, eX) -> failwith "TODO: exceptions" (*TODO*)
-  | Raise e -> failwith "TODO: exceptions" (*TODO*)
+  | Try (e, x, eX) -> let save_address1 = !current_address in
+                      incr current_address;
+                      transform_SECD e;
+                      !result.(!current_address) <- UNSETJMP; incr current_address;
+                      let save_address2 = !current_address in
+                      incr current_address;
+                      !result.(save_address1) <- SETJMP(!current_address);
+                      !result.(!current_address) <- LET(x); incr current_address;
+                      transform_SECD eX;
+                      !result.(!current_address) <- ENDLET; incr current_address;
+                      !result.(save_address2) <- JUMP(!current_address)
+  | Raise e -> transform_SECD e; !result.(!current_address) <- LONGJMP; incr current_address
 
 
 let langage_SECD expr =

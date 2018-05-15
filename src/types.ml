@@ -115,21 +115,22 @@ type instr_f =
   | LET of var_f    (* les LET sont atomiques (i.e pas de let (a, b) = (0, 1) *)
   | REC of var_f    (* le let rec *)
   | ENDLET
-  
+
   (* Instrucfions de branchement *)
   | JUMP   of int
   | JUMPIF of int
   | CLOSURE of int
   | APPLY
   | RETURN
-  
+
   (* Gestion De La Mémoire *)
-  | READ 
+  | READ
   | WRITE
   | ALLOC
-  
+
   (* Exceptions *)
-  | SETJMP
+  | SETJMP of int
+  | UNSETJMP
   | LONGJMP
 
 (* on réinvente la liste avec les notations du cours
