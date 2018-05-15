@@ -111,16 +111,26 @@ type instr_f =
   | LT
   | LE
 
-  (*if then else et booléens :  TODO*)
   | PRINT
   | LET of var_f    (* les LET sont atomiques (i.e pas de let (a, b) = (0, 1) *)
+  | REC of var_f    (* le let rec *)
   | ENDLET
+  
+  (* Instrucfions de branchement *)
   | JUMP   of int
   | JUMPIF of int
   | CLOSURE of int
   | APPLY
   | RETURN
-  (* ref et exceptions : TODO*)
+  
+  (* Gestion De La Mémoire *)
+  | READ 
+  | WRITE
+  | ALLOC
+  
+  (* Exceptions *)
+  | SETJMP
+  | LONGJMP
 
 (* on réinvente la liste avec les notations du cours
 and asm_f == instr_f list*)
