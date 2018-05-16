@@ -14,14 +14,32 @@ let pc = ref 0;
 type mval_f =
     INT of int
   | BOOL of bool
+  | UNIT
   | ENV  of menv_f
   | CLO  of int * menv_f
   | ADDR of int
+  | PTR  of int
 and  menv_f = (var_f * mval_f) list
 
 type stack_f = mval_f list
+type xstack_f = int * menv_f * stack_f list
 ;;
 
+(* Mémoire *)
+(* Initialisation de la mémoire *)
+let secdmem = Array.make 1000000 (INT 0)
+let empty = ref 0
+
+let alloc v =
+  if !empty = 1000000 then failwith "SECD : Out of Memory"
+  else begin
+    secdmem.(!empty) <- v;
+    incr empty;
+    !empty - 1
+  end
+
+let read a = secdmem.(a)
+let write v a = secdmem.(a) <- v
 
 let rec menv_read x = function
     [] -> failwith ("menv_read : " ^ x ^ " not found")
@@ -52,7 +70,13 @@ let ctop stack = match (List.hd stack) with
   | _           -> failwith "ctop : Poping Non-closure"
 let atop stack = match (List.hd stack) with
   | ADDR c -> c
-  | _      -> failwith "atom : Poping Non-asm"
+  | _      -> failwith "atop : Poping Non-asm"
+let ptop stack = match (List.hd stack) with 
+  | PTR  a -> a
+  | _      -> failwith "ptop : Poping non-ptr"
+let utop stack = match (List.hd stack) with 
+  | UNIT   -> ()
+  | _      -> failwith "utop : Poping non-unit"
 ;;
 
 (* Des push plus précis, pour pusher des types particuliers *)
@@ -61,6 +85,8 @@ let bpush b stack = (BOOL b) :: stack
 let epush e stack = (ENV e)  :: stack
 let cpush c' e stack = (CLO (c', e)) :: stack
 let apush c stack = (ADDR c) :: stack
+let ppush p stack = (PTR  p) :: stack
+let upush stack   = (UNIT)   :: stack
 ;;
 
 (* Fonction prINt *)
@@ -95,8 +121,9 @@ let print_instr = function
   | READ   -> print_string "read\n"
   | WRITE  -> print_string "write\n"
   | ALLOC  -> print_string "alloc\n"
-  | SETJMP -> print_string "setjmp\n"
-  | LONGJMP -> print_string "longjmp\n"
+  | SETJMP a -> print_string ("setjmp  <" ^ (string_of_int a) ^ ">\n")
+  | UNSETJMP -> print_string "unset\n"
+  | LONGJMP  -> print_string "longjmp\n"
 
 
 let rec adjust n max_n = 
@@ -128,7 +155,7 @@ let print_SECD code =
   ();;
 
 
-let treat_instr instr stack env pc = match instr with
+let treat_instr instr stack xstack env pc = match instr with
 (* val treat_instr :  instr_f -> stack_f ref -> menv_f ref -> int ref -> unit *)
     EPSILON -> failwith "EPSILON : end of program unexpected"
   | CONST  a -> let _ = stack := ipush a !stack in incr pc
@@ -199,16 +226,23 @@ let treat_instr instr stack env pc = match instr with
               let pc'  = atop !stack in stack := pop !stack ;
               stack := push retv !stack ;
               env   := env' ; pc := pc'
-  | UNIT -> failwith "TODO: Victor"
+  | UNIT -> stack := upush !stack; incr pc
 
 (* Mémoire *)
-  | READ  -> failwith "TODO: Victor"
-  | WRITE -> failwith "TODO: Victor"
-  | ALLOC -> failwith "TODO: Victor"
+  | READ  -> let ptr = ptop !stack in stack := pop !stack;
+             stack := push (read ptr) !stack; incr pc
+  | WRITE -> let ptr = ptop !stack in stack := pop !stack;
+             let v   = top !stack  in stack := pop !stack;
+             write v ptr; stack := upush !stack; incr pc
+  | ALLOC -> let v = top !stack in stack := pop !stack;
+             stack := ppush (alloc v) !stack; incr pc 
 
 (* Exception *)
-  | SETJMP -> failwith "TODO: Victor"
-  | LONGJMP -> failwith "TODO: Victor"
+  | SETJMP a -> xstack := push (a, !env, !stack) !xstack; incr pc
+  | UNSETJMP -> xstack := pop !xstack; incr pc;
+  | LONGJMP  -> let exn = itop !stack in 
+                let (pc', env', stack') = top !xstack in xstack := pop !xstack;
+                stack := ipush exn stack'; env := env'; pc := pc'
 
 let secd code =
 (* val secd : asm_f -> stack_f
@@ -216,14 +250,15 @@ La machine secd : prend du code en argument et l'évalue
 La stack et l'environnement sont des références qui seront modifiées
 au cours de l'exécution du code *)
   let n = Array.length code in
-  let stack = ref [] in
-  let env   = ref [] in
-  let pc    = ref 0  in
+  let stack  = ref [] in
+  let env    = ref [] in
+  let xstack = ref [] in
+  let pc     = ref 0  in
 
   while !pc < n && code.(!pc) <> EPSILON do
     (*print_string ("At ligne " ^ (string_of_int !pc) ^ ":");
     print_instr code.(!pc);*)
-    treat_instr code.(!pc) stack env pc;
+    treat_instr code.(!pc) stack xstack env pc;
     (*print_string ("\tnew line : " ^(string_of_int !pc) ^ "\n")*)
   done;
   !stack;;
