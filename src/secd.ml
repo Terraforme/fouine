@@ -1,6 +1,7 @@
 open Types
 open Env
 open Eval
+open SecdTypes
 
 (* On définit ici la machine SECD :
 on passe la pile et l'environnement en paramètres .
@@ -8,22 +9,9 @@ L'environnement reprend la définition usuelle définit dans `env.ml`.
 Pour la pile ; on peut y stocker des valeurs, des environnements, et une clôture. *)
 
 
-let pc = ref 0;
+let pc = ref 0
 
 (* e comme 'element' *)
-type mval_f =
-    INT of int
-  | BOOL of bool
-  | UNIT
-  | ENV  of menv_f
-  | CLO  of int * menv_f
-  | ADDR of int
-  | PTR  of int
-and  menv_f = (var_f * mval_f) list
-
-type stack_f = mval_f list
-type xstack_f = int * menv_f * stack_f list
-;;
 
 (* Mémoire *)
 (* Initialisation de la mémoire *)
@@ -77,6 +65,9 @@ let ptop stack = match (List.hd stack) with
 let utop stack = match (List.hd stack) with 
   | UNIT   -> ()
   | _      -> failwith "utop : Poping non-unit"
+let ttop stack = match (List.hd stack) with
+  | PAIR(l, r) -> (l, r)
+  | _          -> failwith "ttop : Poping non-tuple"
 ;;
 
 (* Des push plus précis, pour pusher des types particuliers *)
@@ -87,6 +78,7 @@ let cpush c' e stack = (CLO (c', e)) :: stack
 let apush c stack = (ADDR c) :: stack
 let ppush p stack = (PTR  p) :: stack
 let upush stack   = (UNIT)   :: stack
+let tpush  l r stack = (PAIR (l, r)) :: stack
 ;;
 
 (* Fonction prINt *)
@@ -96,10 +88,10 @@ let prInt a = print_int a; print_newline ()
 
 let print_instr = function
     EPSILON -> print_string "epsilon\n"
-  | CONST a -> print_string  ("const  " ^ (string_of_int a)  ^ "\n")
-  | BOOL b  -> print_string  ("bool   "  ^ (string_of_bool b) ^ "\n")
+  | CONST a -> print_string  ("const   " ^ (string_of_int a)  ^ "\n")
+  | BOOL b  -> print_string  ("bool    "  ^ (string_of_bool b) ^ "\n")
   | UNIT    -> print_string "unit\n"
-  | ACCESS x -> print_string ("access \"" ^ x ^ "\"\n")
+  | ACCESS x -> print_string ("access  \"" ^ x ^ "\"\n")
   | ADD     -> print_string "add\n"
   | SUB     -> print_string "sub\n"
   | MULT    -> print_string "mult\n"
@@ -110,20 +102,22 @@ let print_instr = function
   | LE      -> print_string "le\n"
   | LT      -> print_string "lt\n"
   | PRINT  -> print_string "prInt\n"
-  | LET x  -> print_string ("let    \"" ^ x ^ "\"\n")
-  | REC x  -> print_string ("letrec \"" ^ x ^ "\"\n")
+  | LET x  -> print_string ("let     \"" ^ x ^ "\"\n")
+  | REC x  -> print_string ("letrec  \"" ^ x ^ "\"\n")
   | ENDLET -> print_string "endlet\n"
-  | JUMP a     -> print_string ("jump   <" ^ (string_of_int a) ^ ">\n")
-  | JUMPIF a   -> print_string ("jumpif <" ^ (string_of_int a) ^ ">\n")
-  | CLOSURE a  -> print_string ("clos   <" ^ (string_of_int a) ^ ">\n")
+  | JUMP a     -> print_string ("jump    <" ^ (string_of_int a) ^ ">\n")
+  | JUMPIF a   -> print_string ("jumpif  <" ^ (string_of_int a) ^ ">\n")
+  | CLOSURE a  -> print_string ("clos    <" ^ (string_of_int a) ^ ">\n")
   | APPLY  -> print_string "apply\n"
   | RETURN -> print_string "return\n"
   | READ   -> print_string "read\n"
   | WRITE  -> print_string "write\n"
   | ALLOC  -> print_string "alloc\n"
-  | SETJMP a -> print_string ("setjmp  <" ^ (string_of_int a) ^ ">\n")
-  | UNSETJMP -> print_string "unset\n"
+  | SETJMP a -> print_string ("setjmp   <" ^ (string_of_int a) ^ ">\n")
+  | UNSETJMP -> print_string "unsetjmp\n"
   | LONGJMP  -> print_string "longjmp\n"
+  | PAIR   -> print_string "pair\n"
+  | DESTRUCT -> print_string "destruct\n"
 
 
 let rec adjust n max_n = 
@@ -243,6 +237,14 @@ let treat_instr instr stack xstack env pc = match instr with
   | LONGJMP  -> let exn = itop !stack in 
                 let (pc', env', stack') = top !xstack in xstack := pop !xstack;
                 stack := ipush exn stack'; env := env'; pc := pc'
+                
+(* Pairs *)
+  | PAIR     -> let l = top !stack in stack := pop !stack;
+                let r = top !stack in stack := pop !stack;
+                stack := tpush l r !stack; incr pc
+  | DESTRUCT -> let (l, r) = ttop !stack in stack := pop !stack;
+                stack := push r !stack; stack := push l !stack;
+                incr pc
 
 let secd code =
 (* val secd : asm_f -> stack_f

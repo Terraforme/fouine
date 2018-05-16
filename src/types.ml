@@ -132,6 +132,9 @@ type instr_f =
   | SETJMP of int
   | UNSETJMP
   | LONGJMP
+  
+  | PAIR 
+  | DESTRUCT
 
   | DESTRUCT
   | PAIR
