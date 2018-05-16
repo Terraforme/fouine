@@ -114,7 +114,7 @@ let rec transform_SECD = function
                       !result.(!current_address) <- ENDLET;
                       incr current_address
                     done;
-                    !result.(!current_address + 1) <- RETURN;
+                    !result.(!current_address) <- RETURN;
                     incr current_address;
                     !result.(save_address) <- (CLOSURE !current_address)
   | App (e1, e2) ->  transform_SECD e2; transform_SECD e1; !result.(!current_address) <- APPLY; incr current_address
