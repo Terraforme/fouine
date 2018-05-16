@@ -135,10 +135,5 @@ type instr_f =
 
   | PAIR
   | DESTRUCT
-(* on réinvente la liste avec les notations du cours
-and asm_f == instr_f list*)
-(*and asm_f =
-    EPSILON
-  | SEQ of instr_f*asm_f
-;;*)
+
 and asm_f = instr_f array;;
