@@ -132,12 +132,9 @@ type instr_f =
   | SETJMP of int
   | UNSETJMP
   | LONGJMP
-  
-  | PAIR 
-  | DESTRUCT
 
-  | DESTRUCT
   | PAIR
+  | DESTRUCT
 (* on réinvente la liste avec les notations du cours
 and asm_f == instr_f list*)
 (*and asm_f =
