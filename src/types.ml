@@ -133,6 +133,8 @@ type instr_f =
   | UNSETJMP
   | LONGJMP
 
+  | DESTRUCT
+  | PAIR
 (* on réinvente la liste avec les notations du cours
 and asm_f == instr_f list*)
 (*and asm_f =

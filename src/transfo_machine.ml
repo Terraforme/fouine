@@ -20,21 +20,35 @@ let nb_of_instr_op = function
   | Gt    -> 2
   | _     -> failwith "TODO: Or, And"
 
+
+let rec nb_of_instr_in_pattern p = match p with
+  | Var_Pat x -> 1
+  | Pair_Pat(p1, p2) -> (nb_of_instr_in_pattern p1) + (nb_of_instr_in_pattern p2)
+  | _ -> failwith "L'autre cas est une option qui n'a pas été traitée: les constructeurs"
+
+let rec traite_pattern p = match p with
+  | Var_Pat x -> !result.(!current_address) <- (LET x); incr current_address; 1
+  | Pair_Pat(p1, p2) -> !result.(!current_address) <- DESTRUCT; incr current_address; let nb_of_let1 = traite_pattern p1 and nb_of_let2 = traite_pattern p2
+    in nb_of_let1 + nb_of_let2
+  | _ -> failwith "L'autre cas est une option qui n'a pas été traitée: les constructeurs"
+
+
 let rec nb_of_instr = function
   | Cst  a -> 1
   | Bool b -> 1
   | Var  x -> 1
   | Bang e -> (nb_of_instr e) + 1 (* READ *)
   | Unit   -> 1
-  | Pair (e1, e2) -> failwith "TODO: paires" (* TODO *)
+  | Pair (e1, e2) -> (nb_of_instr e2) + (nb_of_instr e1) + 1 (* PAIR *)
   | Neg e -> (nb_of_instr e) + 1
   | Bin (e1, op, e2) -> (nb_of_instr e2) + (nb_of_instr e1) + (nb_of_instr_op op)
   | PrInt e -> (nb_of_instr e) + 1
-  | Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 2 (*LET et ENDLET*)
+  (*| Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 2 (*LET et ENDLET*)*)
+  | Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 3*(nb_of_instr_in_pattern p)-1 (*LET et ENDLET pour chaque var + un destruct par fois où on paire*)
   | LetRec (f, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 2 (*REC et ENDLET*)
   | Match (_, _)->  failwith "TODO or to give up with"
   | IfElse (b, e1, e2) ->  (nb_of_instr b) + (nb_of_instr e2) + (nb_of_instr e1) + 2 (*JUMPIF et JUMP*)
-  | Fun (p, e) ->  (nb_of_instr e) + 4 (*LET, ENDLET, CLOSURE et RETURN*)
+  | Fun (p, e) ->  (nb_of_instr e) + 2 + 3*(nb_of_instr_in_pattern p) - 1 (*CLOSURE et RETURN, et les LET, ENDLET et DESTRUCT*)
   | App (e1, e2) ->  (nb_of_instr e2) + (nb_of_instr e1) + 1 (* APPLY *)
   | Aff (e1, e2) ->  (nb_of_instr e2) + (nb_of_instr e1) + 1 (* WRITE *)
   | Alloc e -> (nb_of_instr e) + 1 (* ALLOC *)
@@ -57,10 +71,6 @@ let transform_op = function
   | Gt    -> !result.(!current_address) <- LE; !result.(!current_address) <- NOT; current_address := !current_address + 2
   | _     -> failwith "TODO: Or, And" (*TODO*)
 
-let extract_var = function
-  |  Var_Pat x -> x
-  | _ -> failwith "Not a singleton"
-
 let rec transform_SECD = function
   | Cst  a -> !result.(!current_address) <- (CONST a); incr current_address
   | Bool b -> !result.(!current_address) <- (BOOL b); incr current_address
@@ -69,12 +79,21 @@ let rec transform_SECD = function
   | Unit   -> !result.(!current_address) <- UNIT; incr current_address
 (*inutile, cf initialisation, mais je le laisse pour l'instant au cas où UNIT est un jour remplacé par EPSILON*)
 
-  | Pair (e1, e2) -> failwith "TODO: paires" (* TODO *)
+  | Pair (e1, e2) -> transform_SECD e2; transform_SECD e1; !result.(!current_address) <- PAIR; incr current_address
   | Neg e -> transform_SECD e; !result.(!current_address) <- NOT; incr current_address
   | Bin (e1, op, e2) -> transform_SECD e2; transform_SECD e1; transform_op op
   | PrInt e -> transform_SECD e; !result.(!current_address) <- PRINT; incr current_address
-  | Let (p, e1, e2) -> transform_SECD e1; !result.(!current_address) <- (LET (extract_var p)); incr current_address;
-                       transform_SECD e2; !result.(!current_address) <- ENDLET; incr current_address
+  | Let (p, e1, e2) ->
+  begin
+    transform_SECD e1;
+    let nb_of_let = traite_pattern p in
+    transform_SECD e2;
+    for i=0 to nb_of_let - 1 do
+      !result.(!current_address) <- ENDLET;
+      incr current_address
+    done;
+  end
+
   | LetRec (f, e1, e2) -> transform_SECD e1; !result.(!current_address) <- (REC f); incr current_address;
                           transform_SECD e2; !result.(!current_address) <- ENDLET; incr current_address
   | Match (_, _)->  failwith "TODO or to give up with..."
@@ -87,14 +106,16 @@ let rec transform_SECD = function
                           incr current_address;
                           transform_SECD e1;
                           !result.(save_address2) <- (JUMP !current_address)
-  | Fun (p, e) ->  let v = extract_var p in
-                    let save_address = !current_address in
-                    !result.(!current_address + 1) <- (LET v);
-                    current_address := !current_address + 2;
+  | Fun (p, e) ->   let save_address = !current_address in
+                    incr current_address;
+                    let nb_of_let = traite_pattern p in
                     transform_SECD e;
-                    !result.(!current_address) <- ENDLET;
+                    for i=0 to nb_of_let - 1 do
+                      !result.(!current_address) <- ENDLET;
+                      incr current_address
+                    done;
                     !result.(!current_address + 1) <- RETURN;
-                    current_address := !current_address + 2;
+                    incr current_address;
                     !result.(save_address) <- (CLOSURE !current_address)
   | App (e1, e2) ->  transform_SECD e2; transform_SECD e1; !result.(!current_address) <- APPLY; incr current_address
   | Aff (e1, e2) ->  transform_SECD e2; transform_SECD e1; !result.(!current_address) <- WRITE; incr current_address
@@ -118,69 +139,3 @@ let langage_SECD expr =
   result := Array.make n UNIT;
   transform_SECD expr;
   !result;;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(*
-let rec langage_SECD expr = match expr with
-  | Cst c -> [CONST c]
-  | Bool b -> [ BOOL b ]
-  | Var v -> [ACCESS v]
-  | Bang e0 -> failwith "TODO" (*TODO*)
-  | Unit -> []
-  | Pair(e1, e2) -> failwith "TODO" (*TODO*)
-  | Neg(e0) -> failwith "TODO" (*TODO*)
-  | Bin(e1, op, e2) ->
-    begin
-    match op with
-      | Plus -> (langage_SECD e2)@(langage_SECD e1)@[ADD]
-      | Minus -> (langage_SECD e2)@(langage_SECD e1)@[SUB]
-      | Times -> (langage_SECD e2)@(langage_SECD e1)@[MULT]
-      | Div -> (langage_SECD e2)@(langage_SECD e1)@[DIV]
-      | Mod -> (langage_SECD e2)@(langage_SECD e1)@[MOD]
-      | Eq -> (langage_SECD e2)@(langage_SECD e1)@[EQ]
-      | Neq -> (langage_SECD e2)@(langage_SECD e1)@[EQ; NOT]
-      | Leq -> (langage_SECD e2)@(langage_SECD e1)@[LE]
-      | Lt -> (langage_SECD e2)@(langage_SECD e1)@[LT]
-      | Geq -> (langage_SECD e2)@(langage_SECD e1)@[LT; NOT]
-      | Gt -> (langage_SECD e2)@(langage_SECD e1)@[LE; NOT]
-      | Or -> langage_SECD (IfElse (e1, Bool true, e2))
-      | And-> langage_SECD (IfElse (e1, e2, Bool false))
-    end
-  | PrInt e0 -> (langage_SECD e0)@[PRINT]
-  | Let(pat, e1, e2) ->
-  begin
-    match pat with
-    | Var_Pat v -> (langage_SECD e1)@[LET(v)]@(langage_SECD e2)@[ENDLET]
-    | Pair_Pat(pat1, pat2) -> failwith "TODO" (*TODO*)
-    | Cons_Pat(v, pat2) -> failwith "TODO" (*TODO*)
-  end
-  | LetRec(v, e1, e2) -> failwith "TODO" (*TODO*)
-  | Match(e0, patm) -> failwith "TODO"
-  | IfElse(bexpr, e1, e2) ->
-    (langage_SECD bexpr)@[SWITCH((langage_SECD e1) @ [RETURN], (langage_SECD e2) @ [RETURN])] (* besoin d'un return *)
-  | Fun(pat, e0) ->
-  begin
-    match pat with
-    | Var_Pat v -> [CLOSURE(v, (langage_SECD e0) @ [RETURN])]
-    | Pair_Pat(pat1, pat2) -> failwith "TODO" (*TODO*)
-    | Cons_Pat(v, pat2) -> failwith "TODO" (*TODO*)
-  end
-  | App(e1, e2) -> (langage_SECD e2)@(langage_SECD e1)@[APPLY]
-  | Aff(e1, e2) -> failwith "TODO" (*TODO*)
-  | Alloc(expr0) -> failwith "TODO" (*TODO*)
-  | Try(expr1, v, expr2) -> failwith "TODO" (*TODO*)
-  | Raise expr0 -> failwith "TODO" (*TODO*)
-;;*)
