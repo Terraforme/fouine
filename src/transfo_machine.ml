@@ -18,7 +18,8 @@ let nb_of_instr_op = function
   | Lt    -> 1
   | Geq   -> 2
   | Gt    -> 2
-  | _     -> failwith "TODO: Or, And"
+  | Or     -> failwith "OR"
+  | And    -> failwith "AND"
 
 
 let rec nb_of_instr_in_pattern p = match p with
@@ -41,7 +42,12 @@ let rec nb_of_instr = function
   | Unit   -> 1
   | Pair (e1, e2) -> (nb_of_instr e2) + (nb_of_instr e1) + 1 (* PAIR *)
   | Neg e -> (nb_of_instr e) + 1
-  | Bin (e1, op, e2) -> (nb_of_instr e2) + (nb_of_instr e1) + (nb_of_instr_op op)
+  | Bin (e1, op, e2) -> 
+    begin
+      try (nb_of_instr e2) + (nb_of_instr e1) + (nb_of_instr_op op)
+      with Failure f -> if f = "OR" then nb_of_instr (IfElse(e1, Bool true, e2))
+                        else             nb_of_instr (IfElse(e1, e2, Bool false))
+    end
   | PrInt e -> (nb_of_instr e) + 1
   (*| Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 2 (*LET et ENDLET*)*)
   | Let (p, e1, e2) -> (nb_of_instr e1) + (nb_of_instr e2) + 3*(nb_of_instr_in_pattern p)-1 (*LET et ENDLET pour chaque var + un destruct par fois où on paire*)
@@ -81,7 +87,12 @@ let rec transform_SECD = function
 
   | Pair (e1, e2) -> transform_SECD e2; transform_SECD e1; !result.(!current_address) <- PAIR; incr current_address
   | Neg e -> transform_SECD e; !result.(!current_address) <- NOT; incr current_address
-  | Bin (e1, op, e2) -> transform_SECD e2; transform_SECD e1; transform_op op
+  | Bin (e1, op, e2) -> 
+    begin match op with
+      | Or  -> transform_SECD (IfElse(e1, Bool true, e2))
+      | And -> transform_SECD (IfElse(e1, e2, Bool false))
+      | _   -> transform_SECD e2; transform_SECD e1; transform_op op
+    end
   | PrInt e -> transform_SECD e; !result.(!current_address) <- PRINT; incr current_address
   | Let (p, e1, e2) ->
   begin
