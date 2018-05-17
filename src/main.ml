@@ -104,7 +104,7 @@ let calc exec_mod =
       pretty_print_expr expr;*)
       print_newline ()
     end
-  | Machine -> 
+  | Machine ->
     begin
       let _ = secd (langage_SECD expr) in ()
     end

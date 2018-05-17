@@ -20,30 +20,17 @@ La fonction d'évaluation principale. Fonctionne en style par continuation
 La mémoire est globale et d'utilisation transparente.
 Pour les continuations : k correspond à la continuation normale et
                          k' à une pile de couple de continuations
-                         correspondant aux continuations d'exceptions 
+                         correspondant aux continuations d'exceptions
 
 Remarque : On pourrait de passer d'une pile. Il s'agit de rétro-ingéniring
 qui sera fait dans des rendus futurs. *)
-  | Neg expr               -> 
-        eval expr env (function   Bool b -> k (Bool (not b)) 
+  | Neg expr               ->
+        eval expr env (function   Bool b -> k (Bool (not b))
                                 | _ -> failwith "eval : non-Bool value") k'
   | Bin (expr1, op, expr2) ->
     begin match op with
-    | Or -> eval expr1 env (function
-                            | Bool b1 -> if b1 then k (Bool true) else 
-                                         eval expr2 env (function
-                                                         | Bool b2 as val2 -> k val2
-                                                         | _ -> debug_print expr expr2;
-                                                                failwith "eval : non-Bool value") k'
-                            | _ -> debug_print expr expr1; failwith "eval : non-Bool value") 
-                            k'
-    | And ->  eval expr1 env (fun val1 -> match val1 with 
-                            | Bool b1 -> if not b1 then k (Bool false) else 
-                                         eval expr2 env (function
-                                                         | Bool b2 as val2 -> k val2
-                                                         | _ -> failwith "eval : non-Bool value") k'
-                            | _ -> failwith "eval : non-Bool value") 
-                            k'
+    | Or -> eval (IfElse(expr1, Bool true, expr2)) env k  k'
+    | And ->  eval (IfElse(expr1, expr2, Bool false)) env k k'
     | _ -> eval expr2 env (fun val2 ->
                            eval expr1 env (fun val1 -> k (aeval op val1 val2)) k') k'
     end
@@ -51,7 +38,7 @@ qui sera fait dans des rendus futurs. *)
   | Var x                  -> k (env_read x env)
   | Bang expr              ->
          eval expr env (function   Ref  addr -> k (read_mem addr)
-                                 | _ -> debug_print (Bang expr) expr; 
+                                 | _ -> debug_print (Bang expr) expr;
                                         failwith "! : Dereferecing non-addr") k'
   | Cst c                  -> k (Int c)
   | PrInt expr             ->
@@ -74,7 +61,7 @@ qui sera fait dans des rendus futurs. *)
                                let rec env0 = (f, Fun_val (pat, expr0, env0)) :: env in
                                eval expr2 env0 k k' *)
                              | val1 -> eval expr2 (env_aff f val1 env) k k') k'
-        
+
 	| Match (expr, pmatch)   -> failwith "TODO - Matchings"
   | IfElse (bexpr, expr1, expr2) ->
     eval bexpr env (function Bool b -> eval (if b then expr1 else expr2) env k k'
@@ -91,7 +78,7 @@ qui sera fait dans des rendus futurs. *)
   (* Affectation : le terme gauche doit être une référence *)
 		eval expr2 env (fun value -> eval expr1 env
                    (function Ref addr -> begin set_mem addr value; k Unit end
-                             | _ -> debug_print expr expr1; 
+                             | _ -> debug_print expr expr1;
                                     failwith "Aff : affecting non-ref" ) k') k'
   | Alloc (expr) ->
   (* L'allocation mémoire : le terme gauche a toutes les libertés *)
@@ -117,7 +104,6 @@ en réalité une fonction donc faire a + b c'est faire
 ((+) a) b). *)
 
 and aeval op val1 val2 =
-(* FIXME *)
 (* aeval :
 operator_f -> val_f -> val_f -> val_f
 Sert à faire des opérations arithmétiques *)
@@ -137,13 +123,13 @@ Sert à faire des opérations arithmétiques *)
       | Gt    -> Bool(a >  b)
       | _     -> failwith "aeval : non-Int operator"
     end
-  | Bool b1, Bool b2 -> 
+  | Bool b1, Bool b2 ->
     begin match op with
       | Or    -> Bool(b1 || b2)
       | And   -> Bool(b1 && b2)
       | _     -> failwith "aeval : non-Bool operator"
     end
-  | Unit, Unit -> 
+  | Unit, Unit ->
     begin match op with
       | Eq  -> Bool true
       | Neq -> Bool false
