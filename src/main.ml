@@ -81,18 +81,18 @@ let calc exec_mod =
       let expr_finale = App(e_concat expr_mem (transforme_ref (ctransform expr)) "this_is_a_tag", Unit) in
       let _ = eval expr_finale [] id [] in ()
     end
-    | RC -> if !outcode_option then
-        let expr_mem = Parser.main Lexer.token lexbuf2 in
-        let expr_inter = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
-        let expr_finale = ctransform expr_inter in
-        pretty_print_expr expr_finale
-      else
-      begin
-        let expr_mem = Parser.main Lexer.token lexbuf2 in
-        let expr_inter = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
-        let expr_finale = ctransform expr_inter in
-        let _ = eval expr_finale [] id [] in ()
-      end
+  | RC -> if !outcode_option then
+      let expr_mem = Parser.main Lexer.token lexbuf2 in
+      let expr_inter = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
+      let expr_finale = ctransform expr_inter in
+      pretty_print_expr expr_finale
+    else
+    begin
+      let expr_mem = Parser.main Lexer.token lexbuf2 in
+      let expr_inter = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
+      let expr_finale = ctransform expr_inter in
+      let _ = eval expr_finale [] id [] in ()
+    end
 
 
   | Parsing ->
@@ -104,9 +104,12 @@ let calc exec_mod =
       pretty_print_expr expr;*)
       print_newline ()
     end
-  | Machine -> 
+  | Machine ->
     begin
-      let _ = secd (langage_SECD expr) in ()
+      let code = langage_SECD expr in
+      if !stackcode_option then print_SECD code;
+      print_newline();
+      let _ = secd code in ()
     end
   | Stackcode -> print_SECD (langage_SECD expr)
   | Debug ->
