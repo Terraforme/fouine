@@ -56,45 +56,28 @@ selon le tag en paramètre *)
 let calc exec_mod =
   let expr = parse () in
   match exec_mod with
-  | Normal -> if !outcode_option
-    then pretty_print_expr expr
-    else let _ = eval expr [] id [] in ()
+  | Normal -> let _ = eval expr [] id [] in ()
   | Continuation -> if !outcode_option
     then let cexpr = ccont expr in pretty_print_expr cexpr
     else let _ = eval (ctransform expr) [] id [] in ()
-  | References -> if !outcode_option then
-      let expr_trans = transforme_ref expr in
-      pretty_print_expr expr_trans;
-    else
-      begin
+  | References ->
         let expr_mem = Parser.main Lexer.token lexbuf2 in
         let expr_finale = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
-        let _ = eval expr_finale [] id [] in ()
-      end
-
-  | CR -> if !outcode_option then
-      let expr_trans = transforme_ref (ccont expr) in
-      pretty_print_expr expr_trans
-    else
+        if !outcode_option then
+            pretty_print_expr expr_finale
+        else let _ = eval expr_finale [] id [] in ()
+  | CR ->
     begin
       let expr_mem = Parser.main Lexer.token lexbuf2 in
       let expr_finale = App(e_concat expr_mem (transforme_ref (ctransform expr)) "this_is_a_tag", Unit) in
-      let _ = eval expr_finale [] id [] in ()
+      if !outcode_option then pretty_print_expr expr_finale
+      else let _ = eval expr_finale [] id [] in ()
     end
-  | RC -> if !outcode_option then
-      let expr_mem = Parser.main Lexer.token lexbuf2 in
+  | RC -> let expr_mem = Parser.main Lexer.token lexbuf2 in
       let expr_inter = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
       let expr_finale = ctransform expr_inter in
-      pretty_print_expr expr_finale
-    else
-    begin
-      let expr_mem = Parser.main Lexer.token lexbuf2 in
-      let expr_inter = App(e_concat expr_mem (transforme_ref expr) "this_is_a_tag", Unit) in
-      let expr_finale = ctransform expr_inter in
-      let _ = eval expr_finale [] id [] in ()
-    end
-
-
+      if !outcode_option then pretty_print_expr expr_finale
+      else let _ = eval expr_finale [] id [] in ()
   | Parsing ->
   (* On a rajouté une option de parsing *)
     begin
@@ -105,12 +88,13 @@ let calc exec_mod =
       print_newline ()
     end
   | Machine ->
-    begin
       let code = langage_SECD expr in
-      if !stackcode_option then print_SECD code;
-      print_newline();
-      let _ = secd code in ()
-    end
+      if !stackcode_option then
+      begin
+        print_SECD code;
+        print_newline()
+      end
+      else let _ = secd code in ()
   | Stackcode -> print_SECD (langage_SECD expr)
   | Debug ->
     begin

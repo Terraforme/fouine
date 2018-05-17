@@ -179,6 +179,7 @@ let pretty_print_expr expr =
 		| Match (expr, patmatch) -> failwith "TODO - match"
     | IfElse (bexpr, expr1, expr2) ->
       begin
+        print_string "(";
         print_string (cons_color ^ "if " ^ def_color);
         pretty_aux indent bexpr;
         print_newline ();
@@ -191,6 +192,7 @@ let pretty_print_expr expr =
         print_string (cons_color ^ "else\n" ^ def_color);
         print_tab (indent + 1);
         pretty_aux (indent + 1) expr2;
+        print_string ")";
       end
     | Fun (x, expr) ->
       begin
@@ -332,4 +334,3 @@ let debug_print e1 e0 =
     print_string ("\027[31;1mError at\n" ^ def_color);
     pretty_print_expr e0
   end else ()
-  
