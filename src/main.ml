@@ -79,14 +79,11 @@ let calc exec_mod =
       if !outcode_option then pretty_print_expr expr_finale
       else let _ = eval expr_finale [] id [] in ()
   | Parsing ->
-  (* On a rajouté une option de parsing *)
-    begin
       print_string "Raw parsing : \n";
       print_expr expr;
-      (*print_string "\n\nBeautiful parsing : \n";
-      pretty_print_expr expr;*)
+      print_string "\n\nBeautiful parsing : \n";
+      pretty_print_expr expr;
       print_newline ()
-    end
   | Machine ->
       let code = langage_SECD expr in
       if !stackcode_option then
