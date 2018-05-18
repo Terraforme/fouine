@@ -26,7 +26,7 @@
 \begin{document}
 
 \maketitle
-
+\tableofcontents
 
 \section{Généralités}
 
@@ -119,19 +119,6 @@ type expr_f =
 	Certains constructeurs intermédiaires sont détaillés dans \code{type.ml}.
 	Les booléens font leur apparition dans les expressions de ce \emph{Fouine}, principalement pour simplifier les transformations de programmes. \code{Bin} a été étendu en conséquence.
 
-\subsection{Evaluation}
-
-	L'évaluation se fait par continuation : \code{eval expr env k kE}. La fonction d'évaluation reçoit quatre arguments :
-
-	\begin{itemize}
-		\item \code{expr} l'expression à évaluer
-		\item \code{env}  l'environnement courant (définition des variables)
-		\item \code{k}	  la continuation courante
-		\item \code{kE}	  la pile de continuations d'exceptions	
-	\end{itemize}
-	
-	Nous renvoyons au code pour l'implémentation de \code{eval}. Certains passages du code sont plus lourd car \code{eval} est capable d'afficher l'expression courante en cas d'erreur - l'implémentation de l'évaluation fainéante a aussi été gourmande en lignes de code.
-
 \subsection{Valeurs}
 
 
@@ -186,10 +173,39 @@ let available = ref 0;;
 	\vspace{0.5cm}
 	
 	Pour savoir qu'elle est la prochaine case mémoire allouable, on utilise une variable globale \code{available}.
-	
-\section{Fonctions}
 
-	\subsection{Fonctions classiques}
+\section{Parsing}
+
+
+\subsection{\code{let ... in}}
+
+Ce qui pose problème avec les \code{let ... in ...} c'est qu'il y en a beaucoup de variantes! On distingue les \code{let} des expressions des \code{let} extérieurs (du toplevel) qui permettent une syntaxe un peu particulière pour enchaîner les \code{let} sans \code{in} ni \code{;;}. Il y a aussi l'ajout (parfois facultatif) du mot clé \code{rec} qui dédouble tous les cas. Enfin les \code{let} peuvent servir à définir des fonctions ou des couples (triplets, etc.). Les let ont été un peu regroupés depuis le rendu 3. Une variable simple est vue comme un cas particulier de uplet à un élément. On définit une règle \code{var\_pattern} qui admet tous ces cas. Les \code{let rec} ne sont pas concernés: on ne peut définir qu'au plus une variable avec un \code{let rec}.
+
+\subsection{L'application de fonction}
+
+Typiquement, une application de fonctions est du type \code{expression expression}, mais écrire cela en tant que règle aurait abouti à du "rule never reduce" car on peut toujours lire une expression derrière, et choisir de \code{shift}. Le plus simple était d'expliciter tous les cas dans une règle \code{applicator applicated} où \code{applicator} sert à enchaîner les applications (curryfication) et \code{applicated} détaille les possibilités de fonctions et d'arguments.
+
+Pour la définition de fonction, il a fallu faire attention aux différentes façons de définir une fonction (avec des \code{fun ->} ou directement, ce qui complique encore un peu les définitions de \code{let... in...}).
+
+
+\section{Evaluation}
+
+\subsection{Style d'évaluation}
+
+	L'évaluation se fait par continuation : \code{eval expr env k kE}. La fonction d'évaluation reçoit quatre arguments :
+
+	\begin{itemize}
+		\item \code{expr} l'expression à évaluer
+		\item \code{env}  l'environnement courant (définition des variables)
+		\item \code{k}	  la continuation courante
+		\item \code{kE}	  la pile de continuations d'exceptions	
+	\end{itemize}
+	
+	Nous renvoyons au code pour l'implémentation de \code{eval}. Certains passages du code sont plus lourd car \code{eval} est capable d'afficher l'expression courante en cas d'erreur - l'implémentation de l'évaluation fainéante a aussi été gourmande en lignes de code.
+	
+\subsection{Fonctions}
+
+	\subsubsection{Fonctions classiques}
 
 	Les fonctions sont définies avec une clôture pour la raison suivante 
 	
@@ -210,7 +226,7 @@ f 10;;
 	
 	donc les fonctions ne sont pas typées en fouine.
 	
-	\subsection{Fonctions Récursives}	
+	\subsubsection{Fonctions Récursives}	
 
 	Quand on définit une fonction \code{f} de la manière ci-dessus, il faut remarquer qu'au moment de sa définition, \code{f} n'est pas définie dans l'environnement, donc une fonction standard n'est pas définie dans sa propre clôture. On ne peut donc pas définir des fonctions récursives. On introduit le \code{let rec}.
 	
@@ -236,7 +252,7 @@ let rec f = e1 in e2
   
   \vspace{0.5cm}
   
-  \code{Remarque :} On pourrait se débarasser de la pile, pour n'avoir qu'une continuation d'exception à chaque fois en changeant 
+  \code{Remarque :} On pourrait se débarrasser de la pile, pour n'avoir qu'une continuation d'exception à chaque fois en changeant 
   
   \begin{minted}{ocaml}
 | Raise expr ->
@@ -258,12 +274,12 @@ let rec f = e1 in e2
    eval expr1 env k (fun exn -> eval expr2 (env_aff var_except exn env) k k')
    \end{minted}
   
-  Ce qui nous a surpris à première vue, mais c'est ce qu'on a fait pour les transformations de programme et cela semble très bien marcher.
+  Ceci nous a surpris à première vue, mais c'est ce qu'on a fait pour les transformations de programme et cela semble très bien marcher.
 
 \newpage
 \section{Transformations de Programmes}
 
-	On met ici les formules utilisées pour les transformations de programmes. Ces dernières ont été converties en expressions d'arbres de programme en utilisant directement le parser.
+	On met ici les formules utilisées pour les transformations de programmes. Ces dernières ont été converties en expressions d'arbres de programme en utilisant directement le \textit{parser}.
 	
 \subsection{Impératives}
 
@@ -334,8 +350,6 @@ let rec f = e1 in e2
 	
 	\end{minted}
 	
-	Il y a quelques difficultés sur les exceptions.
-	
 
 \subsection{Continuations}
 
@@ -374,7 +388,7 @@ let rec f = e1 in e2
 
 	\end{minted}
 	
-	Ici, on utilise le fait \code{[| e1 |]} renvoie une valeur fonctionnelle, mais non récursive. L'utilisation d'un \code{let rec} juste derrière permet de redéfinir cette valeur fonctionnelle comme étant récursive. Ceci fonctionne car \emph{Fouine} n'évalue pas les fonctions, mais les renvoie directement avec leur clôture.
+	Ici, on utilise le fait que \code{[| e1 |]} renvoie une valeur fonctionnelle, mais non récursive. L'utilisation d'un \code{let rec} juste derrière permet de redéfinir cette valeur fonctionnelle comme étant récursive. Ceci fonctionne car \emph{Fouine} n'évalue pas les fonctions, mais les renvoie directement avec leur clôture.
 	
 	\begin{minted}{ocaml}
 	
@@ -400,22 +414,21 @@ let rec f = e1 in e2
 	
 	\end{minted}
 
-\section{Parsing}
+
+\section{La machine SECD}
+
+\subsection{Le langage de la machine}
 
 
-\subsection{\code{let ... in}}
 
-Ce qui pose problème avec les \code{let ... in ...} c'est qu'il y en a beaucoup de variantes! On distingue les \code{let} des expressions des \code{let} extérieurs (du toplevel) qui permettent une syntaxe un peu particulière pour enchaîner les \code{let} sans \code{in} ni \code{;;}. Il y a aussi l'ajout (parfois facultatif) du mot clé \code{rec} qui dédouble tous les cas. Enfin les \code{let} peuvent servir à définir des fonctions ou des couples (triplets, etc.). Il y avait sûrement un moyen de synthétiser tous ces cas mais expliciter tous les cas étaient plus simple.
+\subsection{La transformation}
 
-\subsection{L'application de fonction}
+\subsection{L'exécution}
 
-Typiquement, une application de fonctions est du type expression expression, mais écrire cela en tant que règle aurait abouti à du "rule never reduce" car on peut toujours lire une expression derrière. Là encore, le plus simple était d'expliciter tous les cas dans une règle "applicator applicated".
-
-Pour la définition de fonction, il a fallu faire attention aux différentes façons de définir une fonction (avec des \code{fun ->} ou directement).
 
 \section{Pathologies}
 
-	Dans cette partie, quelques pathologiques sur le fonctionnement de fouine.
+	Dans cette partie, quelques pathologies sur le fonctionnement de fouine.
 	
 	
 	\subsection{Types \code{unit -> 'a}}
@@ -425,7 +438,7 @@ Pour la définition de fonction, il a fallu faire attention aux différentes fa�
 					let f () = 5 ;;
 	\end{minted}
 
-	Ce code ne va pas parser en fouine car \code{()} ne correspond pas à un pattern de variables, or le constructeur pour les fonctions est \code{Fun of pattern\_f * expr\_f}. On utilise la variable "anonyme" \code{\_} pour cela :
+	Ce code ne va pas passer en fouine car \code{()} ne correspond pas à un pattern de variables, or le constructeur pour les fonctions est \code{Fun of pattern\_f * expr\_f}. On utilise la variable "anonyme" \code{\_} pour cela :
 	\begin{minted}{ocaml}
 					let f _  = 5 ;;
 	\end{minted}
@@ -441,7 +454,7 @@ Pour la définition de fonction, il a fallu faire attention aux différentes fa�
 	\end{minted}
 	
 	va être accepté dans notre \emph{Fouine}, alors qui n'est pas sensé l'être en OCamL.
-	Par contre, le code suivant ne l'est pas :
+	Par contre, le code suivant ne l'est pas (et c'est normal, il ne l'est pas non plus en Ocaml) :
 	
 	\begin{minted}{ocaml}
 					let rec f = fun x -> f;;

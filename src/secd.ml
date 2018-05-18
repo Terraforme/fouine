@@ -59,10 +59,10 @@ let ctop stack = match (List.hd stack) with
 let atop stack = match (List.hd stack) with
   | ADDR c -> c
   | _      -> failwith "atop : Poping Non-asm"
-let ptop stack = match (List.hd stack) with 
+let ptop stack = match (List.hd stack) with
   | PTR  a -> a
   | _      -> failwith "ptop : Poping non-ptr"
-let utop stack = match (List.hd stack) with 
+let utop stack = match (List.hd stack) with
   | UNIT   -> ()
   | _      -> failwith "utop : Poping non-unit"
 let ttop stack = match (List.hd stack) with
@@ -87,7 +87,6 @@ let prInt a = print_int a; print_newline ()
 
 
 let print_instr = function
-    EPSILON -> print_string "epsilon\n"
   | CONST a -> print_string  ("const   " ^ (string_of_int a)  ^ "\n")
   | BOOL b  -> print_string  ("bool    "  ^ (string_of_bool b) ^ "\n")
   | UNIT    -> print_string "unit\n"
@@ -120,27 +119,27 @@ let print_instr = function
   | DESTRUCT -> print_string "destruct\n"
 
 
-let rec adjust n max_n = 
+let rec adjust n max_n =
 (* Fonction cracra : plz correct *)
-  let rec adjust_aux i max_n = 
-    if i < max_n then begin 
-      print_string " "; 
+  let rec adjust_aux i max_n =
+    if i < max_n then begin
+      print_string " ";
       adjust_aux (10 * i) max_n
       end
     else ()
   in
-  
-  if n = 0 then adjust 1 max_n 
-  else 
+
+  if n = 0 then adjust 1 max_n
+  else
   let i = ref 1 in
   while !i <= n do i := !i * 10 done;
   adjust_aux !i max_n
-;;  
+;;
 
 let print_SECD code =
   pc := 0;
   let n  = Array.length code in
-  while !pc < n && code.(!pc) <> EPSILON do
+  while !pc < n do
     adjust !pc n;
     print_string ((string_of_int !pc) ^ ": ");
     print_instr code.(!pc);
@@ -151,7 +150,6 @@ let print_SECD code =
 
 let treat_instr instr stack xstack env pc = match instr with
 (* val treat_instr :  instr_f -> stack_f ref -> menv_f ref -> int ref -> unit *)
-    EPSILON -> failwith "EPSILON : end of program unexpected"
   | CONST  a -> let _ = stack := ipush a !stack in incr pc
   | BOOL   b -> let _ = stack := bpush b !stack in incr pc
   | ACCESS x -> let _ = stack := push (menv_read x !env) !stack in incr pc
@@ -160,23 +158,23 @@ let treat_instr instr stack xstack env pc = match instr with
  * Renvoient des valeurs entières *)
   | ADD  -> let v1 = itop !stack in stack := pop !stack;
             let v2 = itop !stack in stack := pop !stack;
-            stack := ipush (v1 + v2) !stack; 
+            stack := ipush (v1 + v2) !stack;
             incr pc
   | SUB  -> let v1 = itop !stack in stack := pop !stack;
             let v2 = itop !stack in stack := pop !stack;
-            stack := ipush (v1 - v2) !stack; 
+            stack := ipush (v1 - v2) !stack;
             incr pc
   | MULT -> let v1 = itop !stack in stack := pop !stack;
             let v2 = itop !stack in stack := pop !stack;
-            stack := ipush (v1 * v2) !stack; 
+            stack := ipush (v1 * v2) !stack;
             incr pc
   | DIV  -> let v1 = itop !stack in stack := pop !stack;
             let v2 = itop !stack in stack := pop !stack;
-            stack := ipush (v1 / v2) !stack; 
+            stack := ipush (v1 / v2) !stack;
             incr pc
   | MOD  -> let v1 = itop !stack in stack := pop !stack;
             let v2 = itop !stack in stack := pop !stack;
-            stack := ipush (v1 mod v2) !stack; 
+            stack := ipush (v1 mod v2) !stack;
             incr pc
 
 (* Opérations Unaires *)
@@ -229,15 +227,15 @@ let treat_instr instr stack xstack env pc = match instr with
              let v   = top !stack  in stack := pop !stack;
              write v ptr; stack := upush !stack; incr pc
   | ALLOC -> let v = top !stack in stack := pop !stack;
-             stack := ppush (alloc v) !stack; incr pc 
+             stack := ppush (alloc v) !stack; incr pc
 
 (* Exception *)
   | SETJMP a -> xstack := push (a, !env, !stack) !xstack; incr pc
   | UNSETJMP -> xstack := pop !xstack; incr pc;
-  | LONGJMP  -> let exn = itop !stack in 
+  | LONGJMP  -> let exn = itop !stack in
                 let (pc', env', stack') = top !xstack in xstack := pop !xstack;
                 stack := ipush exn stack'; env := env'; pc := pc'
-                
+
 (* Pairs *)
   | PAIR     -> let l = top !stack in stack := pop !stack;
                 let r = top !stack in stack := pop !stack;
@@ -257,11 +255,10 @@ au cours de l'exécution du code *)
   let xstack = ref [] in
   let pc     = ref 0  in
 
-  while !pc < n && code.(!pc) <> EPSILON do
+  while !pc < n do
     (*print_string ("At ligne " ^ (string_of_int !pc) ^ ":");
     print_instr code.(!pc);*)
     treat_instr code.(!pc) stack xstack env pc;
     (*print_string ("\tnew line : " ^(string_of_int !pc) ^ "\n")*)
   done;
   !stack;;
-

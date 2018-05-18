@@ -42,7 +42,7 @@ let rec nb_of_instr = function
   | Unit   -> 1
   | Pair (e1, e2) -> (nb_of_instr e2) + (nb_of_instr e1) + 1 (* PAIR *)
   | Neg e -> (nb_of_instr e) + 1
-  | Bin (e1, op, e2) -> 
+  | Bin (e1, op, e2) ->
     begin
       try (nb_of_instr e2) + (nb_of_instr e1) + (nb_of_instr_op op)
       with Failure f -> if f = "OR" then nb_of_instr (IfElse(e1, Bool true, e2))
@@ -83,11 +83,9 @@ let rec transform_SECD = function
   | Var  x -> !result.(!current_address) <- (ACCESS x); incr current_address
   | Bang e -> transform_SECD e; !result.(!current_address) <- READ; incr current_address
   | Unit   -> !result.(!current_address) <- UNIT; incr current_address
-(*inutile, cf initialisation, mais je le laisse pour l'instant au cas où UNIT est un jour remplacé par EPSILON*)
-
   | Pair (e1, e2) -> transform_SECD e2; transform_SECD e1; !result.(!current_address) <- PAIR; incr current_address
   | Neg e -> transform_SECD e; !result.(!current_address) <- NOT; incr current_address
-  | Bin (e1, op, e2) -> 
+  | Bin (e1, op, e2) ->
     begin match op with
       | Or  -> transform_SECD (IfElse(e1, Bool true, e2))
       | And -> transform_SECD (IfElse(e1, e2, Bool false))

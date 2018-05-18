@@ -1,5 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{module} \PYG{n+nc}{Mem\PYGZus{}f} \PYG{o}{=} \PYG{n+nn}{Map}\PYG{p}{.}\PYG{n}{make}\PYG{o}{(}\PYG{n+nc}{Int32}\PYG{o}{)}
-\PYG{c}{(* ici, on est obligé de prendre des \PYGZsq{}Int32\PYGZsq{} pour faire les adressages *)}
-\PYG{c}{(* car \PYGZsq{}Map.make\PYGZsq{} doit prendre un module en argument *)}
-\end{Verbatim}

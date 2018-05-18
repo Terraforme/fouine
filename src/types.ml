@@ -1,33 +1,7 @@
 (* On définit dans ce fichier les types principaux, nécessaires
  * partout dans le code. *)
 
-type var_f = string
-
-(* Les variables sont des chaînes de caractères.
-   Elles sont associées à des valeurs dans l'environnement *)
-
-(* ************ PROGRAMMES ************** *)
-(* Ils sont vus comme des arbres.
- * Chaque noeud est étiqueté par un mot clé :
-Par exemple
-                    (root)
-                      |
-                     (IF)
-                    /    \
-                 then..  else..
-  De maniére évidente, les feuilles seront des
-variables, des appels de fonctions, des tests,
-bref, ce seront des expressions.
-*)
-
-
-(* Quand on considère les expressions arithmétiques :
-   Elles sont de la formule X opérateur Y
-
-Donc de la formule expr_f * opérateur * expr_f
-
-  On définit les différents opérateurs ci-après
-  Qed des expressions booléennes et de comparaisons *)
+type var_f = string (* les variables fouine *)
 
 type operator_f = Plus | Minus | Times | Div | Mod | Eq   | Neq   | Leq   | Lt  | Geq | Gt | Or | And;;
 
@@ -62,23 +36,7 @@ and pattern_f =
 and pmatch_f  = (pattern_f * expr_f) list
 ;;
 
-
-(* Les environnements sont ni plus ni moins
-  des listes d'association *)
-
-type env_f = (var_f * val_f) list
-
-(* Une fonction est un objet fun x -> ... *)
-(* Dans le cas des variables, on ajoute un environnement pour les clôtures *)
-
-(* Rappel sur les types en OCamL : plusieurs constructeurs :
-
-type ::= | int | float | bool | char | unit | string .....
-         /* | (constructeur) of ... ? */
-         | type * type
-         | type -> type
-
-Sachant que Fouine n'est pas typé, on ne distingue pas types et valeurs : *)
+type env_f = (var_f * val_f) list (* Les environnements ne sont ni plus ni moins que des listes d'association *)
 
 and val_f = Unit
           | Bool        of bool
@@ -90,9 +48,7 @@ and val_f = Unit
 ;;
 
 type instr_f =
-
-  | EPSILON
-  | UNIT (*Epsilon peut remplacer Unit au besoin si on veut enlever cette ligne*)
+  | UNIT
 
   | CONST of int
   | BOOL  of bool
@@ -106,13 +62,12 @@ type instr_f =
 
   (* Opérateurs booléens *)
   | NOT
-
   | EQ
   | LT
   | LE
 
   | PRINT
-  | LET of var_f    (* les LET sont atomiques (i.e pas de let (a, b) = (0, 1) *)
+  | LET of var_f    (* les LET sont atomiques (i.e pas de let (a, b) = (0, 1) : on gère ces cas avec PAIR et DESTRUCT *)
   | REC of var_f    (* le let rec *)
   | ENDLET
 

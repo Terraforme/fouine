@@ -13,16 +13,11 @@ let rec regroup_pair pair1 pair2 = match pair1 with
 
 
 let rec eval expr env k k' = match expr with
-(* eval :
-expr_f -> env_f -> (val_f -> val_f) -> (val_f -> val_f) list -> val_f
-
-La fonction d'évaluation principale. Fonctionne en style par continuation
-La mémoire est globale et d'utilisation transparente.
+(* eval : expr_f -> env_f -> (val_f -> val_f) -> (val_f -> val_f) list -> val_f
 Pour les continuations : k correspond à la continuation normale et
                          k' à une pile de couple de continuations
                          correspondant aux continuations d'exceptions
-
-Remarque : On pourrait de passer d'une pile. Il s'agit de rétro-ingéniring
+Remarque : On pourrait de passer d'une pile. Il s'agit de "retro-ingineering"
 qui sera fait dans des rendus futurs. *)
   | Neg expr               ->
         eval expr env (function   Bool b -> k (Bool (not b))
@@ -57,9 +52,6 @@ qui sera fait dans des rendus futurs. *)
 		                           let rec env00' = (f, Fun_val (pat, expr0, env00')) :: env00 in
                                let env0 = (f, Fun_val (pat, expr0, env00')) :: env in
                                eval expr2 env0 k k'
-                               (* Ancienne version :
-                               let rec env0 = (f, Fun_val (pat, expr0, env0)) :: env in
-                               eval expr2 env0 k k' *)
                              | val1 -> eval expr2 (env_aff f val1 env) k k') k'
 
 	| Match (expr, pmatch)   -> failwith "TODO - Matchings"
@@ -94,14 +86,7 @@ qui sera fait dans des rendus futurs. *)
 		  | k_exn :: k'' -> eval expr env k_exn k'
     end
   | Try (expr1, var_except, expr2) ->
-	(* Syntaxe: try expr1 with E var_except -> expr2 *)
     eval expr1 env k ((fun exn -> eval expr2 (env_aff var_except exn env) k k') :: k')
-
-
-(* Pour les opérations ninaire : '+', '-' (...) '=', '<'
-il y quelques subtilités sur les ordres, car '+' est
-en réalité une fonction donc faire a + b c'est faire
-((+) a) b). *)
 
 and aeval op val1 val2 =
 (* aeval :

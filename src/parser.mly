@@ -98,8 +98,6 @@ var_pattern:
   | ANON { Var_Pat "_" }
   | LPAREN var_pattern RPAREN { $2 }
   | var_pattern COMA var_pattern { Pair_Pat($1,$3) }
-  /*| LPAREN var_pattern RPAREN COMA var_pattern { Pair_Pat($2, $5) }*/
-  /*FIXME: Pair_Pat n'accepte que les paires associatives à droites!! Pair_Pat of var_f*pattern_f*/
 ;
 
 expression:
@@ -141,7 +139,7 @@ raise (E 2);; -> valide
   | expression GREATER  expression { Bin($1,Gt,$3) }
   | expression GE  expression { Bin($1,Geq,$3) }
   | NOT expression             { Neg($2) }
-  
+
   | MINUS expression %prec UMINUS       { Bin(Cst 0, Minus, $2) } /*un peu spécial: c'est le seul opérateur "unaire" pour le parseur */
 
   /*let ... in ...*/
@@ -167,7 +165,7 @@ raise (E 2);; -> valide
 
   /* if ... then ... else ...*/
   | IF expression THEN expression { IfElse($2,$4, Cst 0) } /* FIXME : parser en format IfElse */
-  | IF expression THEN expression ELSE expression { IfElse($2,$4,$6) } 
+  | IF expression THEN expression ELSE expression { IfElse($2,$4,$6) }
 
   | PRINT expression { PrInt($2) }
 ;
@@ -198,21 +196,3 @@ func:
   | LPAREN var_pattern RPAREN func  { Fun($2, $4) }
   | LPAREN RPAREN func { Fun(Var_Pat "_", $3) }
 ;
-
-/*
-bool_expr:
-  | LPAREN bool_expr RPAREN           { $2 }
-  | TRUE { True }
-  | FALSE { False }
-
-  | expression EQUAL expression { Cmp($1,Eq,$3) }
-  | expression NE expression { Cmp($1,Neq,$3) }
-  | expression LE expression { Cmp($1,Leq,$3) }
-  | expression LOWER expression { Cmp($1,Lt,$3) }
-  | expression GE expression { Cmp($1,Geq,$3) }
-  | expression GREATER expression { Cmp($1,Gt,$3) }
-
-  | bool_expr OR bool_expr { Bin_op($1,Or,$3) }
-  | bool_expr AND bool_expr { Bin_op($1,And,$3) }
-  | NOT bool_expr { Not($2) }
-;*/

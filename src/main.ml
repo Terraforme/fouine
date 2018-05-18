@@ -7,8 +7,6 @@ open Transfo_ref
 open Transfo_machine
 open Secd
 
-(* Pour la commodité : *)
-
 type exec_mod_f = Normal | Continuation | Parsing | Debug | References | CR | RC | Machine | Stackcode;;
 
 let debug_option = ref false and parsing_only_option = ref false and c_option = ref false and r_option = ref false
@@ -17,7 +15,7 @@ let debug_option = ref false and parsing_only_option = ref false and c_option = 
   and machine_option = ref  false
   and stackcode_option = ref false;;
 
-let anon_fonction s = () in (* print_endline ?*)
+let anon_fonction s = () in
 let speclist = [("-debug", Arg.Set debug_option, "Switch to debug mode");
   ("-p", Arg.Set parsing_only_option, "Print only the result of parsing (do not use with -debug option)");
   ("-E", Arg.Set c_option, "Perform Continuation Transformation");
@@ -124,7 +122,6 @@ let calc exec_mod =
     end
   ;
   flush stdout
-  (*with _ -> (print_string "erreur de saisie\n")*)
 ;;
 
 let exec_mod = if !debug_option then Debug else if !parsing_only_option then Parsing

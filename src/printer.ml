@@ -1,15 +1,13 @@
 open Types
 
 (* ************** Fonctions d'affichage ************** *)
-(* Il y a là un affichage en mode 'arbre' - l'afficheur
+(* Il y a un affichage en mode 'arbre' - l'afficheur
 standard, et un pretty printer capable de fournir du code
 qui pourra être directement utilisé comme code OCamL *)
 
 
 
 (* Le premier Printer *)
-(* Sous forme d'arbre : non ambigü mais parfois
-difficile à utiliser car les notations sont lourdes *)
 
 let op2str = function
   | Plus  -> "Plus"
@@ -75,7 +73,6 @@ let print_expr expr = print_string (expr2str expr) ; print_newline ()
 Le code qu'il donne peut être normalement utilisé
 en code OCamL *)
 
-(*let cons_color = "\027[33;1m"*)
 let cons_color = "\027[0;1m"
 let var_color  = "\027[0;2m"
 let cst_color  = "\027[31;2m"
@@ -150,8 +147,6 @@ let pretty_print_expr expr =
       begin
         print_string "prInt (";
         pretty_aux (indent+1) expr;
-        (* print_newline ();
-        print_tab indent; *)
         print_string ")\n";
       end
     | Let (x, expr1, expr2) ->
@@ -160,8 +155,6 @@ let pretty_print_expr expr =
         pretty_pattern x;
         print_string (def_color ^ " = ");
         pretty_aux (indent+1) expr1;
-        (* print_newline ();
-        print_tab indent; *)
         print_string (cons_color ^ " in\n" ^ def_color);
         print_tab indent;
         pretty_aux indent expr2
@@ -170,8 +163,6 @@ let pretty_print_expr expr =
       begin
         print_string (cons_color ^ "let rec " ^ var_color ^ f ^ def_color ^ " = ");
         pretty_aux (indent+1) expr1;
-        (* print_newline ();
-        print_tab indent; *)
         print_string (cons_color ^ " in\n" ^ def_color);
         print_tab indent;
         pretty_aux indent expr2
@@ -251,22 +242,13 @@ let pretty_print_expr expr =
 
   in
 
-
   pretty_aux 0 expr;
   print_newline ()
 ;;
 
 
 
-
-(* On définit une un pretty-printer de valeurs *)
-
-(* Le printeur de valeurs est définit co-inductivement avec le printeur
-de clôtures. *)
-
 let rec pretty_closure = function
-(* pretty_closure : env_f -> unit
-Prend en paramètre un environnement et tente de l'afficher joliment *)
 	| [] -> print_string "[]"
 	| (var, value) :: closure ->
 		begin
@@ -277,28 +259,6 @@ Prend en paramètre un environnement et tente de l'afficher joliment *)
 		end
 
 and pretty_value opt = function
-(* pretty_value : int -> val_f -> unit
-Prend en paramètre une valeur et tente de l'afficher correctement
-L'argument entier est un renseignement pour améliorer l'affichage	*)
-
-(* opt : FIXME inutilisé pour l'instant
-	| 0 -> comportement usuel (i.e par défaut)
-	| 1 -> liste de couples déjà parenthésée
-
-FIXME :
-
-si
-
-type tree = Nil | Node of int * tree * tree ;;
-let f (Node(x, _, _)) = print_int x ;;
-
-Warning 8: this pattern-matching is not exhaustive.
-Here is an example of a value that is not matched:
-Nil
-val f : tree -> unit = <fun>
-
-*)
-
 	| Unit 	   -> print_string "()"
 	| Bool b   -> print_string (string_of_bool b)
 	| Int x 	 -> print_int x

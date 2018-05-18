@@ -1,3 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-		\PYG{k}{val} \PYG{n}{eval} \PYG{o}{:} \PYG{n}{expr\PYGZus{}f} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{env\PYGZus{}f} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{mem\PYGZus{}f} \PYG{o}{\PYGZhy{}\PYGZgt{}} \PYG{n}{val\PYGZus{}f} \PYG{o}{*} \PYG{n}{mem\PYGZus{}f}
-\end{Verbatim}
