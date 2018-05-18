@@ -417,14 +417,97 @@ let rec f = e1 in e2
 
 \section{La machine SECD}
 
-\subsection{Le langage de la machine}
-
-
-
 \subsection{La transformation}
+
+Le code de la machine SECD est représenté par un tableau d'instructions, et ressemble beaucoup à de l'assembleur. Les indices du tableau sont utilisés pour effectuer des \code{JUMP} à des endroits précis du code (utile par exemple pour les conditions et les exceptions). On effectue la transformation en deux étapes: une première passe sert à déterminer le nombre d'instructions que l'on va avoir dans le tableau, ce qui nous permet de créer un \code{array} de la bonne taille, que l'on remplit avec les instructions pendant une deuxième passe.
+
+Pour le cas du let: on prend en argument un uplet (\code{var\_pattern}). A l'aide d'une fonction récursive auxiliaire \code{traite\_pattern}, on ajoute autant de \code{DESTRUCT} puis de \code{LET} qu'il y a de variables dans cet uplet. On garde en mémoire le nombre de \code{LET} mis, puis on ajoute à la fin ce nombre de \code{ENDLET} dans le tableau d'instructions.
+
+\begin{minted}{ocaml}
+
+  Cst a (* devient *) CONST a
+  Bool b (* devient *) BOOL b
+  Var x (* devient *) ACCESS x
+  !e (* devient *) [e]; READ
+  () (* devient *) UNIT
+  (e1,e2) (* devient *) [e2]; [e1]; PAIR
+  not(e) (* devient *) [e]; NOT
+  e1 + e2 (* devient *) [e1]; [e2]; ADD
+(* de même pour les autres opérations arithmétiques et booléennes *)
+(* cas particulier: or et and sont transformés pour l'évaluation fainéante: 
+a and b devient if a then b else false
+a or b devient if a then true else b *)
+  prInt e (* devient *) [e]; PRINT
+  let pattern = e1 in e2 (* devient *) [e1]; LET (pattern); [e2]; ENDLET (pattern)
+  let rec f = e1 in e2 (* devient *) [e1]; REC f; [e2]; ENDLET
+  if b then e1 else e2 (* devient *) [b]; JUMPIF (addr1); [e2]; JUMP (addr2); [e1]
+(* où addr1 pointe sur le début de [e1] et addr2 pointe sur la première instruction suivant [e1] *)
+  fun pattern -> e (* devient *) CLOSURE (addr); LET (pattern); [e]; ENDLET (pattern); RETURN
+(* où addr pointe vers la première instruction suivant RETURN *)
+  e1 e2 (* devient *) [e2]; [e1]; APPLY
+  e1 := e2 (* devient *) [e2]; [e1]; WRITE
+  ref e (* devient *) [e]; ALLOC
+  try e with E x -> eX (* devient *) SETJMP (addr1); [e]; UNSETJMP; JUMP (addr2); LET x; [eX]; ENDLET
+(* où addr1 pointe vers LET x et addr2 pointe vers la première instruction après le ENDLET *)
+  raise e (* devient *) [e]; LONGJMP
+
+\end{minted}
 
 \subsection{L'exécution}
 
+\begin{footnotesize}
+\begin{tabular}{ c | c | c  | c || c | c | c }
+
+Mot clé & Env avant & Stack avant & PC avant & Env après & Stack après & PC après \\
+\hline
+CONST c & e & s & pc & e & c.s & pc+1 \\
+
+BOOL b & e & s & pc & e & b.s & pc+1 \\
+
+ACCESS x & e & s & pc & e & x.s & pc+1 \\
+
+ADD/etc. & e & v1.v2.s & pc & e & v1+v2.s & pc+1\\
+
+NOT & e & b.s & pc & e & not(b).s & pc+1\\
+
+EQ/etc. & e & v1.v2.s & pc & e & (v1 == v2).s & pc+1\\
+
+PRINT & e & v.s & pc & e & v.s & pc+1 \\
+
+LET x & e & v.s & pc & (x,v).e & s & pc+1\\
+
+REC x & e & v.s & pc & (x,v).e & s & pc+1\\
+
+ENDLET & (x,v).e & s & pc & e & s & pc+1\\
+
+JUMP addr & e & s & pc & e & s & addr\\
+
+JUMPIF addr & e & b.s & pc & e & s & addr si b==True et pc+1 sinon\\
+
+CLOSURE addr & ? & ? & ? & ? & ? & ?\\
+
+APPLY & e & f.x.s & pc & e & (f x).s & pc+1\\
+
+RETURN & e & addr.s & pc & e & s & addr\\
+
+READ & &&&&&\\
+
+WRITE & &&&&&\\
+
+ALLOC & &&&&&\\
+
+SETJMP addr &&& &&&\\
+
+UNSETJMP & &&&&&\\
+
+LONGJMP & &&&&&\\
+
+PAIR & &&&&&\\
+
+DESTRUCT & &&&&&\\
+
+\end{tabular}
+\end{footnotesize}
 
 \section{Pathologies}
 
