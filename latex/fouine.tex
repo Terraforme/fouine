@@ -276,7 +276,6 @@ let rec f = e1 in e2
   
   Ceci nous a surpris à première vue, mais c'est ce qu'on a fait pour les transformations de programme et cela semble très bien marcher.
 
-\newpage
 \section{Transformations de Programmes}
 
 	On met ici les formules utilisées pour les transformations de programmes. Ces dernières ont été converties en expressions d'arbres de programme en utilisant directement le \textit{parser}.
@@ -423,6 +422,8 @@ Le code de la machine SECD est représenté par un tableau d'instructions, et re
 
 Pour le cas du let: on prend en argument un uplet (\code{var\_pattern}). A l'aide d'une fonction récursive auxiliaire \code{traite\_pattern}, on ajoute autant de \code{DESTRUCT} puis de \code{LET} qu'il y a de variables dans cet uplet. On garde en mémoire le nombre de \code{LET} mis, puis on ajoute à la fin ce nombre de \code{ENDLET} dans le tableau d'instructions.
 
+Concernant les exceptions, on utilise trois instructions \code{SETJMP}, \code{LONGJMP} et \code{UNSETJMP} qui utilisent une deuxième pile, appelée \emph{pile d'exception}. Cette pile est utile pour sauter dans le code lors de l'instruction \code{LONGJMP} à l'adresse sauvegardée par le dernier \code{SETJMP} (un \emph{savepoint}), et restaurer l'environnement. L'instruction \code{UNSETJMP} permet d'enlever le dernier \emph{savepoint} dans le cas où on a exécuté le corps \code{e1} d'un \code{try e1 with ... -> e2} sans lever d'exception.
+
 \begin{minted}{ocaml}
 
   Cst a (* devient *) CONST a
@@ -455,6 +456,32 @@ a or b devient if a then true else b *)
 
 \subsection{L'exécution}
 
+	\paragraph{Types} Les types utilisés par la machines ne peuvent pas être exactement identiques à la fonction d'évaluation, car on a besoin de pouvoir empiler des environnements, des clôtures dont la syntaxe est modifiée, etc. Ceci est permis car on n'a pas à mélanger la machine avec l'interpréteur. Les types utilisés sont définis comme suit :
+	
+	\begin{minted}{ocaml}
+	type mval_f =
+  	   INT of int
+ 	 | BOOL of bool
+ 	 | UNIT
+ 	 | ENV  of menv_f
+ 	 | CLO  of int * menv_f
+ 	 | ADDR of int
+  	 | PTR  of int
+ 	 | PAIR of mval_f * mval_f
+	and  menv_f = (var_f * mval_f) list
+
+	type stack_f = mval_f list
+	type xstack_f = int * menv_f * stack_f list
+	;;
+	\end{minted}
+	
+	où \code{xstack\_f} correspond à la pile d'exceptions.
+	
+	
+	\paragraph{} On définit ensuite les instructions :
+	
+	\vspace{0.5cm}
+
 \begin{footnotesize}
 \begin{tabular}{ c | c | c  | c || c | c | c }
 
@@ -484,30 +511,180 @@ JUMP addr & e & s & pc & e & s & addr\\
 
 JUMPIF addr & e & b.s & pc & e & s & addr si b==True et pc+1 sinon\\
 
-CLOSURE addr & ? & ? & ? & ? & ? & ?\\
+CLOSURE addr & e & s & pc & e & clo(pc+1, e).s & addr\\
 
 APPLY & e & f.x.s & pc & e & (f x).s & pc+1\\
 
 RETURN & e & addr.s & pc & e & s & addr\\
 
-READ & &&&&&\\
+READ & e & ptr.s & pc & e & read(ptr).s & pc+1\\
 
-WRITE & &&&&&\\
+WRITE & e & ptr.v.s & pc & e & ().s & pc+1\\
 
-ALLOC & &&&&&\\
+ALLOC & e & v.s & pc & e & ptr.s & pc+1\\
 
-SETJMP addr &&& &&&\\
+SETJMP addr & e & s & pc & e & s & pc+1\\
 
-UNSETJMP & &&&&&\\
+UNSETJMP & e & s & pc & e & s & pc+1\\
 
-LONGJMP & &&&&&\\
+LONGJMP & e & s & pc & e & xn.s & ?\\
 
-PAIR & &&&&&\\
+PAIR & e & l.r.s & pc & e & (l, r).s & pc+1\\
 
-DESTRUCT & &&&&&\\
+DESTRUCT & e & (l, r).s & pc & e & l.r.s & pc+1\\
 
 \end{tabular}
 \end{footnotesize}
+
+	
+	\paragraph{} Les instructions \code{SETJMP} \code{LONGJMP} et \code{UNSETJMP} ont un effet sur la pile d'exception, détaillé dans la sous-section précédente. 
+	
+	
+	\paragraph{} Les instructions \code{WRITE}, \code{READ} et \code{ALLOC} ont un effet sur la mémoire de la machine. La mémoire est globale, et de taille bornée par \code{1000000}.
+
+	\begin{itemize}
+		\item \code{ALLOC} alloue une nouvelle cas qu'il initialise à la valeur qu'il a dépilé, et empile l'adresse de cette case.
+		\item \code{WRITE} écrit dans la case \code{ptr} la valeur \code{v} qu'il a dépilé, puis empile \code{unit}.
+		\item \code{READ} empile la valeur lue dans la mémoire à l'adresse dépilée.
+	\end{itemize}
+
+
+
+\section{Inférence de type et type-checking}
+
+	Les codes relatifs à cette partie sont \code{typeChecker.ml}, \code{checkerTypes.ml}, \code{typePrinter.ml}.
+	
+	Pour typer : utiliser l'option \code{-type} qui renvoie le type d'une expression. Dans l'exécution sans option, on fait un vérifie les types avant de commencer. On peut mettre l'option \code{-a} pour enlever cette fonctionnalité.
+	
+	\paragraph{Introduction} L'inférence de type a été l'un des passages les moins triviaux. L'inférence de type est un problème difficile qui est \code{DEXPTIME}-complet d'après Google. Pour le typage, nous nous sommes basé sur le système d'OCamL, qui prend en compte le \emph{polymorphisme}. Le problème de l'inférence de type revient à un problème d'unification. À une expression fouine, on va associer un type que l'on va chercher à unifier selon certaines contraintes. Nous n'avons pas cherché à réinventer la passoire à spaghetti ; l'algorithme au cœur de \emph{type-checker} est l'algorithme de Hindley-Milner.
+	
+	\paragraph{} Son implémentation n'est pas très performante, car on utilise des substitutions directement. Autrement dit, on explicite une substitution sous la forme d'une liste d'association pour résoudre le problème d'unification, qu'on applique au type "esquissé" de l'expression fouine pour obtenir un type acceptable.
+	
+	\subsection{Hindley - Milner}
+
+	\paragraph{}Pour les types, on considère les entiers machine \code{int}, les booléens \code{bool}, le type \code{unit}, le type \code{... ref}, ainsi que \code{*} et \code{->}. On prend en compte le polymorphisme (\emph{polymorphism} : \code{'a}) et le polymorphisme faible (\emph{weak polyporphism} : \code{'\_a}) représentés respectivement par \code{Poly\_t} et \code{Weak\_t}.
+	
+	\begin{minted}{ocaml}
+	
+	type type_f = 
+ 	 | Unit_t
+ 	 | Int_t 
+ 	 | Bool_t 
+ 	 | Poly_t  of int
+ 	 | Weak_t  of int
+ 	 | Ref_t   of type_f
+ 	 | Pair_t  of type_f * type_f
+ 	 | Fun_t   of type_f * type_f
+	;;
+	\end{minted}
+	
+	\paragraph{} Lorsque l'on cherche le type d'une expression, on va générer un ensemble de types inconnus en chemin (notamment lors d'un \code{fun x -> ...}, on ne connait pas à l'avance le type de \code{x}). L'objectif de l'algorithme est de typer ces inconnues. Il procède en deux étapes : \textbf{(1)} Générer l'ensemble des contraintes d'unification \textbf{(2)} Unifier l'ensemble des contraintes pour en déduire une \emph{substitution} qui remplacera les inconnues par leur type. 
+	
+	\paragraph{} Fondamentalement, les inconnues sont les variables. Hindley-Milner fonctionne dans le cas où il n'y a pas de doublon dans les noms de ces dernières. Plutôt que de les renommer pour avoir des noms injectifs dans le code, on simule un environnement comme dans la fonction d'évaluation. On a une liste d'assocation \code{var\_f * int}, où l'entier est un identifiant initialisé lors d'un \code{let}. C'est un indice dans un tableau qui retient les types de tous les inconnus. \textbf{Les inconnues sont toujours représentées en pratique par un type \code{'\_a} pour l'unification}. Ce type est deviné (voire \emph{généralisé}, voir partie suivante) pour être remplacé dans l'expression finale.
+	
+	\paragraph{Génération des contraintes} Je note ici \code{t(e)} le type de l'expression \code{e}. On procède par induction sur la structure de l'expression fouine fournie. Je laisse le \code{let rec} volontairement de côté pour l'instant.
+	\begin{itemize}
+	\item \textbf{\code{let x = e1 in e2}} : \code{x} est une nouvelle variable, qu'on rajoute dans l'environnement de type (on crée un nouveau type polymorphique faible pour celle-ci), et on a \code{t(x) = t(e1)} ainsi que \code{t(let x = e1 in e2) = t(e2)}.
+	\item \textbf{\code{x}} : on renvoie \code{t(x)}
+	\item \textbf{\code{12}} : on renvoie \code{int}
+	\item \textbf{\code{e1 + e2}} : alors \code{+} est de type \code{s -> t -> r} et on impose \code{t(e1) = s}, \code{t(e2) = t}, \code{t(e1 + e2) = r}.
+	\item \textbf{\code{fun x -> e}} : \code{x} est une nouvelle variable, qu'on associe à un nouveau type \code{'\_a} pour le typage de \code{e}, puis on impose \code{t(fun x -> e) = t(x) -> t(e)}.
+	\item \textbf{\code{e1 e2}} : on crée un nouveau type inconnu \code{'\_a} puis on impose \code{t(e1 e2) = '\_a} et \code{t(e1) = t(e2)->'\_a}.
+	\item \textbf{\code{if b then e1 else e2}} : on impose simplement \code{t(b) = bool}, ainsi que \code{t(e1) = t(e2)} et \code{t(if b then e1 else e2) = t(e1)}
+	\item \textbf{\code{(e1, e2)}} : on renvoie \code{t((e1, e2)) = (t(e1), t(e2))}
+	\item \code{!}, \code{ref}, \code{raise} peuvent être vu comme des fonctions, de même que tous les opérateurs unaires et binaires. Quant à \code{try ... with}, son cas est analogue au \code{if then else}.
+	\end{itemize}
+	
+	On peut alors générer un ensemble de contraintes que je note $C$.
+	
+	\paragraph{Unification} On part de la substitution triviale, représentée par \code{[]} dans le code, puis on considère les éléments de $C$. Notons $s$ la substitution courante. On prend le premier élément de $C$.
+	
+	\begin{itemize}
+	\item \code{t = t} : Alors $s$ est inchangé et on continue.
+	\item \code{'\_a = '\_b} : Alors on rajoute à la substitution \code{'\_a <- '\_b}.
+	\item \code{'\_a = s -> t} : Si \code{'\_a} n'apparaît ni dans \code{s} ni dans \code{t}, on rajoute à la substitution \code{'\_a <- s -> t}. On procède de même pour \code{ref} et \code{,}. Sinon, on explose en disant qu'on a un cycle.
+	\item \code{s -> t = u -> v} : On rajoute dans $C$ les contraintes \code{s = u} et \code{t = v}. De même pour \code{ref} et \code{,}.
+	\item Si on essaie d'unifier de symboles non-compatibles, par exemple \code{->} et \code{,}, on explose en disant que les types de correspondent pas. De même si on essaie d'unifier deux types terminaux (\code{int, bool, unit}) différents.
+	\end{itemize}
+	
+	
+	\paragraph{Hindley-Milner} Si on sépare clairement la collecte des contraintes de l'unification en deux étapes, on obtient l'algorithme de Hindley-Milner. C'est ce qu'on avait implémenté dans un premier temps. Cet algorithme est très puissant, et exhibe toujours un type le plus général possible ; il permet de typer \code{fun x -> x} en \code{'\_a -> '\_a}, ce qui bien (en supposant que \code{'\_a} est remplacé par du \code{'a}). On peut alors typer des choses "compliquées" telles que :
+	
+	\begin{minted}{ocaml}
+		fun x y z -> x z (y z)
+	\end{minted}
+	
+	en : \code{('\_c -> ('\_e -> '\_f)) -> (('\_c -> '\_e) -> ('\_c -> '\_f))}. Donc on est content. 
+	
+	
+	\paragraph{Limites} Cependant, cet algorithme ne gère pas le "vrai" polymorphisme. En effet, rappelons que le type \code{'\_a} est le type \emph{"je ne sais pas"} et non pas le type \emph{"n'importe quoi"} comme \code{'a}. C'est la différence entre le polymorphisme faible et le polymorphisme : \code{'\_a} prend la "valeur" du premier type qu'il rencontre - ce définitivement, mais \code{'a} est universel. Par exemple, on ne peut pas typer :
+	
+	\begin{minted}{ocaml}
+		let f = fun x -> x in (f 5, f true)
+	\end{minted}
+	
+	Car lors de l'unification, l'algorithme voit \code{f true}, donc pense que \code{f} est de type \code{bool -> 'a}. Puis il voit \code{f 5}, donc on essaie d'unifier \code{int -> 'a} avec \code{bool -> 'a}, donc d'unifier \code{int} avec \code{bool}. Et là, l'algorithme explose en disant que \code{bool} et \code{int} ne sont pas unifiable. Alors qu'on a envie de dire qu'il devrait !
+	
+	\subsection{Généralisation du \code{let} - code final}
+	
+	\paragraph{} Une solution à ça s'appelle (en anglais) le \emph{let polymorphism}. L'idée est la suivante, quand on fait \code{let f = fun x -> x}, on définit une fonction \code{'\_a -> '\_a}, donc, comme cette fonction n'impose par de restriction sur \code{'\_a}, celui-ci est en fait un \code{'a}. Dans la littérature, on voit écrit \code{$\forall$a, a -> a}. De notre côté, on utilise le type \code{Poly\_t}.
+	
+	\paragraph{Polymorphisme du \code{let}} À la fin du typage d'un \code{let}, on va \emph{généraliser} le type obtenu à un type polymorphe, si l'expression de \code{e1} dans \code{let x = e1 in e2} le permet. Par exemple, on généralise si \code{e1} est une fonction, une constante, ou un nom, mais pas si c'est une application, ce qui inclus \code{!}, \code{ref}, et les opérations. On dispose en pratique d'une fonction \code{generalize} qui généralise le type des variables après un \code{let}, et d'une fonction \code{is\_generalizable} qui indique si on a le droit de généraliser une expression.
+	
+	\paragraph{} Pour pouvoir faire ceci sans problème, il faut qu'on puisse décider du type de \code{x} avant de le généraliser. On ne peut donc plus faire un bel algorithme en deux phases distinctes, en tout cas pas aussi facilement. On a donc choisi de forcer une unification lors d'un \code{let} (ce qui permet de se débarasser de toutes les contraintes courantes), pour pouvoir ensuite \emph{généraliser} le type de \code{x} qui est alors connu.
+	
+	\paragraph{} Ensuite, lorsqu'on rencontre une variable dans le code, on ne renvoie pas son type, mais on l'\emph{instancie} (i.e on ne dit pas \code{t(x)} mais plutôt \code{t'(x)}). C'est-à-dire qu'on crée un nouveau type isomorphe à \code{t(x)}, qui permettra lors de l'utilisation de \code{x} de ne pas mettre des restrictions sur son type - ce qui peut poser problème lors de l'unification comme on vient de le voir. Par exemple, dans le cas de :
+	
+	\begin{minted}{ocaml}
+		let f = fun x -> x in (f 5, f true)
+	\end{minted}
+	
+	\begin{itemize}
+		\item On type d'abord \code{f} en \code{'\_a -> '\_a}
+		\item Ce type est généralisé par le \code{let} en \code{'a -> 'a}
+		\item On rencontre \code{f true}. En typant \code{f}, on remarque que ce dernier possède le type polymorphe \code{'a}. On crée donc un nouveau type \code{'\_c} pour le représenter i.e \code{t'(f) = '\_c -> '\_c}. On unifie alors \code{'\_c -> '\_c} et un \code{bool -> '\_b}. On en déduit : \code{bool = '\_c}, \code{'\_b = '\_c = bool}. Donc \code{f true} est de type \code{bool} et il n'y a pas de problème de typage.
+		\item Puis, pareillement : on rencontre \code{f 5}. En typant \code{f}, on remarque que ce dernier possède le type polymorphe \code{'a}. On crée donc un nouveau type \code{'\_e} pour le représenter i.e \code{t'(f) = '\_e -> '\_e}. On unifie alors \code{'\_e -> '\_e} et un \code{int -> '\_d}. On en déduit : \code{int = '\_e}, \code{'\_d = '\_e = int}. Donc \code{f 5} est de type \code{int} et il n'y a pas de problème de typage.
+		\item On conclut en renvoyant le type \code{(int * bool)}
+	\end{itemize}
+	
+	
+	\subsection{Typage de fouine}
+	
+	\paragraph{Récursivité} Pour les fonctions récursives : \code{let rec f = e1 in e2}, leur type est sensé être défini dans \code{e1}. Dans les faits, on commence par essayer d'unifier avec la condition \code{t(f) = t(e1)} (au cas où la définition n'est pas récursive). Il est apparu qu'on pouvait avoir des cycles. Mais en enlevant la contrainte \code{t(f) = t(e1)}, on peut unifier sans problème. De même, si c'est autorisé, on généralise juste après.
+	
+	\paragraph{Résultats} Pour ce qui est des résultats, le système de typage semble assez robuste, et fidèle à OCamL. Voici quelques exemples 
+	
+	\begin{minted}{ocaml}
+	let rec f = f (f 7) in f
+	\end{minted}
+	
+	est typé en \code{int -> int}
+	
+	\begin{minted}{ocaml}
+	let a,b = (0+0, fun x -> x) in a, b
+	\end{minted}
+	
+	est typé en \code{int * ('\_c -> '\_c)}. OCamL et Fouine s'interdisent de généraliser \code{'\_c -> '\_c}, à cause du \code{0 + 0} qui est une application de fonction, donc on ne généralise pas pour éviter d'avoir des problèmes.
+	
+	Autre exemple :
+	\begin{minted}{ocaml}
+	let f x y = x in f 5
+	\end{minted}
+	
+	est typé en \code{'\_c -> int}, pareillement qu'en OCamL. Cependant, ce n'est pas le type le plus général ! on aurait envie d'avoir \code{'c -> int} ! mais :
+	
+	\begin{minted}{ocaml}
+	let f x y = x in fun y -> f 5 y
+	\end{minted}
+	
+	est bien typé en \code{'d -> int}. On généralise car on a une fonction à la racine. On arrive aussi à typer : 
+	
+	\begin{minted}{ocaml}
+	let rec fix f = fun arg -> f (fix f) arg in fix
+	\end{minted}
+	
+	en \code{(('h -> 'g) -> ('h -> 'g)) -> ('h -> 'g)}
+	
 
 \section{Pathologies}
 
@@ -542,16 +719,11 @@ DESTRUCT & &&&&&\\
 	\begin{minted}{ocaml}
 					let rec f = fun x -> f;;
 	\end{minted}
-	
-	\subsection{Références}
-	
-	\begin{minted}{ocaml}
-				let a = ref (ref 42) in
-				a := ref (ref 4);
-				prInt !(!(!a));;
-	\end{minted}
-	
-	Ici, on a un code fouine accepté, qui ne l'est pas en OCamL, car OCamL perçoit une erreur de typage.
 
+	\subsection{\code{;;}}
+	
+	Il me semble que le \code{;;} n'a pas le comportement désiré ...
+	C'est une remarque à 22h le jour du rendu, donc qu'il en soit ainsi.
+	
 \end{document}
 

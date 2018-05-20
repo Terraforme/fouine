@@ -60,9 +60,8 @@ selon le tag en paramètre *)
 let calc exec_mod =
   let expr = parse () in
   match exec_mod with
-  | Normal -> let _ = eval expr [] id [] in ()
-  | Complete -> print_type (type_checker expr); print_string " - ";
-                pretty_value 0 (eval expr [] id []); print_newline ()
+  | Normal -> let _ = type_checker expr in let _ = eval expr [] id [] in ()
+  | Complete -> let _ = eval expr [] id [] in ()
   | Continuation -> if !outcode_option
     then let cexpr = ccont expr in pretty_print_expr cexpr
     else let _ = eval (ctransform expr) [] id [] in ()

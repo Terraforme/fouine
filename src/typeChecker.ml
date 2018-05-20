@@ -1,7 +1,7 @@
 open Types
+open Printer
 open CheckerTypes
 open TypePrinter
-open Unification
 
 
 
@@ -143,6 +143,15 @@ let rec generalize_pattern p sub env = match p with
 let generalize_expr expr t = if is_generalizable expr then gen_rebuilt t 0
                              else t
 
+let apply_sub_on_var x sub env = 
+  let i = tenv_get_id x env in
+  let t = apply_sub sub (type_of_id i) in
+  tindex.(i) <- gen_rebuilt t i
+
+let rec apply_sub_on_pat pat sub env = match pat with
+  | Var_Pat x        -> apply_sub_on_var x sub env
+  | Pair_Pat(p1, p2) -> apply_sub_on_pat p1 sub env; apply_sub_on_pat p2 sub env
+  | _ -> failwith "apply_sub_on_pat : unsupported pattern"
 
 (* Instantiation des variables *)
 (* Une instance est une liste d'association int * type_f où id est l'id d'un type *)
@@ -190,6 +199,9 @@ let rec collect_constraint expr env sub = match expr with
   | Bang e              -> let s, c, sub1 = collect_constraint e env sub in
                            begin match s with
                            | Ref_t t -> t, c, sub
+                           | Weak_t x -> let i = new_weak () in
+                                         let r = type_of_id i in
+                                         r, (Ref_t r, s) :: c, sub
                            | _ -> failwith "Dereferencing non ref"
                            end
                             
@@ -205,7 +217,10 @@ let rec collect_constraint expr env sub = match expr with
                            let s, c, sub = collect_constraint e1 env sub in
                            let c = add_constraint_on_pattern pat s env c in
                            let sub = (unify sub c) in
-                           if (is_generalizable expr) then generalize_pattern pat sub env;
+                           let _ = if (is_generalizable expr) 
+                                   then generalize_pattern pat sub env
+                                   else apply_sub_on_pat pat sub env
+                                 in
                            collect_constraint e2 env sub
   | LetRec (f, e1, e2)  -> (* Pour le let rec : on ne rajoute pas de contraintes
                             * après le typage de e1 : elles ont déjà été calculées

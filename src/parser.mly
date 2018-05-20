@@ -1,5 +1,6 @@
 %{
   open Types
+  
 (* --- préambule: ici du code Caml --- *)
 %}
 /* énumération des lexèmes, ceux-ci sont décrits (par vous) dans lexer.mll */
