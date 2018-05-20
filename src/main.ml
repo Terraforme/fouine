@@ -6,14 +6,18 @@ open Continuations
 open Transfo_ref
 open Transfo_machine
 open Secd
+open TypePrinter
+open TypeChecker
 
-type exec_mod_f = Normal | Continuation | Parsing | Debug | References | CR | RC | Machine | Stackcode;;
+type exec_mod_f = Normal | Continuation | Parsing | Debug | References | CR | RC | Machine | Stackcode | Type | Complete;;
 
 let debug_option = ref false and parsing_only_option = ref false and c_option = ref false and r_option = ref false
   and cr_option = ref false and rc_option = ref false
   and outcode_option = ref  false
   and machine_option = ref  false
-  and stackcode_option = ref false;;
+  and stackcode_option = ref false
+  and type_option = ref false
+  and complete_option = ref false;;
 
 let anon_fonction s = () in
 let speclist = [("-debug", Arg.Set debug_option, "Switch to debug mode");
@@ -24,7 +28,9 @@ let speclist = [("-debug", Arg.Set debug_option, "Switch to debug mode");
   ("-RE", Arg.Set rc_option, "Perform Transformation erasing the imperative aspects");
   ("-outcode", Arg.Set outcode_option, "Print the result of the Transformation (use with -E, -R, -ER or -RE)");
   ("-machine", Arg.Set machine_option, "Switch to Machine SECD mod");
-  ("-stackcode", Arg.Set stackcode_option, "Print stackcode")]
+  ("-stackcode", Arg.Set stackcode_option, "Print stackcode");
+  ("-type", Arg.Set type_option, "Type - checker");
+  ("-a", Arg.Set complete_option, "Print on format [type]-[execution value]")]
 in let usage_msg = "\nThis is an ocaml interpreter for the fouine language.\n";
 in Arg.parse speclist anon_fonction usage_msg;;
 
@@ -55,6 +61,8 @@ let calc exec_mod =
   let expr = parse () in
   match exec_mod with
   | Normal -> let _ = eval expr [] id [] in ()
+  | Complete -> print_type (type_checker expr); print_string " - ";
+                pretty_value 0 (eval expr [] id []); print_newline ()
   | Continuation -> if !outcode_option
     then let cexpr = ccont expr in pretty_print_expr cexpr
     else let _ = eval (ctransform expr) [] id [] in ()
@@ -120,11 +128,19 @@ let calc exec_mod =
       pretty_value 0 value2;
 			print_newline ()
     end
+  | Type -> 
+    begin
+      print_expr expr;
+      pretty_print_expr expr;
+      try print_type (type_checker expr); print_newline ()
+      with Failure x -> print_string ("Type checker : " ^ x); print_newline ()
+    end
   ;
   flush stdout
 ;;
 
 let exec_mod = if !debug_option then Debug else if !parsing_only_option then Parsing
+else if !complete_option then Complete else if !type_option then Type 
 else if !c_option then Continuation else if !r_option then References
 else if !cr_option then CR else if !rc_option then RC
 else if !machine_option then Machine else if !stackcode_option then Stackcode
